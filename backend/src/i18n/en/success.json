@@ -1,0 +1,7 @@
+{
+  "user": {
+    "created": "User created successfully , please check your email for verification!",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "user": {
+    "not_found": "Utilisateur non trouvé",
+    "not_deleted": "Impossible de supprimer l'utilisateur",
+    "invalid_password": "Mot de passe incorrect",
+    "invalid_username": "Nom d'utilisateur incorrect",
+    "required_username": "Nom d'utilisateur requis",
+    "invalid_email": "Adresse email incorrecte",
+    "password_too_short": "Le mot de passe doit avoir au moins 6 caractères",
+    "required_password": "Mot de passe requis",
+    "required_email": "Adresse email requise"
+  }
+}

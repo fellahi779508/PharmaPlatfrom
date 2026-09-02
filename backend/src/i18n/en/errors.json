@@ -1,0 +1,17 @@
+{
+  "user": {
+    "not_found": "User not found",
+    "not_deleted": "Failed to delete user",
+    "invalid_password": "Invalid password",
+    "invalid_username": "Invalid username",
+    "required_username": "Username is required",
+    "invalid_email": "Invalid email address",
+    "password_too_short": "Password must be at least 6 characters long",
+    "required_password": "Password is required",
+    "required_email": "Email is required",
+    "email_exists": "A user with this email already exists",
+    "otp_expired": "Verification code has expired",
+    "invalid_otp": "Invalid verification code",
+    "email_already_verified": "Email is already verified"
+  }
+}

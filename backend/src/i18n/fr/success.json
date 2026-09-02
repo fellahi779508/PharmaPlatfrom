@@ -1,0 +1,7 @@
+{
+  "user": {
+    "created": "Utilisateur créé avec succès",
+    "updated": "Utilisateur mis à jour avec succès",
+    "deleted": "Utilisateur supprimé avec succès"
+  }
+}
