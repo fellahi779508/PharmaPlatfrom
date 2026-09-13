@@ -10,8 +10,24 @@
     "required_password": "Password is required",
     "required_email": "Email is required",
     "email_exists": "A user with this email already exists",
-    "otp_expired": "Verification code has expired",
-    "invalid_otp": "Invalid verification code",
+
     "email_already_verified": "Email is already verified"
+  },
+  "email": {
+    "otp_sent": "Failed to send verification code",
+    "otp_expired": "Verification code has expired",
+    "invalid_otp": "Invalid verification code"
+  },
+  "year": {
+    "not_found": "Year not found"
+  },
+  "semester": {
+    "not_found": "Semester not found"
+  },
+  "course": {
+    "not_found": "Course not found"
+  },
+  "subject": {
+    "not_found": "Subject not found"
   }
 }

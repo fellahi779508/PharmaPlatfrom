@@ -1,21 +1,23 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from 'src/user/user.service';
 import { compare } from 'bcrypt';
 import { I18nContext, I18nService } from 'nestjs-i18n';
-import * as jwt from 'jsonwebtoken';
 import { JwtPayloadType } from './types/jwt-payload.type';
 import { JwtService } from '@nestjs/jwt';
 import { CurrentUser } from './types/current-user';
+import { UserService } from 'src/user/user.service';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
     private readonly i18n: I18nService,
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -47,7 +49,7 @@ export class AuthService {
 
     return this.jwtService.sign(payload);
   }
-  async validateJwtUser(userId: number) {
+  async validateJwtUser(userId: string) {
     const user = await this.userService.findOne(userId);
     if (!user) {
       throw new UnauthorizedException(

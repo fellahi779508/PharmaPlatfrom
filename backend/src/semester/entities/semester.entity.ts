@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Year } from 'src/year/entities/year.entity';
-import { Subject } from 'src/subject/entities/subject.entity';
+import { Course } from 'src/course/entities/course.entity';
 
 @Entity('semester')
 export class Semester {
@@ -14,8 +14,8 @@ export class Semester {
   id: number;
   @Column()
   number: number;
-  @ManyToOne(() => Year, (year) => year.semesters)
+  @ManyToOne(() => Year, (year) => year.semesters, { onDelete: 'CASCADE' })
   year: Year;
-  @OneToMany(() => Subject, (subject) => subject.semester)
-  subjects: Subject[];
+  @OneToMany(() => Course, (course) => course.semester)
+  courses: Course[];
 }

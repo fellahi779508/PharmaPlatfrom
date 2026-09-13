@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { YearService } from './year.service';
 import { CreateYearDto } from './dto/create-year.dto';
 import { UpdateYearDto } from './dto/update-year.dto';
@@ -18,17 +27,17 @@ export class YearController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.yearService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.yearService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateYearDto: UpdateYearDto) {
-    return this.yearService.update(+id, updateYearDto);
+  update(@Param('id') id: number, @Body() updateYearDto: UpdateYearDto) {
+    return this.yearService.update(id, updateYearDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.yearService.remove(+id);
+  remove(@Param('id') id: number) {
+    return this.yearService.remove(id);
   }
 }

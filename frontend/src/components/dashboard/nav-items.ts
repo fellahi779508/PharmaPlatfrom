@@ -1,0 +1,69 @@
+import {
+  BarChart3,
+  CalendarCheck,
+  GraduationCap,
+  LayoutDashboard,
+  ListTodo,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
+
+export type NavKey =
+  | "dashboard"
+  | "statistics"
+  | "sessions"
+  | "exams"
+  | "todos"
+  | "profile";
+
+export type NavItem = {
+  key: NavKey;
+  href: string;
+  icon: LucideIcon;
+  tone: string;
+};
+
+/**
+ * The one place that defines "where can a person go from here".
+ * The dashboard grid and the floating QuickNav both read from this list,
+ * so the two can never drift out of sync.
+ */
+export const NAV_ITEMS: NavItem[] = [
+  {
+    key: "dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    tone: "var(--primary)",
+  },
+  {
+    key: "statistics",
+    href: "/dashboard/statistics",
+    icon: BarChart3,
+    tone: "var(--info)",
+  },
+  {
+    key: "sessions",
+    href: "/dashboard/sessions",
+    icon: CalendarCheck,
+    tone: "var(--primary)",
+  },
+
+  {
+    key: "exams",
+    href: "/dashboard/exams",
+    icon: GraduationCap,
+    tone: "var(--warning)",
+  },
+  {
+    key: "todos",
+    href: "/dashboard/todos",
+    icon: ListTodo,
+    tone: "var(--success)",
+  },
+  {
+    key: "profile",
+    href: "/dashboard/profile",
+    icon: UserRound,
+    tone: "var(--accent)",
+  },
+];

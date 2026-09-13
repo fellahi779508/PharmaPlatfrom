@@ -1,0 +1,638 @@
+/*
+  CSS module — class names below are scoped automatically by the build,
+  so no manual prefix is needed to avoid collisions with the rest of the app.
+
+  Motion language:
+    - Entrances are short and decelerating (cubic-bezier(0.16, 1, 0.3, 1)),
+      the same curve used across the panel so nothing feels bolted on.
+    - Hover is a 2px lift, active is a 1px press — small enough to read as
+      physical without feeling jumpy on trackpads.
+*/
+
+/* ============================== Trigger ============================== */
+
+.trigger {
+  position: fixed;
+  inset-block-end: 1.5rem;
+  inset-inline-end: 1.5rem;
+  z-index: 60;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 70%, transparent);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 92%, white) 0%,
+    var(--primary) 100%
+  );
+  color: var(--primary-foreground);
+  cursor: pointer;
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 10px 24px -8px color-mix(in srgb, var(--primary) 55%, transparent),
+    0 2px 6px -2px rgba(0, 0, 0, 0.35);
+
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.trigger:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 16px 32px -10px color-mix(in srgb, var(--primary) 65%, transparent),
+    0 3px 8px -2px rgba(0, 0, 0, 0.4);
+}
+
+.trigger:active {
+  transform: translateY(0);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 3px;
+}
+
+/* Icon inherits a soft rotation hint on hover so the button reads as
+   interactive even when the pointer is just passing over it. */
+.trigger > svg {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.trigger:hover > svg {
+  transform: rotate(-8deg);
+}
+
+/* Open state: the button recedes into the surface so the panel becomes
+   the focus, but keeps enough contrast to remain the obvious "close" hit. */
+.trigger[aria-expanded="true"] {
+  background: var(--surface);
+  color: var(--foreground);
+  border-color: var(--border);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 8px 20px -10px rgba(0, 0, 0, 0.5);
+}
+
+.trigger[aria-expanded="true"] > svg {
+  transform: rotate(90deg);
+}
+
+/* Second trigger on the same screen (e.g. preferences vs. page nav) sits
+   in the opposite corner so the two floating buttons never overlap. */
+.triggerStart {
+  inset-inline-end: auto;
+  inset-inline-start: 1.5rem;
+}
+
+.triggerLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  display: none;
+  padding-inline-end: 0.15rem;
+}
+
+@media (min-width: 640px) {
+  .triggerLabel {
+    display: inline;
+  }
+}
+
+/* ============================== Overlay ============================== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  background: color-mix(in srgb, #0b1120 62%, transparent);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  animation: overlayIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================== Panel ============================== */
+
+.panel {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  /* A one-pixel inner highlight gives the panel a slight "lit from above"
+     feel without being noticeable unless you're looking for it. */
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 24px 60px -20px rgba(0, 0, 0, 0.55),
+    0 8px 20px -10px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Sidebar variant: full-height drawer from the inline-end edge ---- */
+.panelSidebar {
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(340px, 90vw);
+  border-inline-start-width: 1px;
+  border-block-width: 0;
+  border-inline-end-width: 0;
+  border-start-start-radius: 20px;
+  border-end-start-radius: 20px;
+  padding: 1.5rem 1.25rem;
+  gap: 0.25rem;
+  animation: slideInSide 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[dir="rtl"] .panelSidebar {
+  --qn-offset: -100%;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: 20px;
+  border-end-end-radius: 20px;
+}
+
+.panelSidebar .list {
+  flex-direction: column;
+  overflow-y: auto;
+  margin-inline: -0.25rem;
+  padding-inline: 0.25rem;
+}
+
+/* ---- Topbar variant: full-width bar dropping from the top ---- */
+.panelTopbar {
+  inset-inline: 0;
+  inset-block-start: 0;
+  border-block-end-width: 1px;
+  border-inline-width: 0;
+  border-block-start-width: 0;
+  border-end-start-radius: 20px;
+  border-end-end-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  gap: 0.75rem;
+  animation: slideInTop 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panelTopbar .panelHeader {
+  flex-shrink: 0;
+}
+
+.panelTopbar .list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.panelTopbar .item {
+  flex: 1 1 160px;
+}
+
+/* ============================== Header ============================== */
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.panelHeading {
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style: italic;
+  font-size: 1rem;
+  letter-spacing: 0.005em;
+  color: var(--muted-foreground);
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.iconButton:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.iconButton:active {
+  transform: scale(0.94);
+}
+
+.iconButton:focus-visible,
+.item:focus-visible,
+.segment:focus-visible,
+.langBtn:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+/* ============================== List ============================== */
+
+.list {
+  display: flex;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+
+  /* Staggered reveal — --i is set on each item from the component.
+     Falls back to 0 if the component doesn't pass it yet. */
+  opacity: 0;
+  animation: itemIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 32ms + 60ms);
+
+  transition:
+    background 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease,
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.item:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+  transform: translateX(2px);
+}
+
+[dir="rtl"] .item:hover {
+  transform: translateX(-2px);
+}
+
+.item:active {
+  transform: translateX(0) scale(0.995);
+}
+
+/* Active row gets a left accent bar plus a tinted background — two cues
+   instead of relying on color alone. */
+.itemActive {
+  background: color-mix(in srgb, var(--tone) 10%, var(--surface-hover));
+  border-color: color-mix(in srgb, var(--tone) 40%, var(--border));
+}
+
+.itemActive::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.5rem;
+  inset-inline-start: -1px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--tone);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 55%, transparent);
+}
+
+/* ---- Icon chip ---- */
+
+.itemIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--tone);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.item:hover .itemIcon {
+  border-color: color-mix(in srgb, var(--tone) 40%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 12%, transparent);
+}
+
+.itemActive .itemIcon {
+  background: color-mix(in srgb, var(--tone) 14%, var(--background));
+  border-color: color-mix(in srgb, var(--tone) 45%, var(--border));
+  color: var(--tone);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--foreground);
+}
+
+.itemTag {
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemTagDanger {
+  color: var(--error);
+}
+
+/* Trailing check for single-select rows (theme, language). */
+.itemCheck {
+  margin-inline-start: auto;
+  color: var(--tone);
+  flex-shrink: 0;
+}
+
+/* ============================== Bottom actions ============================== */
+
+.bottomActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+
+.preferenceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.langHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  padding-inline-start: 0.1rem;
+}
+
+/* ---- Segmented control — light / dark ---- */
+
+.segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  align-self: flex-start;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.segment:hover {
+  color: var(--foreground);
+  background: var(--surface-hover);
+}
+
+.segment:active {
+  transform: scale(0.94);
+}
+
+.segmentActive {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 4px 10px -4px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+
+.segmentActive:hover {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+/* ---- Language pills ---- */
+
+.langButtons {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-self: flex-start;
+  padding: 0.25rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
+
+.langBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 30px;
+  padding: 0 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.langBtn:hover {
+  color: var(--foreground);
+  background: var(--surface-hover);
+}
+
+.langBtn:active {
+  transform: scale(0.94);
+}
+
+.langBtnActive {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 4px 10px -4px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+
+.langBtnActive:hover {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+/* ---- Logout ---- */
+
+.logout {
+  margin-top: 0.25rem;
+}
+
+.logout:hover {
+  background: color-mix(in srgb, var(--error) 10%, var(--surface-hover));
+  border-color: color-mix(in srgb, var(--error) 35%, var(--border));
+}
+
+.logout:hover .itemIcon {
+  border-color: color-mix(in srgb, var(--error) 40%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 12%, transparent);
+}
+
+.logout:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ============================== Motion ============================== */
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInSide {
+  from {
+    transform: translateX(var(--qn-offset, 100%));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .panel,
+  .trigger,
+  .item,
+  .itemIcon,
+  .segment,
+  .langBtn,
+  .iconButton,
+  .spin {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Fallback for browsers without color-mix() — keeps the old flat look
+   rather than producing an invalid value that silently drops the rule. */
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .itemActive {
+    background: var(--surface-hover);
+    border-color: var(--border);
+  }
+  .itemActive .itemIcon,
+  .logout:hover .itemIcon {
+    box-shadow: none;
+  }
+}

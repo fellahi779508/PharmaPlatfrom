@@ -21,6 +21,11 @@ export class AuthController {
       req.user.role,
       req.user.email,
     );
-    return { id: req.user.id, token };
+    return {
+      id: req.user.id,
+      token,
+      role: req.user.role,
+      email: req.user.email,
+    };
   }
 }

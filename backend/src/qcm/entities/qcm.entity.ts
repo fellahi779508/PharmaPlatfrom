@@ -7,6 +7,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Td } from 'src/td/entities/td.entity';
+import { Tp } from 'src/tp/entities/tp.entity';
 
 @Entity('qcm')
 export class Qcm {
@@ -14,8 +16,15 @@ export class Qcm {
   id: number;
   @Column()
   question: string;
-  @ManyToOne(() => Course, (course) => course.qcms)
+  @ManyToOne(() => Course, (course) => course.qcms, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   course: Course;
-  @OneToMany(() => QcmAnswer, (answer) => answer.qcm)
+  @ManyToOne(() => Td, (td) => td.qcms, { nullable: true, onDelete: 'CASCADE' })
+  td: Td;
+  @ManyToOne(() => Tp, (tp) => tp.qcms, { nullable: true, onDelete: 'CASCADE' })
+  tp: Tp;
+  @OneToMany(() => QcmAnswer, (answer) => answer.qcm, { nullable: true })
   answers: QcmAnswer[];
 }

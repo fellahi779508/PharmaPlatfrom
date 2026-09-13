@@ -12,7 +12,8 @@ import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService, I18nContext } from 'nestjs-i18n';
 import { EmailService } from 'src/email/email.service';
-import { forwardRef, Inject } from '@nestjs/common';
+import { accountVerificationTemplate } from 'src/email/html-templates/account-verification';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -50,7 +51,11 @@ export class UserService {
       otpExpiresAt,
     });
     const savedUser = await this.userRepo.save(user);
-    await this.emailService.sendVerificationOtp(savedUser.email, otpCode);
+    await this.emailService.sendVerificationOtp(
+      savedUser.email,
+      otpCode,
+      accountVerificationTemplate(otpCode),
+    );
     return {
       message: this.i18n.translate('success.user.created', {
         lang: this.currentLang,
@@ -85,7 +90,7 @@ export class UserService {
     return { users, total, pages: Math.ceil(total / limit) };
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(
@@ -97,7 +102,7 @@ export class UserService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.userRepo.preload({
       id,
       ...updateUserDto,
@@ -109,10 +114,15 @@ export class UserService {
         }),
       );
     }
-    return this.userRepo.save(user);
+    await this.userRepo.save(user);
+    return {
+      message: this.i18n.translate('success.user.updated', {
+        lang: this.currentLang,
+      }),
+    };
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.findOne(id);
     try {
       await this.userRepo.remove(user);
@@ -128,5 +138,50 @@ export class UserService {
         }),
       );
     }
+  }
+
+  async changePassword(
+    id: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.findOne(id);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new BadRequestException(
+        this.i18n.translate('errors.user.invalid_password', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await this.userRepo.save(user);
+    return {
+      message: this.i18n.translate('success.user.password_changed', {
+        lang: this.currentLang,
+      }),
+    };
+  }
+
+  async activateUser(id: string) {
+    const user = await this.findOne(id);
+    user.isActive = true;
+    user.activationDate = new Date();
+    await this.userRepo.save(user);
+    return {
+      message: this.i18n.translate('success.user.activated', {
+        lang: this.currentLang,
+      }),
+    };
+  }
+
+  //dev only
+  async deleteAll() {
+    await this.userRepo.clear();
+    return 'done';
   }
 }

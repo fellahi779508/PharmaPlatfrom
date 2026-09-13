@@ -9,6 +9,8 @@ export class QcmAnswer {
   answer: string;
   @Column()
   isCorrect: boolean;
-  @ManyToOne(() => Qcm, (qcm) => qcm.answers)
+  @Column({ type: 'text', nullable: true })
+  explanation: string;
+  @ManyToOne(() => Qcm, (qcm) => qcm.answers, { onDelete: 'CASCADE' })
   qcm: Qcm;
 }

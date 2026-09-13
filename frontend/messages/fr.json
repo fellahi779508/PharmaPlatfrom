@@ -1,0 +1,249 @@
+{
+  "login": {
+    "title": "Bon retour",
+    "subtitle": "Connectez-vous pour continuer votre préparation aux examens de pharmacie.",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié ?",
+    "loginButton": "Se connecter",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "signup": "Créer un compte",
+    "error": {
+      "invalidCredentials": "E-mail ou mot de passe invalide.",
+      "generic": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "topbar": {
+    "dashboard": "Tableau de bord",
+    "exams": "Examens",
+    "profile": "Profil",
+    "switchToDark": "Passer en mode sombre",
+    "switchToLight": "Passer en mode clair",
+    "changeLanguage": "Changer de langue",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "locales": {
+      "en": "English",
+      "fr": "Français",
+      "ar": "العربية"
+    }
+  },
+  "register": {
+    "title": "Créez votre compte",
+    "subtitle": "Rejoignez PharmaExam et commencez à préparer vos examens.",
+    "usernameLabel": "Nom d'utilisateur",
+    "usernamePlaceholder": "votre_nom",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Créez un mot de passe fort",
+    "passwordHint": "Doit contenir au moins 8 caractères.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "registerButton": "Créer un compte",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "login": "Se connecter",
+    "otp": {
+      "title": "Vérifiez votre e-mail",
+      "subtitle": "Nous avons envoyé un code à 6 chiffres à {email}.",
+      "label": "Code de vérification",
+      "placeholder": "000000",
+      "verifyButton": "Vérifier",
+      "backButton": "Retour",
+      "resendButton": "Renvoyer le code"
+    },
+    "success": {
+      "otpSent": "Code de vérification envoyé à votre e-mail.",
+      "otpResent": "Un nouveau code a été envoyé à votre e-mail.",
+      "accountVerified": "Compte vérifié ! Redirection..."
+    },
+    "error": {
+      "registrationFailed": "L'inscription a échoué. Veuillez réessayer.",
+      "invalidOtp": "Code invalide ou expiré. Veuillez réessayer.",
+      "resendFailed": "Impossible de renvoyer le code. Veuillez réessayer.",
+      "generic": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "teacher": {
+    "title": "Gestion du cursus",
+    "subtitle": "Structurez le cursus de pharmacie : années, semestres, matières, cours, TD, TP, QCM et réponses.",
+    "loading": "Chargement…",
+    "refresh": "Actualiser",
+    "selectPlaceholder": "Sélectionner…",
+    "breadcrumb": { "home": "Toutes les années" },
+    "tabs": {
+      "years": "Années",
+      "semesters": "Semestres",
+      "subjects": "Matières",
+      "courses": "Cours",
+      "tds": "TD",
+      "tps": "TP",
+      "qcms": "QCM",
+      "qcmAnswers": "Réponses"
+    },
+    "labels": {
+      "year": "Année",
+      "semester": "Semestre",
+      "subject": "Matière",
+      "course": "Cours",
+      "td": "TD",
+      "tp": "TP",
+      "qcm": "QCM",
+      "subjects": "matières",
+      "semesters": "semestres",
+      "courses": "cours",
+      "tds": "TD",
+      "tps": "TP",
+      "qcms": "QCM",
+      "answers": "réponses",
+      "correct": "Correcte",
+      "incorrect": "Incorrecte",
+      "unassigned": "Semestre non assigné"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "close": "Fermer",
+      "createShort": "Créer",
+      "editEntity": {
+        "year": "Modifier l'année",
+        "semester": "Modifier le semestre",
+        "subject": "Modifier la matière",
+        "course": "Modifier le cours",
+        "td": "Modifier le TD",
+        "tp": "Modifier le TP",
+        "qcm": "Modifier le QCM",
+        "answer": "Modifier la réponse"
+      },
+      "create": {
+        "years": "Nouvelle année",
+        "semesters": "Nouveau semestre",
+        "subjects": "Nouvelle matière",
+        "courses": "Nouveau cours",
+        "tds": "Nouveau TD",
+        "tps": "Nouveau TP",
+        "qcms": "Nouveau QCM",
+        "qcmAnswers": "Nouvelle réponse"
+      }
+    },
+    "fields": {
+      "name": "Nom",
+      "number": "Numéro",
+      "semester": "Semestre",
+      "question": "Question",
+      "answer": "Réponse",
+      "isCorrect": "Marquer comme correcte",
+      "explanation": "Explication (facultatif)"
+    },
+    "qcm": {
+      "answersLabel": "Options de réponse",
+      "addAnswer": "Ajouter une réponse",
+      "answerPlaceholder": "Saisissez une réponse…",
+      "explanationPlaceholder": "Pourquoi cette réponse est correcte/incorrecte ? (facultatif)"
+    },
+    "hints": {
+      "needSemesterFirst": "Créez d'abord un semestre dans cette année."
+    },
+    "empty": {
+      "title": "Rien pour le moment",
+      "yearsHint": "Créez la première année académique pour commencer.",
+      "semestersHint": "Ajoutez des semestres pour organiser les cours.",
+      "subjectsHint": "Ajoutez les matières enseignées cette année.",
+      "coursesHint": "Ajoutez des cours à cette matière. Chaque cours appartient à un semestre.",
+      "tdsHint": "Ajoutez des séances de TD (travaux dirigés) pour cette matière.",
+      "tpsHint": "Ajoutez des séances de TP (travaux pratiques) pour cette matière.",
+      "qcmsHint": "Ajoutez des QCM pour évaluer les étudiants sur cet élément.",
+      "answersHint": "Ajoutez les options de réponse pour cette question."
+    },
+    "confirmDelete": {
+      "title": "Supprimer cet élément ?",
+      "message": "« {name} » sera définitivement supprimé avec ses enfants. Action irréversible."
+    },
+    "success": {
+      "created": "Créé avec succès.",
+      "updated": "Mis à jour avec succès.",
+      "deleted": "Supprimé avec succès."
+    },
+    "error": {
+      "saveFailed": "Échec de l'enregistrement. Veuillez réessayer.",
+      "deleteFailed": "Échec de la suppression. Veuillez réessayer.",
+      "minAnswers": "Un QCM nécessite au moins 2 réponses.",
+      "needCorrect": "Marquez au moins une réponse comme correcte.",
+      "generic": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "Dashboard": {
+    "badge": "Votre espace",
+    "title": "Tableau de bord",
+    "subtitle": "Tout ce qu'il vous faut aujourd'hui, à portée de clic.",
+    "navigate": "Ouvrir",
+    "utility": {
+      "brand": "Console de l'espace de travail",
+      "searchPlaceholder": "Rechercher ou accéder à...",
+      "liveStatus": "Système actif"
+    },
+    "statistics": {
+      "tag": "Analytique",
+      "title": "Statistiques",
+      "description": "Consultez vos tendances de performance et votre progression."
+    },
+    "sessions": {
+      "tag": "Planning",
+      "title": "Séances",
+      "description": "Consultez et gérez vos prochaines séances d'étude."
+    },
+    "exams": {
+      "tag": "Échéances",
+      "title": "Examens",
+      "description": "Suivez vos examens à venir et les dates importantes."
+    },
+    "dashboard": {
+      "tag": "Tableau de bord",
+      "title": "Tableau de bord",
+      "description": "Consultez vos statistiques et votre progression."
+    },
+    "teacher": {
+      "tag": "Enseignant",
+      "title": "Enseignant",
+      "description": "Gérez vos cours et vos étudiants."
+    },
+    "admin": {
+      "tag": "Admin",
+      "title": "Admin",
+      "description": "Gérez les utilisateurs et les paramètres du système."
+    },
+    "todos": {
+      "tag": "Tâches",
+      "title": "À faire",
+      "description": "Organisez et terminez vos tâches en attente."
+    },
+    "profile": {
+      "tag": "Compte",
+      "title": "Profil",
+      "description": "Gérez les informations et préférences de votre compte."
+    },
+    "logout": {
+      "tag": "Session",
+      "title": "Déconnexion",
+      "description": "Terminez votre session en toute sécurité.",
+      "signingOut": "Déconnexion en cours...",
+      "signOut": "Se déconnecter"
+    }
+  },
+  "QuickNav": {
+    "openLabel": "Parcourir les pages",
+    "closeLabel": "Fermer le menu",
+    "heading": "Accéder à",
+    "language": "Langue",
+    "themeLabel": "Thème",
+    "light": "Clair",
+    "dark": "Sombre"
+  }
+}

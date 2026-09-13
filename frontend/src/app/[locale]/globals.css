@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  /* Base backgrounds & foregrounds */
+  --background: #f8fafc; /* soft slate-50 */
+  --foreground: #0f172a; /* dark slate-900 */
+
+  /* Surfaces & borders */
+  --surface: #ffffff; /* white cards, panels */
+  --surface-hover: #f1f5f9; /* subtle hover state */
+  --border: #e2e8f0; /* slate-200 */
+
+  /* Primary brand – medical teal */
+  --primary: #0d9488; /* teal-600 */
+  --primary-foreground: #ffffff; /* white text on primary */
+
+  /* Secondary – muted slate */
+  --secondary: #64748b; /* slate-500 */
+  --secondary-foreground: #ffffff;
+
+  /* Muted – for less important text/backgrounds */
+  --muted: #f1f5f9; /* slate-100 */
+  --muted-foreground: #64748b; /* slate-500 */
+
+  /* Accent – warm amber for highlights & focus */
+  --accent: #f59e0b; /* amber-500 */
+  --accent-foreground: #ffffff;
+
+  /* Semantic – success (correct answers) */
+  --success: #16a34a; /* green-600 */
+  --success-foreground: #ffffff;
+
+  /* Semantic – warning */
+  --warning: #d97706; /* amber-600 */
+  --warning-foreground: #ffffff;
+
+  /* Semantic – error (incorrect answers) */
+  --error: #dc2626; /* red-600 */
+  --error-foreground: #ffffff;
+
+  /* Semantic – info */
+  --info: #2563eb; /* blue-600 */
+  --info-foreground: #ffffff;
+
+  /* Exam-specific tokens */
+  --highlight: #fef08a; /* light yellow for selected options */
+  --highlight-foreground: #0f172a;
+  --correct: var(--success);
+  --correct-foreground: var(--success-foreground);
+  --incorrect: var(--error);
+  --incorrect-foreground: var(--error-foreground);
+
+  /* Disabled states */
+  --disabled: #e2e8f0; /* slate-200 */
+  --disabled-foreground: #94a3b8; /* slate-400 */
+}
+
+/* Dark mode overrides — driven by the data-theme attribute that
+   useTheme() / ThemeScript() write onto <html>. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #0f172a; /* dark slate-900 */
+  --foreground: #f1f5f9; /* slate-100 */
+
+  --surface: #1e293b; /* slate-800 */
+  --surface-hover: #334155; /* slate-700 */
+  --border: #334155; /* slate-700 */
+
+  --primary: #14b8a6; /* teal-500 (lighter for contrast) */
+  --primary-foreground: #0f172a; /* dark text on primary */
+
+  --secondary: #94a3b8; /* slate-400 */
+  --secondary-foreground: #0f172a;
+
+  --muted: #1e293b; /* slate-800 */
+  --muted-foreground: #94a3b8; /* slate-400 */
+
+  --accent: #fbbf24; /* amber-400 */
+  --accent-foreground: #0f172a;
+
+  --success: #22c55e; /* green-500 */
+  --success-foreground: #0f172a;
+
+  --warning: #f59e0b; /* amber-500 */
+  --warning-foreground: #0f172a;
+
+  --error: #ef4444; /* red-500 */
+  --error-foreground: #ffffff;
+
+  --info: #3b82f6; /* blue-500 */
+  --info-foreground: #ffffff;
+
+  --highlight: #fde047; /* yellow-300 for dark mode */
+  --highlight-foreground: #0f172a;
+
+  --disabled: #334155; /* slate-700 */
+  --disabled-foreground: #64748b; /* slate-500 */
+}
+
+/* Tailwind v4 theme mapping – exposes these as utilities (e.g., bg-primary) */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-correct: var(--correct);
+  --color-correct-foreground: var(--correct-foreground);
+  --color-incorrect: var(--incorrect);
+  --color-incorrect-foreground: var(--incorrect-foreground);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
+
+  /* Preserve existing font mappings */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base body styles */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}

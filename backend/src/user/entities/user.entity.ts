@@ -11,8 +11,8 @@ import * as bcrypt from 'bcrypt';
 import { Role } from 'src/auth/enums/role.enum';
 @Entity('user')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
   @Column()
   username: string;
   @Column()

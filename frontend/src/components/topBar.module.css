@@ -1,0 +1,197 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--foreground);
+  font-weight: 700;
+  font-size: 1.25rem;
+  transition: opacity 0.2s;
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.logoIcon {
+  font-size: 1.5rem;
+}
+
+.logoText {
+  letter-spacing: -0.02em;
+}
+
+/* Desktop nav */
+.desktopNav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.navLink {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.navLink:hover {
+  color: var(--foreground);
+}
+
+.navLink::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: width 0.2s;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.iconButton:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.langWrapper {
+  position: relative;
+}
+
+.langCode {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Language dropdown */
+.langDropdown {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0.25rem 0;
+  min-width: 120px;
+  z-index: 10;
+}
+
+.langOption {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.langOption:hover {
+  background: var(--surface-hover);
+}
+
+.activeLang {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Mobile menu button (hidden on desktop) */
+.mobileMenuButton {
+  display: none;
+}
+
+/* Mobile nav */
+.mobileNav {
+  display: none;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+}
+
+.mobileNavLink {
+  padding: 0.5rem 0;
+  color: var(--foreground);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobileNavLink:last-child {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .desktopNav {
+    display: none;
+  }
+
+  .mobileMenuButton {
+    display: flex;
+  }
+
+  .mobileNav {
+    display: flex;
+  }
+
+  .langCode {
+    display: none; /* Hide language code on mobile to save space */
+  }
+}

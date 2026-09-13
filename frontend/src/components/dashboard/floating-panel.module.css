@@ -1,0 +1,373 @@
+/*
+  CSS module — class names below are scoped automatically by the build,
+  so no manual prefix is needed to avoid collisions with the rest of the app.
+*/
+
+.trigger {
+  position: fixed;
+  inset-block-end: 1.5rem;
+  inset-inline-end: 1.5rem;
+  z-index: 60;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  cursor: pointer;
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.5);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 3px;
+}
+
+.trigger[aria-expanded="true"] {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+/* Second trigger on the same screen (e.g. preferences vs. page nav) sits
+   in the opposite corner so the two floating buttons never overlap. */
+.triggerStart {
+  inset-inline-end: auto;
+  inset-inline-start: 1.5rem;
+}
+
+/* Label is present for accessibility/clarity but only shown from tablet
+   width up — on small screens the trigger stays a plain round icon button. */
+.triggerLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: none;
+  padding-inline-end: 0.15rem;
+}
+
+@media (min-width: 640px) {
+  .triggerLabel {
+    display: inline;
+  }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  animation: fade 0.2s ease-out;
+}
+
+.panel {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* ---- Sidebar variant: full-height drawer from the inline-end edge ---- */
+.panelSidebar {
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(320px, 88vw);
+  border-inline-start-width: 1px;
+  border-block-width: 0;
+  border-inline-end-width: 0;
+  padding: 1.25rem 1rem;
+  gap: 0.25rem;
+  animation: slideInSide 0.25s ease-out;
+}
+
+.panelSidebar .list {
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* ---- Topbar variant: full-width bar dropping from the top ---- */
+.panelTopbar {
+  inset-inline: 0;
+  inset-block-start: 0;
+  border-block-end-width: 1px;
+  border-inline-width: 0;
+  border-block-start-width: 0;
+  padding: 1rem 1.25rem;
+  gap: 0.75rem;
+  animation: slideInTop 0.25s ease-out;
+}
+
+.panelTopbar .panelHeader {
+  flex-shrink: 0;
+}
+
+.panelTopbar .list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.panelTopbar .item {
+  flex: 1 1 140px;
+}
+
+/* ---- Popover variant: compact, anchored above its trigger — for short,
+   secondary lists (like preferences) rather than the full destination list ---- */
+.panelPopover {
+  inset-block-end: 5rem;
+  inset-inline-start: 1.5rem;
+  width: min(280px, 88vw);
+  max-height: min(70vh, 480px);
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 1rem;
+  gap: 0.15rem;
+  transform-origin: bottom left;
+  animation: popIn 0.18s ease-out;
+}
+
+[dir="rtl"] .panelPopover {
+  transform-origin: bottom right;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.panelHeading {
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--muted-foreground);
+}
+
+/* Groups items within a panel (e.g. "Appearance", "Language") — quiet
+   and sentence case, not a shouting eyebrow label. */
+.sectionLabel {
+  display: block;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  margin-block: 0.6rem 0.3rem;
+  padding-inline-start: 0.1rem;
+}
+
+.sectionLabel:first-of-type {
+  margin-block-start: 0.1rem;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--secondary);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.iconButton:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.iconButton:focus-visible,
+.item:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+.list {
+  display: flex;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.item:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+}
+
+.itemActive {
+  background: var(--surface-hover);
+  border-color: var(--tone);
+}
+
+.itemIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--tone);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.itemTag {
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.itemTagDanger {
+  color: var(--error);
+}
+
+/* Trailing checkmark for single-select rows (theme, language) instead of
+   relying on color alone to show what's currently active. */
+.itemCheck {
+  margin-inline-start: auto;
+  color: var(--tone);
+  flex-shrink: 0;
+}
+
+.logout {
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+  border-radius: 0;
+  padding-top: 0.85rem;
+}
+
+.panelTopbar .logout {
+  margin-top: 0;
+  border-top: none;
+  border-inline-start: 1px dashed var(--border);
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+
+.logout:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInSide {
+  from {
+    transform: translateX(var(--qn-offset, 100%));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mirror the slide direction under RTL, since translateX(100%) always
+   means "toward the physical right" regardless of writing direction. */
+[dir="rtl"] .panelSidebar {
+  --qn-offset: -100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .panel,
+  .trigger {
+    animation: none;
+    transition: none;
+  }
+}

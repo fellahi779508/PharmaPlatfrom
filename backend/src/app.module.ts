@@ -19,6 +19,9 @@ import { ExamModule } from './exam/exam.module';
 import { QcmModule } from './qcm/qcm.module';
 import { QcmAnswerModule } from './qcm_answer/qcm_answer.module';
 import { EmailModule } from './email/email.module';
+import { RedeemCodeModule } from './redeem_code/redeem_code.module';
+import { TdModule } from './td/td.module';
+import { TpModule } from './tp/tp.module';
 
 @Module({
   imports: [
@@ -68,6 +71,9 @@ import { EmailModule } from './email/email.module';
     QcmModule,
     QcmAnswerModule,
     EmailModule,
+    RedeemCodeModule,
+    TdModule,
+    TpModule,
   ],
   controllers: [],
   providers: [],

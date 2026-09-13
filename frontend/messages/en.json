@@ -1,0 +1,250 @@
+{
+  "login": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to continue your pharmacy exam preparation.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "loginButton": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signup": "Create one",
+    "error": {
+      "invalidCredentials": "Invalid email or password.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "topbar": {
+    "dashboard": "Dashboard",
+    "exams": "Exams",
+    "profile": "Profile",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode",
+    "changeLanguage": "Change language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "locales": {
+      "en": "English",
+      "fr": "Français",
+      "ar": "العربية"
+    }
+  },
+  "register": {
+    "title": "Create your account",
+    "subtitle": "Join PharmaExam and start preparing for your exams.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "your_username",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Create a strong password",
+    "passwordHint": "Must be at least 8 characters long.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "registerButton": "Create account",
+    "haveAccount": "Already have an account?",
+    "login": "Sign in",
+    "otp": {
+      "title": "Verify your email",
+      "subtitle": "We sent a 6-digit code to {email}.",
+      "label": "Verification code",
+      "placeholder": "000000",
+      "verifyButton": "Verify",
+      "backButton": "Back",
+      "resendButton": "Resend code"
+    },
+    "success": {
+      "otpSent": "Verification code sent to your email.",
+      "otpResent": "A new code has been sent to your email.",
+      "accountVerified": "Account verified! Redirecting..."
+    },
+    "error": {
+      "registrationFailed": "Registration failed. Please try again.",
+      "invalidOtp": "Invalid or expired code. Please try again.",
+      "resendFailed": "Could not resend code. Please try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "teacher": {
+    "title": "Curriculum Manager",
+    "subtitle": "Structure the pharmacy curriculum: years, semesters, subjects, courses, TDs, TPs, QCMs and answers.",
+    "loading": "Loading…",
+    "refresh": "Refresh",
+    "selectPlaceholder": "Select…",
+    "breadcrumb": { "home": "All years" },
+    "tabs": {
+      "years": "Years",
+      "semesters": "Semesters",
+      "subjects": "Subjects",
+      "courses": "Courses",
+      "tds": "TDs",
+      "tps": "TPs",
+      "qcms": "QCMs",
+      "qcmAnswers": "Answers"
+    },
+    "labels": {
+      "year": "Year",
+      "semester": "Semester",
+      "subject": "Subject",
+      "course": "Course",
+      "td": "TD",
+      "tp": "TP",
+      "qcm": "QCM",
+      "subjects": "subjects",
+      "semesters": "semesters",
+      "courses": "courses",
+      "tds": "TDs",
+      "tps": "TPs",
+      "qcms": "QCMs",
+      "answers": "answers",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "unassigned": "Unassigned semester"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "close": "Close",
+      "createShort": "Create",
+      "editEntity": {
+        "year": "Edit year",
+        "semester": "Edit semester",
+        "subject": "Edit subject",
+        "course": "Edit course",
+        "td": "Edit TD",
+        "tp": "Edit TP",
+        "qcm": "Edit QCM",
+        "answer": "Edit answer"
+      },
+      "create": {
+        "years": "New year",
+        "semesters": "New semester",
+        "subjects": "New subject",
+        "courses": "New course",
+        "tds": "New TD",
+        "tps": "New TP",
+        "qcms": "New QCM",
+        "qcmAnswers": "New answer"
+      }
+    },
+    "fields": {
+      "name": "Name",
+      "number": "Number",
+      "semester": "Semester",
+      "question": "Question",
+      "answer": "Answer",
+      "isCorrect": "Mark as correct",
+      "explanation": "Explanation (optional)"
+    },
+    "qcm": {
+      "answersLabel": "Answer options",
+      "addAnswer": "Add answer",
+      "answerPlaceholder": "Type an answer…",
+      "explanationPlaceholder": "Why is this answer correct/incorrect? (optional)"
+    },
+    "hints": {
+      "needSemesterFirst": "Create a semester in this year first."
+    },
+    "empty": {
+      "title": "Nothing here yet",
+      "yearsHint": "Create the first academic year to start building the curriculum.",
+      "semestersHint": "Add semesters to organize courses within this year.",
+      "subjectsHint": "Add subjects taught in this year.",
+      "coursesHint": "Add courses to this subject. Each course belongs to a semester.",
+      "tdsHint": "Add TD (directed work) sessions for this subject.",
+      "tpsHint": "Add TP (practical work) sessions for this subject.",
+      "qcmsHint": "Add QCMs to test students on this container.",
+      "answersHint": "Add answer options for this question."
+    },
+    "confirmDelete": {
+      "title": "Delete this item?",
+      "message": "\"{name}\" will be permanently deleted along with its children. This cannot be undone."
+    },
+    "success": {
+      "created": "Created successfully.",
+      "updated": "Updated successfully.",
+      "deleted": "Deleted successfully."
+    },
+    "error": {
+      "saveFailed": "Could not save. Please try again.",
+      "deleteFailed": "Could not delete. Please try again.",
+      "minAnswers": "A QCM needs at least 2 answers.",
+      "needCorrect": "Mark at least one answer as correct.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "Dashboard": {
+    "badge": "Your workspace",
+    "title": "Dashboard",
+    "subtitle": "Everything you need for today, one click away.",
+    "navigate": "Open",
+    "utility": {
+      "brand": "Workspace Console",
+      "searchPlaceholder": "Search or jump to...",
+      "liveStatus": "System live"
+    },
+    "statistics": {
+      "tag": "Analytics",
+      "title": "Statistics",
+      "description": "Review your performance trends and progress over time."
+    },
+    "sessions": {
+      "tag": "Schedule",
+      "title": "Sessions",
+      "description": "View and manage your upcoming study sessions."
+    },
+    "exams": {
+      "tag": "Milestones",
+      "title": "Exams",
+      "description": "Keep track of upcoming exams and important dates."
+    },
+    "todos": {
+      "tag": "Tasks",
+      "title": "To-dos",
+      "description": "Organize and work through your outstanding tasks."
+    },
+    "dashboard": {
+      "tag": "Dashboard",
+      "title": "Dashboard",
+      "description": "Review your performance trends and progress over time."
+    },
+    "teacher": {
+      "tag": "Teacher",
+      "title": "Teacher",
+      "description": "Manage your courses and students."
+    },
+    "admin": {
+      "tag": "Admin",
+      "title": "Admin",
+      "description": "Manage users and system settings."
+    },
+    "profile": {
+      "tag": "Account",
+      "title": "Profile",
+      "description": "Manage your account details and preferences."
+    },
+    "logout": {
+      "tag": "Session",
+      "title": "Log out",
+      "description": "End your current session securely.",
+      "signingOut": "Signing out...",
+      "signOut": "Sign out"
+    }
+  },
+  "QuickNav": {
+    "openLabel": "Browse pages",
+    "closeLabel": "Close menu",
+    "heading": "Jump to",
+    "language": "Language",
+    "themeLabel": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "dashboard": "Dashboard"
+  }
+}

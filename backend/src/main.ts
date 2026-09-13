@@ -9,7 +9,6 @@ async function bootstrap() {
   app.useGlobalPipes(
     new I18nValidationPipe({
       whitelist: true, // Strips out properties that do not have decorators in the DTO
-      forbidNonWhitelisted: true, // Throws an error if unknown properties are sent
       transform: true, // Automatically transforms payloads to DTO instances
     }),
   );

@@ -4,6 +4,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { UserService } from 'src/user/user.service';
 import { forwardRef, Inject } from '@nestjs/common';
 import { I18nContext, I18nService, i18nValidationMessage } from 'nestjs-i18n';
+import { accountVerificationTemplate } from './html-templates/account-verification';
 
 @Injectable()
 export class EmailService {
@@ -20,27 +21,18 @@ export class EmailService {
     return I18nContext.current()?.lang!;
   }
 
-  async sendVerificationOtp(email: string, otp: string) {
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #1e293b; text-align: center; margin-bottom: 8px;">Verify Your Email</h2>
-        <p style="color: #475569; text-align: center;">Use the code below to complete your registration:</p>
-        <div style="text-align: center; margin: 28px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #2563eb; background: #eff6ff; padding: 12px 24px; border-radius: 6px; border: 1px dashed #bfdbfe;">
-            ${otp}
-          </span>
-        </div>
-        <p style="color: #64748b; font-size: 13px; text-align: center;">This OTP expires in <strong>1 minute</strong>.</p>
-      </div>
-    `;
-
+  async sendVerificationOtp(email: string, otp: string, html: any) {
     try {
       await this.mailerService.sendMail({
         to: email,
         subject: 'Your Account Verification Code',
         html,
       });
-      return { message: 'OTP sent successfully' };
+      return {
+        message: this.i18n.translate('errors.email.otp_sent', {
+          lang: this.currentLang,
+        }),
+      };
     } catch (error) {
       this.logger.error(
         `Failed to send email to ${email}`,
@@ -62,7 +54,7 @@ export class EmailService {
 
     if (!user.otpCode || user.otpCode !== dto.otp) {
       throw new BadRequestException({
-        message: this.i18n.translate('errors.user.invalid_otp', {
+        message: this.i18n.translate('errors.email.invalid_otp', {
           lang: this.currentLang,
         }),
       });
@@ -70,7 +62,7 @@ export class EmailService {
 
     if (user.otpExpiresAt && new Date() > user.otpExpiresAt) {
       throw new BadRequestException({
-        message: this.i18n.translate('errors.user.otp_expired', {
+        message: this.i18n.translate('errors.email.otp_expired', {
           lang: this.currentLang,
         }),
       });

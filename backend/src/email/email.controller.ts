@@ -12,6 +12,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { DataSource } from 'typeorm';
+import { accountVerificationTemplate } from './html-templates/account-verification';
 
 @Controller('email')
 export class EmailController {
@@ -39,9 +40,23 @@ export class EmailController {
     user.otpCode = otpCode;
     user.otpExpiresAt = new Date(Date.now() + 60 * 1000);
     await this.dataSource.getRepository('user').save(user);
-    return await this.emailService.sendVerificationOtp(req.user.email, otpCode);
+    return await this.emailService.sendVerificationOtp(
+      req.user.email,
+      otpCode,
+      accountVerificationTemplate(otpCode),
+    );
   }
   private generate6DigitOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  //this endpoint is called when the user wants to change his password
+  @Get('otpCode/auth')
+  async getOtpCodeAuth(@Body() otpCode: string, @Req() req) {
+    return await this.emailService.sendVerificationOtp(
+      req.user.email,
+      otpCode,
+      accountVerificationTemplate(otpCode),
+    );
   }
 }
