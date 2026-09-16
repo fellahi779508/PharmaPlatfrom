@@ -34,39 +34,45 @@
     }
   },
   "register": {
-    "title": "Create your account",
-    "subtitle": "Join PharmaExam and start preparing for your exams.",
+    "title": "Create an Account",
+    "subtitle": "Join us today! Please fill in your details.",
+    "firstNameLabel": "First Name",
+    "firstNamePlaceholder": "John",
+    "lastNameLabel": "Last Name",
+    "lastNamePlaceholder": "Doe",
     "usernameLabel": "Username",
-    "usernamePlaceholder": "your_username",
-    "emailLabel": "Email address",
-    "emailPlaceholder": "you@example.com",
+    "usernamePlaceholder": "johndoe123",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "+1 234 567 8900",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "john@example.com",
     "passwordLabel": "Password",
-    "passwordPlaceholder": "Create a strong password",
+    "passwordPlaceholder": "••••••••",
     "passwordHint": "Must be at least 8 characters long.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "registerButton": "Create account",
+    "registerButton": "Create Account",
     "haveAccount": "Already have an account?",
-    "login": "Sign in",
-    "otp": {
-      "title": "Verify your email",
-      "subtitle": "We sent a 6-digit code to {email}.",
-      "label": "Verification code",
-      "placeholder": "000000",
-      "verifyButton": "Verify",
-      "backButton": "Back",
-      "resendButton": "Resend code"
-    },
+    "login": "Log in here",
     "success": {
       "otpSent": "Verification code sent to your email.",
-      "otpResent": "A new code has been sent to your email.",
-      "accountVerified": "Account verified! Redirecting..."
+      "accountVerified": "Account verified successfully!",
+      "otpResent": "Verification code resent."
     },
     "error": {
       "registrationFailed": "Registration failed. Please try again.",
-      "invalidOtp": "Invalid or expired code. Please try again.",
-      "resendFailed": "Could not resend code. Please try again.",
+      "invalidOtp": "Invalid verification code.",
+      "resendFailed": "Failed to resend code.",
       "generic": "Something went wrong. Please try again."
+    },
+    "otp": {
+      "title": "Verify your email",
+      "subtitle": "We've sent a 6-digit code to {email}",
+      "label": "Verification Code",
+      "placeholder": "123456",
+      "verifyButton": "Verify Code",
+      "backButton": "Back to registration",
+      "resendButton": "Resend Code"
     }
   },
   "teacher": {
@@ -75,7 +81,9 @@
     "loading": "Loading…",
     "refresh": "Refresh",
     "selectPlaceholder": "Select…",
-    "breadcrumb": { "home": "All years" },
+    "breadcrumb": {
+      "home": "All years"
+    },
     "tabs": {
       "years": "Years",
       "semesters": "Semesters",
@@ -194,10 +202,30 @@
       "title": "Statistics",
       "description": "Review your performance trends and progress over time."
     },
+    "pomodoro": {
+      "tag": "Focus",
+      "title": "Pomodoro",
+      "description": "Stay focused with structured work intervals and short breaks."
+    },
     "sessions": {
       "tag": "Schedule",
       "title": "Sessions",
       "description": "View and manage your upcoming study sessions."
+    },
+    "login": {
+      "tag": "Login",
+      "title": "Login",
+      "description": "Login to your account."
+    },
+    "register": {
+      "tag": "Register",
+      "title": "Register",
+      "description": "Register for an account."
+    },
+    "home": {
+      "tag": "Home",
+      "title": "Home",
+      "description": "Welcome to your dashboard."
     },
     "exams": {
       "tag": "Milestones",
@@ -206,7 +234,7 @@
     },
     "todos": {
       "tag": "Tasks",
-      "title": "To-dos",
+      "title": "To-Do",
       "description": "Organize and work through your outstanding tasks."
     },
     "dashboard": {
@@ -246,5 +274,284 @@
     "light": "Light",
     "dark": "Dark",
     "dashboard": "Dashboard"
+  },
+  "Todo": {
+    "badge": "Todo Lists",
+    "title": "My Todo Lists",
+    "subtitle": "Manage your tasks and track your progress with personalized todo lists",
+    "createButton": "Create New Todo List",
+    "empty": {
+      "title": "No Todo Lists Yet",
+      "text": "Create your first todo list to start organizing your tasks and tracking progress"
+    },
+    "modal": {
+      "title": "Create New Todo List",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter todo list title",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter todo list description",
+      "cancel": "Cancel",
+      "submit": "Create Todo List",
+      "submitting": "Creating..."
+    },
+    "card": {
+      "progress": "Progress",
+      "tasksCompleted": "tasks completed",
+      "of": "of"
+    },
+    "tasks": {
+      "title": "Tasks",
+      "empty": "No tasks in this todo list yet",
+      "addTask": "Add Task",
+      "modal": {
+        "title": "Add New Task",
+        "titleLabel": "Title",
+        "titlePlaceholder": "Enter task title",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Enter task description",
+        "cancel": "Cancel",
+        "submit": "Add Task",
+        "submitting": "Adding..."
+      }
+    }
+  },
+  "profile": {
+    "defaultTitle": "My Profile",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "joined": "Joined {date}",
+    "personalInfoTitle": "Personal Information",
+    "personalInfoSubtitle": "Update your personal details here.",
+    "firstNameLabel": "First Name",
+    "lastNameLabel": "Last Name",
+    "usernameLabel": "Username",
+    "phoneLabel": "Phone Number",
+    "emailLabel": "Email Address (Cannot be changed)",
+    "saveChanges": "Save Changes",
+    "securityTitle": "Security",
+    "securitySubtitle": "Ensure your account is using a long, random password.",
+    "currentPasswordLabel": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmPasswordLabel": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "verifyNow": "Verify Now",
+    "otpPlaceholder": "123456",
+    "submitOtp": "Submit",
+    "cancel": "Cancel",
+    "messages": {
+      "successInfoUpdate": "Profile updated successfully!",
+      "errorInfoUpdate": "Failed to update profile.",
+      "successPassUpdate": "Password changed successfully!",
+      "errorPassMatch": "New passwords do not match.",
+      "errorPassUpdate": "Failed to change password.",
+      "otpSent": "Verification code sent to your email.",
+      "invalidOtp": "Invalid or expired OTP code.",
+      "accountVerified": "Your account has been successfully verified!",
+      "genericError": "Something went wrong. Please try again."
+    }
+  },
+  "Session": {
+    "badge": "QCM Sessions",
+    "title": "Your Sessions",
+    "subtitle": "Build a custom quiz from your subjects and courses, then work through it question by question. Progress is saved automatically, so you can pause and pick up where you left off anytime.",
+    "newSession": "New session",
+    "refresh": "Refresh",
+    "loadError": "Something went wrong",
+    "noSessions": "No sessions yet",
+    "noSessionsHint": "Create your first session to start practising.",
+    "status": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "completed": "Completed"
+    },
+    "card": {
+      "question": "question",
+      "questions": "questions",
+      "correct": "correct",
+      "score": "Score",
+      "created": "Created",
+      "review": "Review",
+      "resume": "Resume",
+      "startSession": "Start session",
+      "delete": "Delete session",
+      "deleteConfirm": "Are you sure you want to delete session \"{name}\"?",
+      "deleteFailed": "Failed to delete session",
+      "restart": "Restart",
+      "restartConfirm": "Are you sure you want to restart session \"{name}\"? All progress will be reset.",
+      "restartFailed": "Failed to restart session"
+    },
+    "create": {
+      "title": "Create New Session",
+      "sessionName": "Session Name",
+      "sessionNamePlaceholder": "e.g. Pharmacology – Cardiovascular system",
+      "selectSubjectsAndCourses": "Select Subjects & Courses",
+      "selectHint": "Click a subject to browse its courses and specify how many QCMs to include.",
+      "noSubjects": "No subjects available for your enrolled curriculum.",
+      "noCourses": "No courses found for this subject.",
+      "loadingCourses": "Loading courses…",
+      "selected": "selected",
+      "unavailable": "Unavailable",
+      "qcmsAvailable": "{count} QCM{plural} available",
+      "zeroQcms": "0 QCMs (Unavailable)",
+      "quantity": "Quantity",
+      "all": "All",
+      "summary": "Session Summary",
+      "courseSelected": "{count} course{plural} selected",
+      "totalQcms": "{count} total QCM{plural}",
+      "cancel": "Cancel",
+      "createSession": "Create session",
+      "creating": "Creating…",
+      "nameRequired": "Please give your session a name.",
+      "courseRequired": "Please select at least one course with available QCMs.",
+      "createFailed": "Failed to create session"
+    },
+    "play": {
+      "session": "Session",
+      "exitTitle": "Exit and resume later",
+      "loadFailed": "Failed to load session",
+      "error": "Error",
+      "noQuestion": "No question available.",
+      "questionOf": "Question {current} of {total}",
+      "correct": "correct",
+      "questionNum": "Question #{num}",
+      "correctBanner": "Correct! You got all correct answers.",
+      "incorrectBanner": "Incorrect. Review the correct answers and explanations below.",
+      "correctExplanation": "Correct explanation",
+      "optionExplanation": "Option explanation",
+      "revealAnswer": "Reveal answer",
+      "checking": "Checking…",
+      "revealFailed": "Failed to reveal answer",
+      "nextQuestion": "Next question",
+      "finishSession": "Finish session",
+      "loading": "Loading…",
+      "advanceFailed": "Failed to advance"
+    },
+    "completion": {
+      "title": "Session Complete!",
+      "subtitle": "Great work — you finished \"{name}\".",
+      "correct": "Correct",
+      "totalQuestions": "Total Questions",
+      "finalScore": "Final Score",
+      "backToSessions": "Back to sessions",
+      "restartSession": "Restart session",
+      "restarting": "Restarting…"
+    }
+  },
+  "pomodoro": {
+    "badge": "Focus Timer",
+    "title": "Pomodoro",
+    "subtitle": "Stay focused in short, structured sprints. Work, rest, repeat — and let the timer keep you honest.",
+    "modes": {
+      "focus": "Focus",
+      "shortBreak": "Short Break",
+      "longBreak": "Long Break"
+    },
+    "controls": {
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Reset",
+      "next": "Next",
+      "settings": "Settings",
+      "mute": "Mute sound",
+      "unmute": "Unmute sound"
+    },
+    "settings": {
+      "title": "Timer Settings",
+      "focus": "Focus duration (min)",
+      "shortBreak": "Short break (min)",
+      "longBreak": "Long break (min)",
+      "interval": "Long break every (sessions)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "reset": "Reset to defaults"
+    },
+    "stats": {
+      "completed": "Completed focus",
+      "untilLong": "Until long break",
+      "cycle": "Cycle"
+    }
+  },
+  "exams": {
+    "title": "My Exams",
+    "subtitle": "Track your progress and start a new exam anytime.",
+    "createNew": "Create New Exam",
+    "semester": "Semester",
+    "questions": "Questions",
+    "time": "Time",
+    "score": "Score",
+    "continue": "Continue",
+    "pause": "Pause",
+    "resume": "Resume",
+    "retake": "Retake",
+    "viewResults": "View Results",
+    "generateFailed": "Could not generate the exam.",
+    "startFailed": "Could not start the exam.",
+    "emptyTitle": "No exams yet",
+    "emptySubtitle": "Create your first exam to start practicing.",
+    "noMatchTitle": "Nothing here",
+    "noMatchSubtitle": "No exams match the selected filter.",
+    "filterAll": "All",
+    "filterInProgress": "In Progress",
+    "filterPaused": "Paused",
+    "filterCompleted": "Completed",
+    "minutesShort": "min",
+    "hiddenUntilFinish": "Hidden until finish",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete this exam?",
+    "deleteConfirmText": "“{title}” and all its progress will be permanently removed.",
+    "status": {
+      "in_progress": "In Progress",
+      "paused": "Paused",
+      "completed": "Completed"
+    },
+    "modal": {
+      "title": "Create a New Exam",
+      "semester": "Semester",
+      "subject": "Subject",
+      "selectSemester": "Select a semester…",
+      "selectSubject": "Select a subject…",
+      "questionCount": "Number of Questions",
+      "duration": "Duration",
+      "oneHour": "1 hour",
+      "cancel": "Cancel",
+      "start": "Generate & Start",
+      "generating": "Generating…"
+    },
+    "session": {
+      "back": "Back to exams",
+      "backToList": "Back to list",
+      "loading": "Loading exam…",
+      "question": "Question",
+      "of": "of",
+      "navigator": "Questions",
+      "previous": "Previous",
+      "next": "Next",
+      "skip": "Skip",
+      "pause": "Pause",
+      "resume": "Resume",
+      "finish": "Finish Exam",
+      "pausedBanner": "This session is paused. Resume to continue answering.",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "skipped": "Skipped",
+      "unanswered": "Unanswered",
+      "explanation": "Explanation",
+      "yourAnswer": "Your answer",
+      "correctAnswerWas": "The correct answer was: {answer}",
+      "legendAnswered": "Answered",
+      "legendUnanswered": "Unanswered",
+      "confirmFinishTitle": "Finish exam?",
+      "confirmFinishText": "You still have {count} unanswered questions. You won't be able to change any answer after finishing.",
+      "confirmFinishTextAll": "You've answered every question. You won't be able to change any answer after finishing.",
+      "confirmFinishYes": "Yes, finish",
+      "confirmFinishNo": "Keep going",
+      "results": "Your Results",
+      "correctCount": "Correct",
+      "wrongCount": "Wrong",
+      "skippedCount": "Skipped",
+      "unansweredCount": "Unanswered",
+      "reviewAnswers": "Review Answers",
+      "retake": "Retake Exam"
+    }
   }
 }

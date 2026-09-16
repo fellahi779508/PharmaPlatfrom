@@ -34,39 +34,45 @@
     }
   },
   "register": {
-    "title": "Créez votre compte",
-    "subtitle": "Rejoignez PharmaExam et commencez à préparer vos examens.",
+    "title": "Créer un Compte",
+    "subtitle": "Rejoignez-nous ! Veuillez remplir vos informations.",
+    "firstNameLabel": "Prénom",
+    "firstNamePlaceholder": "Jean",
+    "lastNameLabel": "Nom de famille",
+    "lastNamePlaceholder": "Dupont",
     "usernameLabel": "Nom d'utilisateur",
-    "usernamePlaceholder": "votre_nom",
-    "emailLabel": "Adresse e-mail",
-    "emailPlaceholder": "vous@exemple.com",
+    "usernamePlaceholder": "jeandupont123",
+    "phoneLabel": "Numéro de téléphone",
+    "phonePlaceholder": "+33 6 12 34 56 78",
+    "emailLabel": "Adresse E-mail",
+    "emailPlaceholder": "jean@exemple.com",
     "passwordLabel": "Mot de passe",
-    "passwordPlaceholder": "Créez un mot de passe fort",
+    "passwordPlaceholder": "••••••••",
     "passwordHint": "Doit contenir au moins 8 caractères.",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Masquer le mot de passe",
-    "registerButton": "Créer un compte",
+    "registerButton": "S'inscrire",
     "haveAccount": "Vous avez déjà un compte ?",
-    "login": "Se connecter",
-    "otp": {
-      "title": "Vérifiez votre e-mail",
-      "subtitle": "Nous avons envoyé un code à 6 chiffres à {email}.",
-      "label": "Code de vérification",
-      "placeholder": "000000",
-      "verifyButton": "Vérifier",
-      "backButton": "Retour",
-      "resendButton": "Renvoyer le code"
-    },
+    "login": "Connectez-vous",
     "success": {
       "otpSent": "Code de vérification envoyé à votre e-mail.",
-      "otpResent": "Un nouveau code a été envoyé à votre e-mail.",
-      "accountVerified": "Compte vérifié ! Redirection..."
+      "accountVerified": "Compte vérifié avec succès !",
+      "otpResent": "Code de vérification renvoyé."
     },
     "error": {
       "registrationFailed": "L'inscription a échoué. Veuillez réessayer.",
-      "invalidOtp": "Code invalide ou expiré. Veuillez réessayer.",
-      "resendFailed": "Impossible de renvoyer le code. Veuillez réessayer.",
-      "generic": "Une erreur s'est produite. Veuillez réessayer."
+      "invalidOtp": "Code de vérification invalide.",
+      "resendFailed": "Échec du renvoi du code.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "otp": {
+      "title": "Vérifiez votre e-mail",
+      "subtitle": "Nous avons envoyé un code à {email}",
+      "label": "Code de Vérification",
+      "placeholder": "123456",
+      "verifyButton": "Vérifier le code",
+      "backButton": "Retour à l'inscription",
+      "resendButton": "Renvoyer le code"
     }
   },
   "teacher": {
@@ -75,7 +81,9 @@
     "loading": "Chargement…",
     "refresh": "Actualiser",
     "selectPlaceholder": "Sélectionner…",
-    "breadcrumb": { "home": "Toutes les années" },
+    "breadcrumb": {
+      "home": "Toutes les années"
+    },
     "tabs": {
       "years": "Années",
       "semesters": "Semestres",
@@ -194,6 +202,26 @@
       "title": "Statistiques",
       "description": "Consultez vos tendances de performance et votre progression."
     },
+    "pomodoro": {
+      "tag": "Focus",
+      "title": "Pomodoro",
+      "description": "Restez concentré avec des sessions de travail courtes et des pauses régulières."
+    },
+    "home": {
+      "tag": "Accueil",
+      "title": "Accueil",
+      "description": "Bienvenue sur votre tableau de bord."
+    },
+    "login": {
+      "tag": "Connexion",
+      "title": "Connexion",
+      "description": "Connectez-vous à votre compte."
+    },
+    "register": {
+      "tag": "Inscription",
+      "title": "Inscription",
+      "description": "Créez votre compte."
+    },
     "sessions": {
       "tag": "Planning",
       "title": "Séances",
@@ -221,7 +249,7 @@
     },
     "todos": {
       "tag": "Tâches",
-      "title": "À faire",
+      "title": "To-Do",
       "description": "Organisez et terminez vos tâches en attente."
     },
     "profile": {
@@ -245,5 +273,284 @@
     "themeLabel": "Thème",
     "light": "Clair",
     "dark": "Sombre"
+  },
+  "Todo": {
+    "badge": "Listes de tâches",
+    "title": "Mes listes de tâches",
+    "subtitle": "Gérez vos tâches et suivez votre progression grâce à des listes de tâches personnalisées",
+    "createButton": "Créer une nouvelle liste de tâches",
+    "empty": {
+      "title": "Pas de liste de tâches encore",
+      "text": "Créez votre première liste de tâches pour commencer à organiser vos tâches et à suivre votre progression"
+    },
+    "modal": {
+      "title": "Créer une nouvelle liste de tâches",
+      "titleLabel": "Titre",
+      "titlePlaceholder": "Entrez le titre de la liste de tâches",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Entrez la description de la liste de tâches",
+      "cancel": "Annuler",
+      "submit": "Créer la liste de tâches",
+      "submitting": "Création..."
+    },
+    "card": {
+      "progress": "Progression",
+      "tasksCompleted": "tâches complétées",
+      "of": "sur"
+    },
+    "tasks": {
+      "title": "Tâches",
+      "empty": "Aucune tâche dans cette liste de tâches encore",
+      "addTask": "Ajouter une tâche",
+      "modal": {
+        "title": "Ajouter une nouvelle tâche",
+        "titleLabel": "Titre",
+        "titlePlaceholder": "Entrez le titre de la tâche",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Entrez la description de la tâche",
+        "cancel": "Annuler",
+        "submit": "Ajouter la tâche",
+        "submitting": "Ajout en cours..."
+      }
+    }
+  },
+  "profile": {
+    "defaultTitle": "Mon Profil",
+    "verified": "Vérifié",
+    "unverified": "Non vérifié",
+    "joined": "Inscrit le {date}",
+    "personalInfoTitle": "Informations Personnelles",
+    "personalInfoSubtitle": "Mettez à jour vos informations personnelles ici.",
+    "firstNameLabel": "Prénom",
+    "lastNameLabel": "Nom de famille",
+    "usernameLabel": "Nom d'utilisateur",
+    "phoneLabel": "Numéro de téléphone",
+    "emailLabel": "Adresse E-mail (Ne peut pas être modifiée)",
+    "saveChanges": "Enregistrer les modifications",
+    "securityTitle": "Sécurité",
+    "securitySubtitle": "Assurez-vous que votre compte utilise un mot de passe long et aléatoire.",
+    "currentPasswordLabel": "Mot de passe actuel",
+    "newPasswordLabel": "Nouveau mot de passe",
+    "confirmPasswordLabel": "Confirmer le nouveau mot de passe",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "verifyNow": "Vérifier maintenant",
+    "otpPlaceholder": "123456",
+    "submitOtp": "Soumettre",
+    "cancel": "Annuler",
+    "messages": {
+      "successInfoUpdate": "Profil mis à jour avec succès !",
+      "errorInfoUpdate": "Échec de la mise à jour du profil.",
+      "successPassUpdate": "Mot de passe modifié avec succès !",
+      "errorPassMatch": "Les nouveaux mots de passe ne correspondent pas.",
+      "errorPassUpdate": "Échec de la modification du mot de passe.",
+      "otpSent": "Code de vérification envoyé à votre email.",
+      "invalidOtp": "Code de vérification invalide ou expiré.",
+      "accountVerified": "Votre compte a été vérifié avec succès !",
+      "genericError": "Quelque chose s'est mal passé. Veuillez réessayer."
+    }
+  },
+  "Session": {
+    "badge": "Sessions QCM",
+    "title": "Vos sessions",
+    "subtitle": "Créez un quiz personnalisé à partir de vos matières et cours, puis répondez question par question. La progression est sauvegardée automatiquement, vous pouvez reprendre à tout moment.",
+    "newSession": "Nouvelle session",
+    "refresh": "Actualiser",
+    "loadError": "Une erreur est survenue",
+    "noSessions": "Aucune session",
+    "noSessionsHint": "Créez votre première session pour commencer à pratiquer.",
+    "status": {
+      "not_started": "Non commencée",
+      "in_progress": "En cours",
+      "completed": "Terminée"
+    },
+    "card": {
+      "question": "question",
+      "questions": "questions",
+      "correct": "correcte(s)",
+      "score": "Score",
+      "created": "Créée le",
+      "review": "Revoir",
+      "resume": "Reprendre",
+      "startSession": "Démarrer",
+      "delete": "Supprimer la session",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer la session \"{name}\" ?",
+      "deleteFailed": "Échec de la suppression",
+      "restart": "Redémarrer",
+      "restartConfirm": "Êtes-vous sûr de vouloir redémarrer la session \"{name}\" ? Toute la progression sera réinitialisée.",
+      "restartFailed": "Échec du redémarrage"
+    },
+    "create": {
+      "title": "Créer une nouvelle session",
+      "sessionName": "Nom de la session",
+      "sessionNamePlaceholder": "ex. Pharmacologie – Système cardiovasculaire",
+      "selectSubjectsAndCourses": "Sélectionner matières et cours",
+      "selectHint": "Cliquez sur une matière pour parcourir ses cours et définir le nombre de QCMs à inclure.",
+      "noSubjects": "Aucune matière disponible pour votre cursus.",
+      "noCourses": "Aucun cours trouvé pour cette matière.",
+      "loadingCourses": "Chargement des cours…",
+      "selected": "sélectionné(s)",
+      "unavailable": "Indisponible",
+      "qcmsAvailable": "{count} QCM{plural} disponible(s)",
+      "zeroQcms": "0 QCMs (Indisponible)",
+      "quantity": "Quantité",
+      "all": "Tous",
+      "summary": "Résumé de la session",
+      "courseSelected": "{count} cours sélectionné{plural}",
+      "totalQcms": "{count} QCM{plural} au total",
+      "cancel": "Annuler",
+      "createSession": "Créer la session",
+      "creating": "Création…",
+      "nameRequired": "Veuillez donner un nom à votre session.",
+      "courseRequired": "Veuillez sélectionner au moins un cours avec des QCMs disponibles.",
+      "createFailed": "Échec de la création"
+    },
+    "play": {
+      "session": "Session",
+      "exitTitle": "Quitter et reprendre plus tard",
+      "loadFailed": "Échec du chargement de la session",
+      "error": "Erreur",
+      "noQuestion": "Aucune question disponible.",
+      "questionOf": "Question {current} sur {total}",
+      "correct": "correcte(s)",
+      "questionNum": "Question n°{num}",
+      "correctBanner": "Correct ! Vous avez toutes les bonnes réponses.",
+      "incorrectBanner": "Incorrect. Consultez les réponses correctes et les explications ci-dessous.",
+      "correctExplanation": "Explication correcte",
+      "optionExplanation": "Explication de l'option",
+      "revealAnswer": "Révéler la réponse",
+      "checking": "Vérification…",
+      "revealFailed": "Échec de la révélation",
+      "nextQuestion": "Question suivante",
+      "finishSession": "Terminer la session",
+      "loading": "Chargement…",
+      "advanceFailed": "Échec de la progression"
+    },
+    "completion": {
+      "title": "Session terminée !",
+      "subtitle": "Bravo — vous avez terminé « {name} ».",
+      "correct": "Correctes",
+      "totalQuestions": "Total de questions",
+      "finalScore": "Score final",
+      "backToSessions": "Retour aux sessions",
+      "restartSession": "Redémarrer la session",
+      "restarting": "Redémarrage…"
+    }
+  },
+  "pomodoro": {
+    "badge": "Minuteur de concentration",
+    "title": "Pomodoro",
+    "subtitle": "Restez concentré par sessions courtes et structurées. Travaillez, reposez-vous, recommencez — le minuteur donne le rythme.",
+    "modes": {
+      "focus": "Concentration",
+      "shortBreak": "Pause courte",
+      "longBreak": "Pause longue"
+    },
+    "controls": {
+      "start": "Démarrer",
+      "pause": "Pause",
+      "reset": "Réinitialiser",
+      "next": "Suivant",
+      "settings": "Paramètres",
+      "mute": "Couper le son",
+      "unmute": "Activer le son"
+    },
+    "settings": {
+      "title": "Paramètres du minuteur",
+      "focus": "Durée de concentration (min)",
+      "shortBreak": "Pause courte (min)",
+      "longBreak": "Pause longue (min)",
+      "interval": "Pause longue toutes les (sessions)",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "reset": "Valeurs par défaut"
+    },
+    "stats": {
+      "completed": "Sessions terminées",
+      "untilLong": "Avant pause longue",
+      "cycle": "Cycle"
+    }
+  },
+  "exams": {
+    "title": "Mes examens",
+    "subtitle": "Suivez votre progression et lancez un nouvel examen à tout moment.",
+    "createNew": "Créer un examen",
+    "semester": "Semestre",
+    "questions": "Questions",
+    "time": "Temps",
+    "score": "Score",
+    "continue": "Continuer",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "retake": "Refaire",
+    "viewResults": "Voir les résultats",
+    "generateFailed": "Impossible de générer l'examen.",
+    "startFailed": "Impossible de démarrer l'examen.",
+    "emptyTitle": "Aucun examen",
+    "emptySubtitle": "Créez votre premier examen pour commencer à vous entraîner.",
+    "noMatchTitle": "Rien à afficher",
+    "noMatchSubtitle": "Aucun examen ne correspond au filtre sélectionné.",
+    "filterAll": "Tous",
+    "filterInProgress": "En cours",
+    "filterPaused": "En pause",
+    "filterCompleted": "Terminés",
+    "minutesShort": "min",
+    "hiddenUntilFinish": "Masqué jusqu'à la fin",
+    "delete": "Supprimer",
+    "deleteConfirmTitle": "Supprimer cet examen ?",
+    "deleteConfirmText": "« {title} » et toute sa progression seront définitivement supprimés.",
+    "status": {
+      "in_progress": "En cours",
+      "paused": "En pause",
+      "completed": "Terminé"
+    },
+    "modal": {
+      "title": "Créer un nouvel examen",
+      "semester": "Semestre",
+      "subject": "Matière",
+      "selectSemester": "Choisir un semestre…",
+      "selectSubject": "Choisir une matière…",
+      "questionCount": "Nombre de questions",
+      "duration": "Durée",
+      "oneHour": "1 heure",
+      "cancel": "Annuler",
+      "start": "Générer et démarrer",
+      "generating": "Génération…"
+    },
+    "session": {
+      "back": "Retour aux examens",
+      "backToList": "Retour à la liste",
+      "loading": "Chargement de l'examen…",
+      "question": "Question",
+      "of": "sur",
+      "navigator": "Questions",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "skip": "Passer",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "finish": "Terminer l'examen",
+      "pausedBanner": "Cette session est en pause. Reprenez pour continuer à répondre.",
+      "correct": "Correcte",
+      "incorrect": "Fausse",
+      "skipped": "Passée",
+      "unanswered": "Sans réponse",
+      "explanation": "Explication",
+      "yourAnswer": "Votre réponse",
+      "correctAnswerWas": "La bonne réponse était : {answer}",
+      "legendAnswered": "Répondu",
+      "legendUnanswered": "Sans réponse",
+      "confirmFinishTitle": "Terminer l'examen ?",
+      "confirmFinishText": "Il vous reste {count} questions sans réponse. Vous ne pourrez plus modifier vos réponses après avoir terminé.",
+      "confirmFinishTextAll": "Vous avez répondu à toutes les questions. Vous ne pourrez plus modifier vos réponses après avoir terminé.",
+      "confirmFinishYes": "Oui, terminer",
+      "confirmFinishNo": "Continuer",
+      "results": "Vos résultats",
+      "correctCount": "Correctes",
+      "wrongCount": "Fausses",
+      "skippedCount": "Passées",
+      "unansweredCount": "Sans réponse",
+      "reviewAnswers": "Revoir les réponses",
+      "retake": "Refaire l'examen"
+    }
   }
 }

@@ -1,0 +1,2496 @@
+am making a qcm platform for a client 
+right now am on session creation step 
+here is how the backend is working 
+there will be one to many years 
+each year contains set of trimesters and subjects 
+each subject has set of courses 
+each course will be assigned on a single trimester 
+also each subject has one to many tds and tps 
+now each course and tp and td has set of QCMs 
+each qcm has multiple answers 
+many answerts can be correct and the rest will be false
+each answet has explanation whether its correct or not 
+now here is how i made the session entity :
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+import { User } from 'src/user/entities/user.entity';
+import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
+
+export enum SessionStatus {
+  NOT_STARTED = 'not_started',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
+@Entity('session')
+export class Session {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+
+  @Column({
+    type: 'enum',
+    enum: SessionStatus,
+    default: SessionStatus.NOT_STARTED,
+  })
+  status: SessionStatus;
+
+  // 👇 explicit type + nullable
+  @Column({ type: 'int', nullable: true })
+  currentQuestionId: number | null;
+
+  @Column({ type: 'int', default: 0 })
+  totalQuestions: number;
+
+  @Column({ type: 'int', default: 0 })
+  correctCount: number;
+
+  @ManyToOne(() => User, (user) => user.sessions, { onDelete: 'CASCADE' })
+  user: User;
+
+  @OneToMany(() => SessionQuestion, (sq) => sq.session, { cascade: true })
+  questions: SessionQuestion[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+
+this is sessiion question entity :
+import { Qcm } from 'src/qcm/entities/qcm.entity';
+import { SessionQuestionAnswer } from 'src/session-question-answer/entities/session-question-answer.entity';
+import { Session } from 'src/session/entities/session.entity';
+import {
+  Entity,
+  Unique,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  Column,
+  OneToMany,
+} from 'typeorm';
+
+@Entity('session_question')
+@Unique(['session', 'qcm'])
+export class SessionQuestion {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => Session, (session) => session.questions, {
+    onDelete: 'CASCADE',
+  })
+  session: Session;
+
+  @ManyToOne(() => Qcm, (qcm) => qcm.sessionQuestions, { onDelete: 'CASCADE' })
+  qcm: Qcm;
+
+  @Column()
+  position: number;
+
+  @Column({ default: false })
+  isAnswered: boolean;
+
+  @Column({ default: false })
+  isRevealed: boolean;
+
+  @Column({ nullable: true })
+  isCorrect: boolean;
+
+  @Column({ nullable: true })
+  answeredAt: Date;
+
+  @OneToMany(() => SessionQuestionAnswer, (a) => a.sessionQuestion, {
+    cascade: true,
+  })
+  selectedAnswers: SessionQuestionAnswer[];
+
+  // optional: save selected answers before reveal
+  @Column('json', { nullable: true })
+  draftAnswerIds: number[] | null;
+}
+
+this is session qiestion answer entity :
+import { QcmAnswer } from 'src/qcm_answer/entities/qcm_answer.entity';
+import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
+import { Entity, Unique, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+
+@Entity('session_question_answer')
+@Unique(['sessionQuestion', 'qcmAnswer'])
+export class SessionQuestionAnswer {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => SessionQuestion, (sq) => sq.selectedAnswers, {
+    onDelete: 'CASCADE',
+  })
+  sessionQuestion: SessionQuestion;
+
+  @ManyToOne(() => QcmAnswer, { onDelete: 'CASCADE' })
+  qcmAnswer: QcmAnswer;
+}
+
+this is qcm entity :
+import { Course } from 'src/course/entities/course.entity';
+import { QcmAnswer } from 'src/qcm_answer/entities/qcm_answer.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Td } from 'src/td/entities/td.entity';
+import { Tp } from 'src/tp/entities/tp.entity';
+import { Session } from 'src/session/entities/session.entity';
+import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
+
+@Entity('qcm')
+export class Qcm {
+  @PrimaryGeneratedColumn()
+  id: number;
+  @Column()
+  question: string;
+  @ManyToOne(() => Course, (course) => course.qcms, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  course: Course;
+  @ManyToOne(() => Td, (td) => td.qcms, { nullable: true, onDelete: 'CASCADE' })
+  td: Td;
+  @ManyToOne(() => Tp, (tp) => tp.qcms, { nullable: true, onDelete: 'CASCADE' })
+  tp: Tp;
+
+  @OneToMany(() => QcmAnswer, (answer) => answer.qcm, { nullable: true })
+  answers: QcmAnswer[];
+
+  @OneToMany(() => SessionQuestion, (sq) => sq.qcm)
+  sessionQuestions: SessionQuestion[];
+}
+
+this is qcm answer entity :
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Qcm } from 'src/qcm/entities/qcm.entity';
+
+@Entity('qcm_answer')
+export class QcmAnswer {
+  @PrimaryGeneratedColumn()
+  id: number;
+  @Column()
+  answer: string;
+  @Column()
+  isCorrect: boolean;
+  @Column({ type: 'text', nullable: true })
+  explanation: string;
+  @ManyToOne(() => Qcm, (qcm) => qcm.answers, { onDelete: 'CASCADE' })
+  qcm: Qcm;
+}
+
+this is controller of session 
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { SessionService } from './session.service';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { UpdateSessionDto } from './dto/update-session.dto';
+// import { RolesGuard } from 'src/auth/guards/roles.guard';
+// import { Roles } from 'src/auth/decorators/roles.decorator';
+import { IsArray, IsInt } from 'class-validator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
+
+class RevealDto {
+  @IsArray()
+  @IsInt({ each: true })
+  selectedAnswerIds: number[];
+}
+
+@Controller('sessions')
+@UseGuards(JwtAuthGuard /*, RolesGuard */)
+export class SessionController {
+  constructor(private readonly sessionService: SessionService) {}
+
+  // POST /sessions  → create
+  @Post()
+  create(@Body() dto: CreateSessionDto, @Req() req) {
+    return this.sessionService.create(dto, req.user.id);
+  }
+
+  // GET /sessions  → all (admin)
+  @Get()
+  findAll() {
+    return this.sessionService.findAll();
+  }
+
+  // GET /sessions/me  → current user’s sessions
+  @Get('me')
+  getMySessions(@Req() req) {
+    return this.sessionService.getSessionsOfStudent(req.user.id);
+  }
+
+  // GET /sessions/student/:studentId  → admin or self
+  @Get('student/:studentId')
+  getSessionsOfStudent(@Param('studentId') studentId: string, @Req() req) {
+    // Optionally restrict: only admin or the student themselves
+    // if (req.user.id !== studentId && req.user.role !== 'admin') throw new ForbiddenException();
+    return this.sessionService.getSessionsOfStudent(studentId);
+  }
+
+  // GET /sessions/:id  → session meta
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.sessionService.findOne(id, req.user.id);
+  }
+
+  // GET /sessions/:id/play  → current question (resume)
+  @Get(':id/play')
+  getPlay(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.sessionService.getPlay(id, req.user.id);
+  }
+
+  // POST /sessions/:id/questions/:questionId/draft  → autosave selections
+  @Post(':id/questions/:questionId/draft')
+  saveDraft(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('questionId', ParseIntPipe) questionId: number,
+    @Body() dto: RevealDto,
+    @Req() req,
+  ) {
+    return this.sessionService.saveDraft(
+      id,
+      questionId,
+      dto.selectedAnswerIds,
+      req.user.id,
+    );
+  }
+
+  // POST /sessions/:id/questions/:questionId/reveal  → check answer
+  @Post(':id/questions/:questionId/reveal')
+  reveal(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('questionId', ParseIntPipe) questionId: number,
+    @Body() dto: RevealDto,
+    @Req() req,
+  ) {
+    return this.sessionService.reveal(
+      id,
+      questionId,
+      dto.selectedAnswerIds,
+      req.user.id,
+    );
+  }
+
+  // POST /sessions/:id/next  → move to next question or complete
+  @Post(':id/next')
+  next(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.sessionService.next(id, req.user.id);
+  }
+
+  // PATCH /sessions/:id
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateSessionDto,
+    @Req() req,
+  ) {
+    return this.sessionService.update(id, dto);
+  }
+
+  // DELETE /sessions/:id
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.sessionService.remove(id, req.user.id);
+  }
+}
+
+this is types on frontend :
+export type Course = {
+  id: number;
+  name: string;
+  subjectId?: number;
+  semesterId?: number;
+};
+
+export type CreateCourse = {
+  name: string;
+  subjectId: number;
+  semesterId: number;
+};
+
+// -----------------------------------------------------------------------------
+// User (kept as-is for compatibility)
+// -----------------------------------------------------------------------------
+export type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  phone: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+  activationDate?: Date;
+  endDate?: Date;
+  role: string;
+  isVerified: boolean;
+};
+
+// -----------------------------------------------------------------------------
+// Session
+// -----------------------------------------------------------------------------
+export type SessionStatus = "not_started" | "in_progress" | "completed";
+
+export type Session = {
+  id: number;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  status: SessionStatus;
+  currentQuestionId: number | null;
+  totalQuestions: number;
+  correctCount: number;
+  user?: User;
+};
+
+// -----------------------------------------------------------------------------
+// Create / Update DTOs — matches the new backend payload
+// -----------------------------------------------------------------------------
+export type CreateSession = {
+  name: string;
+  subjects: {
+    subjectId: number;
+    courses: {
+      courseId: number;
+      qcmQte: number;
+    }[];
+  }[];
+};
+
+export type UpdateSession = Partial<CreateSession>;
+
+// -----------------------------------------------------------------------------
+// Play state (returned by /session/:id/play, /reveal, /next)
+// -----------------------------------------------------------------------------
+export type SessionAnswer = {
+  id: number;
+  answer: string;
+  /** Only present after reveal */
+  isCorrect?: boolean;
+  /** Only present after reveal */
+  explanation?: string | null;
+  /** Only present after reveal */
+  selected?: boolean;
+};
+
+export type SessionQuestion = {
+  id: number;
+  position: number;
+  question: string;
+  isAnswered: boolean;
+  isRevealed: boolean;
+  isCorrect: boolean | null;
+  selectedAnswerIds: number[];
+  answers: SessionAnswer[];
+};
+
+export type SessionPlaySession = {
+  id: number;
+  name: string;
+  status: SessionStatus;
+  totalQuestions: number;
+  correctCount: number;
+  currentPosition?: number;
+};
+
+export type SessionPlayState = {
+  completed: boolean;
+  session: SessionPlaySession;
+  question?: SessionQuestion;
+};
+
+// -----------------------------------------------------------------------------
+// API wrappers
+// -----------------------------------------------------------------------------
+export type ApiResponse<T> = {
+  status: boolean;
+  response?: T;
+  message?: string;
+};
+
+export type RevealResponse = {
+  status: boolean;
+  result: SessionPlayState;
+  message?: string;
+};
+
+// -----------------------------------------------------------------------------
+// Kept for compatibility (used elsewhere in your app)
+// -----------------------------------------------------------------------------
+export type Qcm = {
+  id: number;
+  question: string;
+  courseId?: number;
+  tdId?: number;
+  tpId?: number;
+  answers?: QcmAnswer[];
+};
+
+export type QcmAnswer = {
+  id: number;
+  answer: string;
+  isCorrect: boolean;
+  explanation?: string;
+  qcmId?: number;
+};
+
+/* ------------------------------------------------------------------ */
+/* Entity Types (matching backend entities)                           */
+/* ------------------------------------------------------------------ */
+
+export type Year = {
+  id: number;
+  name: string;
+  semesters?: Semester[];
+  subjects?: Subject[];
+};
+
+export type Semester = {
+  id: number;
+  number: number;
+  yearId?: number;
+  year?: Year;
+  courses?: Course[];
+};
+
+export type Subject = {
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  yearId?: number;
+  year?: Year;
+  courses?: Course[];
+  tds?: Td[];
+  tps?: Tp[];
+};
+
+export type Course = {
+  id: number;
+  name: string;
+  subjectId?: number;
+  subject?: Subject;
+  semesterId?: number;
+  semester?: Semester;
+  qcms?: Qcm[];
+};
+
+export type CourseWithQcmCount = Course & {
+  qcmCount?: number;
+};
+
+export type Qcm = {
+  id: number;
+  question: string;
+  courseId?: number;
+  course?: Course;
+  tdId?: number;
+  td?: Td;
+  tpId?: number;
+  tp?: Tp;
+  answers?: QcmAnswer[];
+};
+
+export type QcmAnswer = {
+  id: number;
+  answer: string;
+  isCorrect: boolean;
+  explanation?: string;
+  qcmId?: number;
+  qcm?: Qcm;
+};
+
+export type Td = {
+  id: number;
+  name: string;
+  subjectId?: number;
+  subject?: Subject;
+  qcms?: Qcm[];
+};
+
+export type TdWithQcmCount = Td & {
+  qcmCount?: number;
+};
+
+export type Tp = {
+  id: number;
+  name: string;
+  subjectId?: number;
+  subject?: Subject;
+  qcms?: Qcm[];
+};
+
+export type TpWithQcmCount = Tp & {
+  qcmCount?: number;
+};
+
+export type Exam = {
+  id: number;
+  duration: number;
+};
+
+export type RedeemCode = {
+  id: string;
+};
+
+export type User = {
+  id: string;
+  username: string;
+  email: string;
+  password?: string;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  activationDate?: string;
+  endDate?: string;
+  role: string;
+  isVerified: boolean;
+  otpCode?: string | null;
+  otpExpiresAt?: string | null;
+};
+
+/* ------------------------------------------------------------------ */
+/* Create DTO Types (matching backend create DTOs)                     */
+/* ------------------------------------------------------------------ */
+
+export type CreateYear = {
+  name: string;
+};
+
+export type CreateSemester = {
+  number: number;
+  yearId: number;
+};
+
+export type CreateSubject = {
+  name: string;
+  yearId: number;
+};
+
+export type CreateCourse = {
+  name: string;
+  subjectId: number;
+  semesterId: number;
+};
+
+export type CreateQcm = {
+  question: string;
+  courseId?: number;
+  tdId?: number;
+  tpId?: number;
+  answers: CreateQcmAnswer[];
+};
+
+export type CreateQcmAnswer = {
+  answer: string;
+  isCorrect: boolean;
+  explanation?: string;
+};
+
+export type CreateTd = {
+  name: string;
+  subjectId: number;
+};
+
+export type CreateTp = {
+  name: string;
+  subjectId: number;
+};
+
+export type CreateExam = {
+  duration: number;
+};
+
+export type CreateRedeemCode = Record<string, never>;
+
+export type CreateUser = {
+  firstName: string;
+  lastName: string;
+  username: string;
+  phone: string;
+  email: string;
+  password: string;
+  role: string;
+};
+
+export type CreateTodo = {
+  title: string;
+  description: string;
+  status: string;
+};
+export type Todo = {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  tasks?: Task[];
+};
+
+export type Task = {
+  id: number;
+  title: string;
+  description: string;
+  priority: string;
+  startDate?: Date;
+  startTime?: Date;
+  isFinished: boolean;
+};
+export type CreateTask = {
+  title: string;
+  description: string;
+  priority: string;
+  startDate?: Date;
+  startTime?: Date;
+  isFinished: boolean;
+  todoId: number;
+};
+
+/* ------------------------------------------------------------------ */
+/* Update DTO Types (for partial updates)                              */
+/* ------------------------------------------------------------------ */
+export type UpdateTodo = Partial<CreateTodo>;
+
+export type UpdateTask = Partial<CreateTask>;
+
+export type UpdateYear = Partial<CreateYear>;
+
+export type UpdateSemester = Partial<CreateSemester>;
+
+export type UpdateSubject = Partial<CreateSubject>;
+
+export type UpdateCourse = Partial<CreateCourse>;
+
+export type UpdateQcm = Partial<CreateQcm>;
+
+export type UpdateQcmAnswer = Partial<CreateQcmAnswer>;
+
+export type UpdateTd = Partial<CreateTd>;
+
+export type UpdateTp = Partial<CreateTp>;
+
+export type UpdateExam = Partial<CreateExam>;
+
+export type UpdateRedeemCode = Record<string, never>;
+
+export type UpdateUser = Partial<CreateUser>;
+
+
+here is the api calls :
+course-api.ts :
+"use server";
+
+import { api } from "../api";
+import { CreateCourse } from "../types/course.types";
+import { GetToken } from "./auth-api";
+import { getLanguage } from "./lang-api";
+
+export async function createCourse(data: CreateCourse) {
+  try {
+    const response = await api.post("/course", data, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getCourses() {
+  try {
+    const response = await api.get("/course", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getCourse(id: number) {
+  try {
+    const response = await api.get(`/course/${id}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function updateCourse(id: number, data: CreateCourse) {
+  try {
+    const response = await api.patch(`/course/${id}`, data, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function deleteCourse(id: number) {
+  try {
+    const response = await api.delete(`/course/${id}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSubjectWithContent(subjectId: number) {
+  try {
+    const response = await api.get(`/subject/${subjectId}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+session-api.ts :
+"use server";
+
+import { api } from "../api";
+import {
+  CreateSession,
+  SessionPlayState,
+  UpdateSession,
+} from "../types/session.types";
+import { GetToken } from "./auth-api";
+import { getLanguage } from "./lang-api";
+
+// ---------------------------------------------------------------------------
+// Shared headers
+// ---------------------------------------------------------------------------
+async function authHeaders() {
+  return {
+    "Accept-Language": await getLanguage(),
+    Authorization: `Bearer ${await GetToken()}`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// CRUD
+// ---------------------------------------------------------------------------
+export async function createSession(data: CreateSession) {
+  try {
+    const response = await api.post("/session", data, {
+      headers: await authHeaders(),
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message:
+        error.response?.data?.message ??
+        "Failed to create session. Please try again.",
+    };
+  }
+}
+
+export async function getSessions() {
+  try {
+    const response = await api.get("/session", {
+      headers: await authHeaders(),
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSessionsOfStudent() {
+  try {
+    const response = await api.get("/session/me", {
+      headers: await authHeaders(),
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSession(id: number) {
+  try {
+    const response = await api.get(`/session/${id}`, {
+      headers: await authHeaders(),
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function updateSession(id: number, data: UpdateSession) {
+  try {
+    const response = await api.patch(`/session/${id}`, data, {
+      headers: await authHeaders(),
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function deleteSession(id: number) {
+  try {
+    const response = await api.delete(`/session/${id}`, {
+      headers: await authHeaders(),
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Play / reveal / next / draft
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /session/:id/play
+ * Returns the current question for the session (resumes at currentQuestionId).
+ */
+export async function getSessionPlay(id: number) {
+  try {
+    const response = await api.get(`/session/${id}/play`, {
+      headers: await authHeaders(),
+    });
+    // Backend returns SessionPlayState directly
+    return { status: true, response: response.data as SessionPlayState };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+/**
+ * POST /session/:id/questions/:questionId/reveal
+ * Reveals correctness + explanations for a question.
+ */
+export async function revealAnswer(
+  sessionId: number,
+  questionId: number,
+  selectedAnswerIds: number[],
+) {
+  try {
+    const response = await api.post(
+      `/session/${sessionId}/questions/${questionId}/reveal`,
+      { selectedAnswerIds },
+      { headers: await authHeaders() },
+    );
+    // Backend returns { status: true, result: SessionPlayState }
+    return response.data as { status: boolean; result: SessionPlayState };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+/**
+ * POST /session/:id/next
+ * Advances to the next question, or completes the session.
+ */
+export async function nextQuestion(sessionId: number) {
+  try {
+    const response = await api.post(
+      `/session/${sessionId}/next`,
+      {},
+      { headers: await authHeaders() },
+    );
+    // Backend returns SessionPlayState directly
+    return { status: true, response: response.data as SessionPlayState };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+/**
+ * POST /session/:id/questions/:questionId/draft
+ * Optional: autosave user selection before reveal.
+ */
+export async function saveDraft(
+  sessionId: number,
+  questionId: number,
+  selectedAnswerIds: number[],
+) {
+  try {
+    const response = await api.post(
+      `/session/${sessionId}/questions/${questionId}/draft`,
+      { selectedAnswerIds },
+      { headers: await authHeaders() },
+    );
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+subject-api.ts :
+"use server";
+
+import { api } from "../api";
+import { CreateSubject } from "../types/subject.types";
+import { GetToken } from "./auth-api";
+import { getLanguage } from "./lang-api";
+
+export async function createSubject(data: CreateSubject) {
+  try {
+    const response = await api.post("/subject", data, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSubjects() {
+  try {
+    const response = await api.get("/subject", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSubject(id: number) {
+  try {
+    const response = await api.get(`/subject/${id}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function updateSubject(id: number, data: CreateSubject) {
+  try {
+    const response = await api.patch(`/subject/${id}`, data, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function deleteSubject(id: number) {
+  try {
+    const response = await api.delete(`/subject/${id}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSubjectsByStudent() {
+  try {
+    const response = await api.get("/subject/student", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+
+
+
+i want the user to create sessions 
+give it a name 
+and then select subjects 
+fetch subject by id
+on each subject he select the courses he wants 
+fetch course by id
+and on each course he chooses the quantity of qcms he want to see on the session 
+after the creation i want him to click on the created session 
+fetch session by id
+and he will get the questions with aswer options 
+he chooses many options and then reveal the result if he get correct or not and then show wxplanation of each option 
+and then click next and he finds the second question and so on untill he finishes 
+if he stops in the middle and reenter the session he will resume where he stoped before 
+so the session must be tracked in progress 
+make me session.component.tsx 
+current css of the current test page :
+/* ==================================================================
+   Session Page
+   ================================================================== */
+
+.page {
+  --font-serif:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia,
+    "Times New Roman", serif;
+
+  min-height: 100vh;
+  width: 100%;
+
+  background-color: var(--background);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E"),
+    radial-gradient(
+      circle at 8% 0%,
+      color-mix(in srgb, var(--primary) 7%, transparent),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 92% 18%,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 24rem
+    );
+
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  overflow-x: hidden;
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* ==================================================================
+   Header
+   ================================================================== */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 760px;
+  position: relative;
+}
+
+.header::before {
+  content: "";
+  position: absolute;
+  width: 72px;
+  height: 3px;
+  left: 0;
+  top: -1rem;
+  background: var(--primary);
+  border-radius: 999px;
+  opacity: 0.8;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: max-content;
+  padding: 0.38rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 70%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  border-radius: 5px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.86rem;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 3%, transparent);
+  transform: rotate(-1deg);
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.badge:hover {
+  transform: rotate(0deg) translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.title {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--muted-foreground);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.65;
+}
+
+/* ==================================================================
+   Action Bar
+   ================================================================== */
+
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease,
+    box-shadow 0.25s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.addButton:hover {
+  background: color-mix(in srgb, var(--primary) 85%, var(--primary));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.addButton:active {
+  transform: translateY(0);
+}
+
+/* ==================================================================
+   Session Grid
+   ================================================================== */
+
+.sessionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+/* ==================================================================
+   Session Card
+   ================================================================== */
+
+.sessionCard {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 200px;
+  padding: 1.5rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--foreground);
+
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface) 100%, transparent),
+    color-mix(in srgb, var(--surface-hover) 28%, var(--surface))
+  );
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry))
+    translateZ(0);
+  transform-style: preserve-3d;
+
+  box-shadow:
+    inset 0 1px 1px 0 color-mix(in srgb, white 8%, transparent),
+    0 2px 4px color-mix(in srgb, var(--foreground) 3%, transparent),
+    0 8px 30px color-mix(in srgb, var(--foreground) 4%, transparent);
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.35s ease,
+    background 0.3s ease,
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+}
+
+.sessionCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 300px at var(--mx) var(--my),
+    color-mix(in srgb, var(--primary) 12%, transparent),
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.sessionCard::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0;
+  transform: scaleX(0.3);
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.sessionCard:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface) 100%, transparent),
+    color-mix(in srgb, var(--primary) 3%, var(--surface))
+  );
+  box-shadow:
+    inset 0 1px 1px 0 color-mix(in srgb, white 12%, transparent),
+    0 18px 45px -18px color-mix(in srgb, var(--primary) 25%, transparent),
+    0 8px 22px color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+.sessionCard:hover::before {
+  opacity: 1;
+}
+
+.sessionCard:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.sessionCardHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.sessionIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface-hover));
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+  color: var(--primary);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.sessionCard:hover .sessionIcon {
+  transform: translateY(-2px) scale(1.05);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-hover));
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+
+.startButton,
+.resumeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.startButton {
+  background: var(--success);
+  color: var(--success-foreground);
+}
+
+.startButton:hover {
+  background: color-mix(in srgb, var(--success) 85%, var(--success));
+  transform: translateY(-1px);
+}
+
+.resumeButton {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.resumeButton:hover {
+  background: color-mix(in srgb, var(--primary) 85%, var(--primary));
+  transform: translateY(-1px);
+}
+
+.sessionCardTitle {
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.sessionCardMeta {
+  margin-top: 0.5rem;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.statusNotStarted {
+  background: color-mix(in srgb, var(--muted-foreground) 12%, transparent);
+  color: var(--muted-foreground);
+  border-color: color-mix(in srgb, var(--muted-foreground) 25%, transparent);
+}
+
+.statusInProgress {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.statusCompleted {
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+
+.sessionCardInfo {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0.5rem 0 1rem 0;
+  flex-grow: 1;
+}
+
+.sessionCardFooter {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.sessionDate {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+/* ==================================================================
+   Empty / Loading
+   ================================================================== */
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted-foreground);
+}
+
+.emptyStateIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  color: var(--muted-foreground);
+  opacity: 0.5;
+}
+
+.emptyStateTitle {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.emptyStateText {
+  font-size: 0.95rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--muted-foreground);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==================================================================
+   Modal
+   ================================================================== */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.createModal,
+.sessionModal {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.createModal {
+  max-width: 700px;
+}
+
+.sessionModal {
+  max-width: 800px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modalTitle {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.closeButtonAbs {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* ==================================================================
+   Steps / Lists
+   ================================================================== */
+
+.stepContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stepTitle {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+  width: max-content;
+}
+
+.backButton:hover {
+  background: var(--surface-hover);
+  border-color: var(--secondary);
+}
+
+.backIcon {
+  transform: rotate(180deg);
+}
+
+.subjectsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.noSubjects {
+  text-align: center;
+  color: var(--muted-foreground);
+  padding: 2rem;
+}
+
+.subjectButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.subjectButton:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateX(4px);
+}
+
+.subjectName {
+  flex: 1;
+  text-align: left;
+}
+
+.subjectRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subjectCount {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+/* ==================================================================
+   Content Selection
+   ================================================================== */
+
+.contentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contentSectionTitle {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.contentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.noContent {
+  text-align: center;
+  color: var(--muted-foreground);
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+.contentItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.contentItem:hover {
+  background: var(--surface-hover);
+}
+
+.contentLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.contentCheckbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.qcmCount {
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+
+.qcmQteControl {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 2.25rem;
+}
+
+.qcmQteControl label {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.qcmQteInput {
+  width: 70px;
+  padding: 0.4rem 0.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--foreground);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.qcmQteInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* ==================================================================
+   Session Form
+   ================================================================== */
+
+.sessionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.formInput {
+  padding: 0.75rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--foreground);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.selectedSummary {
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--foreground);
+}
+
+.selectedSummaryTitle {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted-foreground);
+}
+
+.selectedSummaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.selectedSummaryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--foreground);
+}
+
+.selectedSummaryQte {
+  color: var(--primary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: var(--surface-hover);
+  border-color: var(--secondary);
+}
+
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 85%, var(--primary));
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==================================================================
+   Play Modal
+   ================================================================== */
+
+.sessionModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sessionModalTitle {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.progressSection {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--surface-hover) 50%, var(--surface));
+  border-radius: 8px;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: color-mix(in srgb, var(--border) 50%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--success));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.questionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.questionNumber {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.questionText {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--foreground);
+}
+
+/* Result banner */
+.questionResultBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.questionResultBanner.correct {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+
+.questionResultBanner.incorrect {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #ef4444;
+  border-color: color-mix(in srgb, #ef4444 35%, transparent);
+}
+
+/* Answers */
+.answersList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answerWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.answerButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+  text-align: left;
+}
+
+.answerButton:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateX(4px);
+}
+
+.answerButtonInner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.answerCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  background: var(--background);
+  flex-shrink: 0;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.answerCheckChecked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.answerCheckIcon {
+  color: var(--primary-foreground);
+}
+
+.answerText {
+  flex-grow: 1;
+}
+
+.answerSelected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+
+.answerCorrectRevealed {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 8%, var(--surface));
+}
+
+.answerIncorrectSelected {
+  border-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 8%, var(--surface));
+}
+
+.answerDisabled {
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.correctIcon {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.answerExplanation {
+  margin-left: 1rem;
+  margin-right: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  border-left: 3px solid transparent;
+  background: color-mix(in srgb, var(--surface-hover) 60%, var(--surface));
+  color: var(--foreground);
+}
+
+.answerExplanation.correct {
+  border-left-color: var(--success);
+  background: color-mix(in srgb, var(--success) 6%, var(--surface));
+}
+
+.answerExplanation.incorrect {
+  border-left-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 6%, var(--surface));
+}
+
+/* Navigation */
+.questionNavigation {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.submitAnswerButton,
+.nextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.submitAnswerButton {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.submitAnswerButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 85%, var(--primary));
+  transform: translateY(-1px);
+}
+
+.nextButton {
+  background: var(--success);
+  color: var(--success-foreground);
+}
+
+.nextButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--success) 85%, var(--success));
+  transform: translateY(-1px);
+}
+
+.submitAnswerButton:disabled,
+.nextButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==================================================================
+   Completion Screen
+   ================================================================== */
+
+.completionScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.completionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--success) 12%, var(--surface));
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 35%, var(--border));
+  margin-bottom: 0.5rem;
+}
+
+.completionTitle {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.completionSubtitle {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+}
+
+.completionStats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 1.5rem 0;
+  padding: 1.5rem 2rem;
+  background: color-mix(in srgb, var(--surface-hover) 50%, var(--surface));
+  border-radius: 12px;
+  width: 100%;
+}
+
+.completionStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.completionStatValue {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.completionStatLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+}
+
+.completionButton {
+  margin-top: 0.5rem;
+  padding: 0.75rem 2rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.completionButton:hover {
+  background: color-mix(in srgb, var(--primary) 85%, var(--primary));
+  transform: translateY(-1px);
+}
+
+/* ==================================================================
+   Responsive
+   ================================================================== */
+
+@media (max-width: 639px) {
+  .contentWrapper {
+    padding: 1.5rem 1rem 3rem;
+    gap: 2rem;
+  }
+
+  .sessionGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .sessionCard {
+    min-height: 180px;
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .createModal,
+  .sessionModal {
+    padding: 1.5rem;
+    max-height: 95vh;
+  }
+
+  .contentList {
+    max-height: 150px;
+  }
+
+  .completionStats {
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .completionStatValue {
+    font-size: 1.4rem;
+  }
+}
+
+/* ==================================================================
+   Accessibility / Reduced Motion
+   ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .sessionCard,
+  .sessionIcon,
+  .progressFill,
+  .addButton,
+  .createModal,
+  .sessionModal,
+  .answerButton {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+

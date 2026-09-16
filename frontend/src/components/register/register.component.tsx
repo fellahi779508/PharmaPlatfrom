@@ -17,25 +17,37 @@ import {
   CheckCircle2,
   KeyRound,
   RefreshCw,
+  Phone,
 } from "lucide-react";
 import { Login, Register, ResendOTP, VerifyOTP } from "@/utils/server/auth-api";
 import styles from "./register.module.css";
 
-type RegisterData = {
+export type CreateUser = {
+  firstName: string;
+  lastName: string;
   username: string;
+  phone: string;
   email: string;
   password: string;
+  role: string;
 };
 
 export default function RegisterComponent() {
   const t = useTranslations("register");
   const router = useRouter();
   const [step, setStep] = useState<"form" | "otp">("form");
-  const [formData, setFormData] = useState<RegisterData>({
+
+  // State updated: role is now hardcoded to "USER"
+  const [formData, setFormData] = useState<CreateUser>({
+    firstName: "",
+    lastName: "",
     username: "",
+    phone: "",
     email: "",
     password: "",
+    role: "user",
   });
+
   const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +56,7 @@ export default function RegisterComponent() {
   const [success, setSuccess] = useState("");
 
   const handleChange =
-    (field: keyof RegisterData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof CreateUser) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
@@ -55,11 +67,8 @@ export default function RegisterComponent() {
     setSuccess("");
 
     try {
-      const response = await Register(
-        formData.username,
-        formData.email,
-        formData.password,
-      );
+      const response = await Register(formData);
+
       if (response.status) {
         setSuccess(t("success.otpSent"));
         setStep("otp");
@@ -148,6 +157,45 @@ export default function RegisterComponent() {
                 </div>
 
                 <form onSubmit={handleRegister} className={styles.form}>
+                  {/* Name Row: First & Last Name side-by-side */}
+                  <div className={styles.nameRow}>
+                    <div className={styles.inputGroup}>
+                      <label htmlFor="firstName" className={styles.label}>
+                        {t("firstNameLabel")}
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <User className={styles.inputIcon} size={20} />
+                        <input
+                          id="firstName"
+                          type="text"
+                          required
+                          value={formData.firstName}
+                          onChange={handleChange("firstName")}
+                          placeholder={t("firstNamePlaceholder")}
+                          className={styles.input}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label htmlFor="lastName" className={styles.label}>
+                        {t("lastNameLabel")}
+                      </label>
+                      <div className={styles.inputWrapper}>
+                        <User className={styles.inputIcon} size={20} />
+                        <input
+                          id="lastName"
+                          type="text"
+                          required
+                          value={formData.lastName}
+                          onChange={handleChange("lastName")}
+                          placeholder={t("lastNamePlaceholder")}
+                          className={styles.input}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Username */}
                   <div className={styles.inputGroup}>
                     <label htmlFor="username" className={styles.label}>
@@ -163,6 +211,25 @@ export default function RegisterComponent() {
                         value={formData.username}
                         onChange={handleChange("username")}
                         placeholder={t("usernamePlaceholder")}
+                        className={styles.input}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="phone" className={styles.label}>
+                      {t("phoneLabel")}
+                    </label>
+                    <div className={styles.inputWrapper}>
+                      <Phone className={styles.inputIcon} size={20} />
+                      <input
+                        id="phone"
+                        type="tel"
+                        required
+                        value={formData.phone}
+                        onChange={handleChange("phone")}
+                        placeholder={t("phonePlaceholder")}
                         className={styles.input}
                       />
                     </div>
@@ -224,7 +291,7 @@ export default function RegisterComponent() {
                     <p className={styles.hint}>{t("passwordHint")}</p>
                   </div>
 
-                  {/* Error */}
+                  {/* Error Message */}
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
@@ -237,7 +304,7 @@ export default function RegisterComponent() {
                     </motion.div>
                   )}
 
-                  {/* Success */}
+                  {/* Success Message */}
                   {success && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}

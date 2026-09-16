@@ -1,0 +1,630 @@
+/* ==================================================================
+   Pomodoro Page
+   ================================================================== */
+
+.page {
+    min-height: 100vh;
+    width: 100%;
+    color: var(--foreground);
+    background-color: var(--background);
+    background-image:
+        radial-gradient(circle at 8% 0%,
+            color-mix(in srgb, var(--primary) 8%, transparent),
+            transparent 28rem),
+        radial-gradient(circle at 92% 18%,
+            color-mix(in srgb, var(--accent) 6%, transparent),
+            transparent 24rem);
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+.wrapper {
+    width: 100%;
+    max-width: 720px;
+    padding: clamp(1.25rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2rem);
+}
+
+/* ==================================================================
+   Header
+   ================================================================== */
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    position: relative;
+    width: 100%;
+}
+
+.header::before {
+    content: "";
+    position: absolute;
+    width: 72px;
+    height: 3px;
+    top: -1rem;
+    background: var(--primary);
+    border-radius: 999px;
+    opacity: 0.85;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: max-content;
+    padding: 0.38rem 0.75rem;
+    border: 1px dashed color-mix(in srgb, var(--accent) 70%, var(--border));
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+    border-radius: 5px;
+    font-style: italic;
+    font-size: 0.85rem;
+    transform: rotate(-1deg);
+}
+
+.title {
+    margin: 0;
+    font-size: clamp(1.75rem, 5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+}
+
+.subtitle {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--muted-foreground);
+    font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+    line-height: 1.6;
+}
+
+/* ==================================================================
+   Mode tabs
+   ================================================================== */
+
+.modeTabs {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow:
+        inset 0 1px 1px color-mix(in srgb, white 8%, transparent),
+        0 2px 6px color-mix(in srgb, var(--foreground) 4%, transparent);
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.modeTabs::-webkit-scrollbar {
+    display: none;
+}
+
+.modeTab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        color 0.2s ease,
+        background 0.25s ease;
+}
+
+.modeTab:hover {
+    color: var(--foreground);
+    background: var(--surface-hover);
+}
+
+.modeTabActive {
+    color: var(--primary-foreground);
+    background: var(--primary);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.modeTabActive:hover {
+    color: var(--primary-foreground);
+    background: var(--primary);
+}
+
+/* ==================================================================
+   Timer card + ring
+   ================================================================== */
+
+.timerCard {
+    --ring-color: var(--primary);
+
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.25rem, 3vw, 1.75rem);
+    padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow:
+        inset 0 1px 1px color-mix(in srgb, white 10%, transparent),
+        0 2px 4px color-mix(in srgb, var(--foreground) 3%, transparent),
+        0 20px 50px -20px color-mix(in srgb, var(--primary) 18%, transparent);
+    transition: box-shadow 0.3s ease;
+}
+
+.modeFocus {
+    --ring-color: var(--primary);
+}
+
+.modeShort {
+    --ring-color: var(--success);
+}
+
+.modeLong {
+    --ring-color: var(--info);
+}
+
+.ringWrapper {
+    position: relative;
+    width: clamp(220px, 78vw, 320px);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ring {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--ring-color) 25%, transparent));
+}
+
+.ringTrack {
+    stroke: color-mix(in srgb, var(--border) 80%, transparent);
+    opacity: 0.6;
+}
+
+.ringProgress {
+    stroke: var(--ring-color);
+    transition:
+        stroke-dashoffset 1s linear,
+        stroke 0.4s ease;
+}
+
+.ringCenter {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    pointer-events: none;
+}
+
+.modeIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(38px, 12vw, 46px);
+    height: clamp(38px, 12vw, 46px);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--ring-color) 12%, transparent);
+    color: var(--ring-color);
+    margin-bottom: 0.25rem;
+}
+
+.time {
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(2.25rem, 12vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--foreground);
+}
+
+.modeLabel {
+    font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+/* ==================================================================
+   Controls
+   ================================================================== */
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.primaryButton,
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: clamp(0.85rem, 2.4vw, 0.92rem);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+.primaryButton {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.primaryButton:hover {
+    background: color-mix(in srgb, var(--primary) 88%, black);
+}
+
+.secondaryButton {
+    background: var(--surface-hover);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+}
+
+.secondaryButton:hover {
+    background: color-mix(in srgb, var(--primary) 8%, var(--surface-hover));
+    border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+
+.iconButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--surface-hover);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.iconButton:hover {
+    background: color-mix(in srgb, var(--primary) 8%, var(--surface-hover));
+    border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+    color: var(--primary);
+}
+
+/* ==================================================================
+   Stats
+   ================================================================== */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.statCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.9rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 3%, transparent);
+    min-width: 0;
+}
+
+.statLabel {
+    font-size: clamp(0.65rem, 2.4vw, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted-foreground);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.statValue {
+    font-size: clamp(1.15rem, 4.5vw, 1.5rem);
+    font-weight: 700;
+    color: var(--primary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================
+   Settings modal
+   ================================================================== */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+}
+
+.modal {
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 25px 60px -20px color-mix(in srgb, var(--foreground) 25%, transparent);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.modalTitle {
+    margin: 0;
+    font-size: clamp(1.05rem, 3vw, 1.2rem);
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+.closeButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.closeButton:hover {
+    background: var(--surface-hover);
+    color: var(--foreground);
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.fieldLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.fieldInput {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--foreground);
+    font-variant-numeric: tabular-nums;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    /* hides spinner arrows in Firefox, still allows typing */
+    -moz-appearance: textfield;
+}
+
+/* hide webkit spinner arrows so typing feels cleaner, optional */
+.fieldInput::-webkit-outer-spin-button,
+.fieldInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.fieldInput:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.modalActionsRight {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.ghostButton,
+.cancelButton,
+.saveButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.ghostButton {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted-foreground);
+}
+
+.ghostButton:hover {
+    color: var(--foreground);
+    border-color: var(--primary);
+}
+
+.cancelButton {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+}
+
+.cancelButton:hover {
+    background: var(--surface-hover);
+}
+
+.saveButton {
+    background: var(--primary);
+    border: none;
+    color: var(--primary-foreground);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.saveButton:hover {
+    background: color-mix(in srgb, var(--primary) 88%, black);
+}
+
+/* ==================================================================
+   Responsive
+   ================================================================== */
+
+/* Tablet: tighten card padding a little */
+@media (max-width: 768px) {
+    .timerCard {
+        border-radius: 20px;
+    }
+}
+
+/* Small phones: stack modal fields, keep everything comfortable */
+@media (max-width: 560px) {
+    .wrapper {
+        padding: 1rem 0.85rem 2.5rem;
+        gap: 1rem;
+    }
+
+    .modeTab {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .modeTab span {
+        font-size: 0.8rem;
+    }
+
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .modalActions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .modalActionsRight {
+        margin-left: 0;
+        width: 100%;
+        flex-direction: column-reverse;
+    }
+
+    .cancelButton,
+    .saveButton,
+    .ghostButton {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* Very small: stack stats */
+@media (max-width: 420px) {
+    .stats {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .controls {
+        gap: 0.4rem;
+    }
+
+    .primaryButton span,
+    .secondaryButton span {
+        display: none;
+    }
+
+    .primaryButton,
+    .secondaryButton {
+        padding: 0.7rem;
+        min-width: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ringProgress,
+    .primaryButton,
+    .secondaryButton,
+    .iconButton {
+        transition: none !important;
+    }
+}

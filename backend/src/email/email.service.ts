@@ -28,6 +28,13 @@ export class EmailService {
         subject: 'Your Account Verification Code',
         html,
       });
+      const user = await this.userService.findByEmail(email);
+      user.otpCode = otp;
+      user.otpExpiresAt = new Date(Date.now() + 60 * 1000); // 10 minutes
+      await this.userService.update(user.id, {
+        otpCode: otp,
+        otpExpiresAt: user.otpExpiresAt,
+      });
       return {
         message: this.i18n.translate('errors.email.otp_sent', {
           lang: this.currentLang,
@@ -69,9 +76,6 @@ export class EmailService {
     }
 
     // Mark as verified & clear OTP data
-    user.isVerified = true;
-    user.otpCode = null;
-    user.otpExpiresAt = null;
     await this.userService.update(user.id, {
       isVerified: true,
       otpCode: null,

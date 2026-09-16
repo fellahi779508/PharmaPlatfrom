@@ -26,6 +26,11 @@ export class CourseController {
     return this.courseService.findAll();
   }
 
+  @Get('subject/:subjectId')
+  findBySubject(@Param('subjectId') subjectId: string) {
+    return this.courseService.findBySubject(+subjectId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.courseService.findOne(+id);

@@ -3,6 +3,7 @@ import { api } from "../api";
 import { cookies } from "next/headers";
 import { getLanguage } from "./lang-api";
 import { redirect } from "next/navigation";
+import { CreateUser } from "../types/allTypes";
 
 export async function Login(email: string, password: string) {
   try {
@@ -47,23 +48,14 @@ export async function GetToken(): Promise<string | null> {
   return cookieStore.get("token")?.value || null;
 }
 
-export async function Register(
-  username: string,
-  email: string,
-  password: string,
-  role: string = "user",
-) {
+export async function Register(data: CreateUser) {
   try {
-    const response = await api.post(
-      "/user",
-      { username, email, password, role },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Accept-Language": await getLanguage(),
-        },
+    const response = await api.post("/user", data, {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": await getLanguage(),
       },
-    );
+    });
 
     return { status: true, response: response.data };
   } catch (error: any) {
@@ -101,6 +93,28 @@ export async function ResendOTP(email: string) {
   try {
     const response = await api.get(
       "/email/otpCode",
+
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": await getLanguage(),
+          Authorization: `Bearer ${await GetToken()}`,
+        },
+      },
+    );
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response?.data?.message || "Une erreur est survenue",
+    };
+  }
+}
+export async function authOtp() {
+  try {
+    const response = await api.get(
+      "/email/otpCode/auth",
 
       {
         headers: {

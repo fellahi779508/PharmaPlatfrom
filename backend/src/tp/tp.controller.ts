@@ -5,7 +5,7 @@ import { UpdateTpDto } from './dto/update-tp.dto';
 
 @Controller('tp')
 export class TpController {
-  constructor(private readonly tpService: TpService) {}
+  constructor(private readonly tpService: TpService) { }
 
   @Post()
   create(@Body() createTpDto: CreateTpDto) {
@@ -15,6 +15,10 @@ export class TpController {
   @Get()
   findAll() {
     return this.tpService.findAll();
+  }
+  @Get('subject/:subjectId')
+  findBySubject(@Param('subjectId') subjectId: string) {
+    return this.tpService.getTpsBySubject(+subjectId);
   }
 
   @Get(':id')

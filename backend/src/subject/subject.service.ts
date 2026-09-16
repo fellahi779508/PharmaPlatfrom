@@ -6,6 +6,8 @@ import { Subject } from './entities/subject.entity';
 import { Repository, DataSource } from 'typeorm';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { Year } from 'src/year/entities/year.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Course } from 'src/course/entities/course.entity';
 
 @Injectable()
 export class SubjectService {
@@ -13,7 +15,7 @@ export class SubjectService {
     @InjectRepository(Subject) private subjectRepository: Repository<Subject>,
     private readonly i18n: I18nService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -43,13 +45,15 @@ export class SubjectService {
   async findOne(id: number) {
     const subject = await this.subjectRepository.findOne({
       where: { id },
-      relations: { courses: { qcms: true }, year: true, tds: true, tps: true },
+      relations: { year: true, tds: true, tps: true, courses: true },
     });
     if (!subject) {
       throw new NotFoundException(
         this.i18n.t('errors.subject.not_found', { lang: this.currentLang }),
       );
     }
+    console.log(subject);
+
     return subject;
   }
 
@@ -74,5 +78,32 @@ export class SubjectService {
   async remove(id: number) {
     const subject = await this.findOne(id);
     return this.subjectRepository.remove(subject);
+  }
+  async getSubjectsByStudent(userId: string) {
+    const user = await this.dataSource.getRepository(User).findOne({
+      where: {
+        id: userId,
+      },
+      relations: { redeemCode: { year: true } },
+    });
+    if (!user) {
+      throw new NotFoundException(
+        this.i18n.t('errors.user.not_found', { lang: this.currentLang }),
+      );
+    }
+    if (user.redeemCode) {
+
+      const subjects = await this.subjectRepository.find({
+        relations: { year: true },
+        where: { year: { id: user.redeemCode.year.id } },
+      });
+
+      return subjects;
+    }
+
+
+    return this.subjectRepository.find({
+      relations: { year: true },
+    });
   }
 }

@@ -34,39 +34,45 @@
     }
   },
   "register": {
-    "title": "أنشئ حسابك",
-    "subtitle": "انضم إلى PharmaExam وابدأ التحضير لامتحاناتك.",
+    "title": "إنشاء حساب",
+    "subtitle": "انضم إلينا اليوم! يرجى إدخال بياناتك.",
+    "firstNameLabel": "الاسم الأول",
+    "firstNamePlaceholder": "أحمد",
+    "lastNameLabel": "اسم العائلة",
+    "lastNamePlaceholder": "محمد",
     "usernameLabel": "اسم المستخدم",
-    "usernamePlaceholder": "اسم_المستخدم",
+    "usernamePlaceholder": "ahmed123",
+    "phoneLabel": "رقم الهاتف",
+    "phonePlaceholder": "0550123456",
     "emailLabel": "البريد الإلكتروني",
-    "emailPlaceholder": "you@example.com",
+    "emailPlaceholder": "ahmed@example.com",
     "passwordLabel": "كلمة المرور",
-    "passwordPlaceholder": "أنشئ كلمة مرور قوية",
+    "passwordPlaceholder": "••••••••",
     "passwordHint": "يجب أن تتكون من 8 أحرف على الأقل.",
-    "showPassword": "إظهار كلمة المرور",
+    "showPassword": "عرض كلمة المرور",
     "hidePassword": "إخفاء كلمة المرور",
-    "registerButton": "إنشاء حساب",
-    "haveAccount": "هل لديك حساب بالفعل؟",
+    "registerButton": "إنشاء الحساب",
+    "haveAccount": "لديك حساب بالفعل؟",
     "login": "تسجيل الدخول",
-    "otp": {
-      "title": "تحقق من بريدك الإلكتروني",
-      "subtitle": "أرسلنا رمزًا مكوّنًا من 6 أرقام إلى {email}.",
-      "label": "رمز التحقق",
-      "placeholder": "000000",
-      "verifyButton": "تحقق",
-      "backButton": "رجوع",
-      "resendButton": "إعادة إرسال الرمز"
-    },
     "success": {
       "otpSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني.",
-      "otpResent": "تم إرسال رمز جديد إلى بريدك الإلكتروني.",
-      "accountVerified": "تم التحقق من الحساب! جارٍ إعادة التوجيه..."
+      "accountVerified": "تم التحقق من الحساب بنجاح!",
+      "otpResent": "تم إعادة إرسال رمز التحقق."
     },
     "error": {
       "registrationFailed": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
-      "invalidOtp": "رمز غير صالح أو منتهي الصلاحية. يرجى المحاولة مرة أخرى.",
-      "resendFailed": "تعذّر إعادة إرسال الرمز. يرجى المحاولة مرة أخرى.",
+      "invalidOtp": "رمز التحقق غير صحيح.",
+      "resendFailed": "فشل إعادة إرسال الرمز.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    },
+    "otp": {
+      "title": "تأكيد بريدك الإلكتروني",
+      "subtitle": "لقد أرسلنا رمزاً إلى {email}",
+      "label": "رمز التحقق",
+      "placeholder": "123456",
+      "verifyButton": "تأكيد الرمز",
+      "backButton": "العودة للتسجيل",
+      "resendButton": "إعادة إرسال الرمز"
     }
   },
   "teacher": {
@@ -75,7 +81,9 @@
     "loading": "جارٍ التحميل…",
     "refresh": "تحديث",
     "selectPlaceholder": "اختر…",
-    "breadcrumb": { "home": "كل السنوات" },
+    "breadcrumb": {
+      "home": "كل السنوات"
+    },
     "tabs": {
       "years": "السنوات",
       "semesters": "السدود",
@@ -171,7 +179,6 @@
       "updated": "تم التحديث بنجاح.",
       "deleted": "تم الحذف بنجاح."
     },
-
     "error": {
       "saveFailed": "تعذّر الحفظ. يرجى المحاولة مرة أخرى.",
       "deleteFailed": "تعذّر الحذف. يرجى المحاولة مرة أخرى.",
@@ -195,10 +202,30 @@
       "title": "الإحصائيات",
       "description": "اطّلع على اتجاهات أدائك وتقدمك عبر الوقت."
     },
+    "pomodoro": {
+      "tag": "التركيز",
+      "title": "بومودورو",
+      "description": "حافظ على تركيزك في فترات عمل قصيرة واستراحات منظّمة."
+    },
     "sessions": {
       "tag": "الجدول",
       "title": "الجلسات",
       "description": "اعرض جلسات الدراسة القادمة وأدرها."
+    },
+    "login": {
+      "tag": "تسجيل الدخول",
+      "title": "تسجيل الدخول",
+      "description": "سجل الدخول إلى حسابك."
+    },
+    "register": {
+      "tag": "التسجيل",
+      "title": "التسجيل",
+      "description": "أنشئ حسابك."
+    },
+    "home": {
+      "tag": "الرئيسية",
+      "title": "الرئيسية",
+      "description": "اطّلع على اتجاهات أدائك وتقدمك عبر الوقت."
     },
     "exams": {
       "tag": "المحطات",
@@ -247,5 +274,284 @@
     "light": "فاتح",
     "dark": "داكن",
     "dashboard": "لوحة التحكم"
+  },
+  "Todo": {
+    "badge": "قائمة المهام",
+    "title": "قائمة المهام",
+    "subtitle": "إدارة مهامك وتتبع تقدمك مع قوائم مهام مخصصة",
+    "createButton": "إنشاء قائمة مهام جديدة",
+    "empty": {
+      "title": "لا توجد قوائم مهام بعد",
+      "text": "أنشئ قائمة مهامك الأولى لبدء تنظيم مهامك وتتبع التقدم"
+    },
+    "modal": {
+      "title": "إنشاء قائمة مهام جديدة",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "أدخل عنوان قائمة المهام",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "أدخل وصف قائمة المهام",
+      "cancel": "إلغاء",
+      "submit": "إنشاء قائمة المهام",
+      "submitting": "جارٍ الإنشاء..."
+    },
+    "card": {
+      "progress": "التقدم",
+      "tasksCompleted": "المهام المكتملة",
+      "of": "من"
+    },
+    "tasks": {
+      "title": "المهام",
+      "empty": "لا توجد مهام في قائمة المهام هذه بعد",
+      "addTask": "إضافة مهمة",
+      "modal": {
+        "title": "إضافة مهمة جديدة",
+        "titleLabel": "العنوان",
+        "titlePlaceholder": "أدخل عنوان المهمة",
+        "descriptionLabel": "الوصف",
+        "descriptionPlaceholder": "أدخل وصف المهمة",
+        "cancel": "إلغاء",
+        "submit": "إضافة المهمة",
+        "submitting": "جارٍ الإضافة..."
+      }
+    }
+  },
+  "profile": {
+    "defaultTitle": "ملفي الشخصي",
+    "verified": "تم التحقق",
+    "unverified": "غير موثق",
+    "joined": "انضم في {date}",
+    "personalInfoTitle": "المعلومات الشخصية",
+    "personalInfoSubtitle": "قم بتحديث بياناتك الشخصية هنا.",
+    "firstNameLabel": "الاسم الأول",
+    "lastNameLabel": "الاسم الأخير",
+    "usernameLabel": "اسم المستخدم",
+    "phoneLabel": "رقم الهاتف",
+    "emailLabel": "البريد الإلكتروني (لا يمكن تغييره)",
+    "saveChanges": "حفظ التغييرات",
+    "securityTitle": "الأمان",
+    "securitySubtitle": "تأكد من استخدام كلمة مرور طويلة وقوية لحسابك.",
+    "currentPasswordLabel": "كلمة المرور الحالية",
+    "newPasswordLabel": "كلمة المرور الجديدة",
+    "confirmPasswordLabel": "تأكيد كلمة المرور الجديدة",
+    "updatePassword": "تحديث كلمة المرور",
+    "verifyNow": "تحقق الآن",
+    "otpPlaceholder": "123456",
+    "submitOtp": "إرسال",
+    "cancel": "إلغاء",
+    "messages": {
+      "successInfoUpdate": "تم تحديث الملف الشخصي بنجاح!",
+      "errorInfoUpdate": "فشل في تحديث الملف الشخصي.",
+      "successPassUpdate": "تم تغيير كلمة المرور بنجاح!",
+      "errorPassMatch": "كلمات المرور الجديدة غير متطابقة.",
+      "errorPassUpdate": "فشل في تغيير كلمة المرور.",
+      "otpSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني.",
+      "invalidOtp": "رمز التحقق غير صالح أو منتهي الصلاحية.",
+      "accountVerified": "تم التحقق من حسابك بنجاح!",
+      "genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "Session": {
+    "badge": "جلسات QCM",
+    "title": "جلساتك",
+    "subtitle": "أنشئ اختبارًا مخصصًا من موادك ودروسك، ثم أجب سؤالاً بسؤال. يتم حفظ التقدم تلقائيًا، لذا يمكنك التوقف والاستئناف في أي وقت.",
+    "newSession": "جلسة جديدة",
+    "refresh": "تحديث",
+    "loadError": "حدث خطأ ما",
+    "noSessions": "لا توجد جلسات بعد",
+    "noSessionsHint": "أنشئ جلستك الأولى لبدء التدريب.",
+    "status": {
+      "not_started": "لم تبدأ",
+      "in_progress": "جارية",
+      "completed": "مكتملة"
+    },
+    "card": {
+      "question": "سؤال",
+      "questions": "أسئلة",
+      "correct": "صحيحة",
+      "score": "النتيجة",
+      "created": "أُنشئت في",
+      "review": "مراجعة",
+      "resume": "استئناف",
+      "startSession": "بدء الجلسة",
+      "delete": "حذف الجلسة",
+      "deleteConfirm": "هل أنت متأكد من حذف الجلسة \"{name}\"؟",
+      "deleteFailed": "فشل حذف الجلسة",
+      "restart": "إعادة البدء",
+      "restartConfirm": "هل أنت متأكد من إعادة بدء الجلسة \"{name}\"؟ سيتم إعادة تعيين كل التقدم.",
+      "restartFailed": "فشل إعادة البدء"
+    },
+    "create": {
+      "title": "إنشاء جلسة جديدة",
+      "sessionName": "اسم الجلسة",
+      "sessionNamePlaceholder": "مثال: علم الأدوية – الجهاز القلبي الوعائي",
+      "selectSubjectsAndCourses": "اختر المواد والدروس",
+      "selectHint": "انقر على مادة لتصفح دروسها وتحديد عدد الأسئلة المطلوبة.",
+      "noSubjects": "لا توجد مواد متاحة لمنهجك.",
+      "noCourses": "لا توجد دروس لهذه المادة.",
+      "loadingCourses": "جارٍ تحميل الدروس…",
+      "selected": "محدد",
+      "unavailable": "غير متاح",
+      "qcmsAvailable": "{count} سؤال{plural} متاح",
+      "zeroQcms": "0 أسئلة (غير متاح)",
+      "quantity": "الكمية",
+      "all": "الكل",
+      "summary": "ملخص الجلسة",
+      "courseSelected": "{count} درس{plural} محدد",
+      "totalQcms": "{count} سؤال{plural} إجمالي",
+      "cancel": "إلغاء",
+      "createSession": "إنشاء الجلسة",
+      "creating": "جارٍ الإنشاء…",
+      "nameRequired": "يرجى إعطاء الجلسة اسمًا.",
+      "courseRequired": "يرجى تحديد درس واحد على الأقل يحتوي على أسئلة.",
+      "createFailed": "فشل إنشاء الجلسة"
+    },
+    "play": {
+      "session": "الجلسة",
+      "exitTitle": "الخروج والاستئناف لاحقًا",
+      "loadFailed": "فشل تحميل الجلسة",
+      "error": "خطأ",
+      "noQuestion": "لا يوجد سؤال متاح.",
+      "questionOf": "السؤال {current} من {total}",
+      "correct": "صحيحة",
+      "questionNum": "السؤال #{num}",
+      "correctBanner": "صحيح! حصلت على جميع الإجابات الصحيحة.",
+      "incorrectBanner": "خطأ. راجع الإجابات الصحيحة والتفسيرات أدناه.",
+      "correctExplanation": "التفسير الصحيح",
+      "optionExplanation": "تفسير الخيار",
+      "revealAnswer": "كشف الإجابة",
+      "checking": "جارٍ التحقق…",
+      "revealFailed": "فشل كشف الإجابة",
+      "nextQuestion": "السؤال التالي",
+      "finishSession": "إنهاء الجلسة",
+      "loading": "جارٍ التحميل…",
+      "advanceFailed": "فشل التقدم"
+    },
+    "completion": {
+      "title": "اكتملت الجلسة!",
+      "subtitle": "عمل رائع — أنهيت \"{name}\".",
+      "correct": "صحيحة",
+      "totalQuestions": "إجمالي الأسئلة",
+      "finalScore": "النتيجة النهائية",
+      "backToSessions": "العودة للجلسات",
+      "restartSession": "إعادة بدء الجلسة",
+      "restarting": "جارٍ إعادة البدء…"
+    }
+  },
+  "pomodoro": {
+    "badge": "مؤقّت التركيز",
+    "title": "بومودورو",
+    "subtitle": "حافظ على تركيزك في جلسات قصيرة ومنظّمة. اعمل، استرح، ثم كرّر — ودع المؤقّت يضبط إيقاعك.",
+    "modes": {
+      "focus": "تركيز",
+      "shortBreak": "استراحة قصيرة",
+      "longBreak": "استراحة طويلة"
+    },
+    "controls": {
+      "start": "ابدأ",
+      "pause": "إيقاف مؤقت",
+      "reset": "إعادة",
+      "next": "التالي",
+      "settings": "الإعدادات",
+      "mute": "كتم الصوت",
+      "unmute": "تشغيل الصوت"
+    },
+    "settings": {
+      "title": "إعدادات المؤقّت",
+      "focus": "مدة التركيز (دقيقة)",
+      "shortBreak": "الاستراحة القصيرة (دقيقة)",
+      "longBreak": "الاستراحة الطويلة (دقيقة)",
+      "interval": "استراحة طويلة كل (جلسات)",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "reset": "استعادة القيم الافتراضية"
+    },
+    "stats": {
+      "completed": "جلسات مكتملة",
+      "untilLong": "حتى الاستراحة الطويلة",
+      "cycle": "الدورة"
+    }
+  },
+  "exams": {
+    "title": "امتحاناتي",
+    "subtitle": "تابع تقدمك وابدأ امتحانًا جديدًا في أي وقت.",
+    "createNew": "إنشاء امتحان جديد",
+    "semester": "السداسي",
+    "questions": "الأسئلة",
+    "time": "الوقت",
+    "score": "النتيجة",
+    "continue": "متابعة",
+    "pause": "إيقاف مؤقت",
+    "resume": "استئناف",
+    "retake": "إعادة",
+    "viewResults": "عرض النتائج",
+    "generateFailed": "تعذّر إنشاء الامتحان.",
+    "startFailed": "تعذّر بدء الامتحان.",
+    "emptyTitle": "لا توجد امتحانات بعد",
+    "emptySubtitle": "أنشئ امتحانك الأول لبدء التدريب.",
+    "noMatchTitle": "لا يوجد شيء هنا",
+    "noMatchSubtitle": "لا توجد امتحانات تطابق الفلتر المحدد.",
+    "filterAll": "الكل",
+    "filterInProgress": "قيد التقدم",
+    "filterPaused": "متوقف مؤقتًا",
+    "filterCompleted": "مكتمل",
+    "minutesShort": "د",
+    "hiddenUntilFinish": "مخفي حتى الإنهاء",
+    "delete": "حذف",
+    "deleteConfirmTitle": "حذف هذا الامتحان؟",
+    "deleteConfirmText": "سيتم حذف «{title}» وكل تقدمه نهائيًا.",
+    "status": {
+      "in_progress": "قيد التقدم",
+      "paused": "متوقف مؤقتًا",
+      "completed": "مكتمل"
+    },
+    "modal": {
+      "title": "إنشاء امتحان جديد",
+      "semester": "السداسي",
+      "subject": "المادة",
+      "selectSemester": "اختر السداسي…",
+      "selectSubject": "اختر المادة…",
+      "questionCount": "عدد الأسئلة",
+      "duration": "المدة",
+      "oneHour": "ساعة واحدة",
+      "cancel": "إلغاء",
+      "start": "إنشاء وبدء",
+      "generating": "جارٍ الإنشاء…"
+    },
+    "session": {
+      "back": "العودة إلى الامتحانات",
+      "backToList": "العودة إلى القائمة",
+      "loading": "جارٍ تحميل الامتحان…",
+      "question": "السؤال",
+      "of": "من",
+      "navigator": "الأسئلة",
+      "previous": "السابق",
+      "next": "التالي",
+      "skip": "تخطي",
+      "pause": "إيقاف مؤقت",
+      "resume": "استئناف",
+      "finish": "إنهاء الامتحان",
+      "pausedBanner": "هذه الجلسة متوقفة مؤقتًا. استأنف للمتابعة في الإجابة.",
+      "correct": "صحيحة",
+      "incorrect": "خاطئة",
+      "skipped": "متخطاة",
+      "unanswered": "بدون إجابة",
+      "explanation": "التوضيح",
+      "yourAnswer": "إجابتك",
+      "correctAnswerWas": "الإجابة الصحيحة كانت: {answer}",
+      "legendAnswered": "تمت الإجابة",
+      "legendUnanswered": "بدون إجابة",
+      "confirmFinishTitle": "إنهاء الامتحان؟",
+      "confirmFinishText": "لا يزال لديك {count} أسئلة بدون إجابة. لن تتمكن من تغيير أي إجابة بعد الإنهاء.",
+      "confirmFinishTextAll": "لقد أجبت على جميع الأسئلة. لن تتمكن من تغيير أي إجابة بعد الإنهاء.",
+      "confirmFinishYes": "نعم، أنهِ",
+      "confirmFinishNo": "المتابعة",
+      "results": "نتائجك",
+      "correctCount": "صحيحة",
+      "wrongCount": "خاطئة",
+      "skippedCount": "متخطاة",
+      "unansweredCount": "بدون إجابة",
+      "reviewAnswers": "مراجعة الإجابات",
+      "retake": "إعادة الامتحان"
+    }
   }
 }

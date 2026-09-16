@@ -1,3 +1,4 @@
+import { RedeemCode } from 'src/redeem_code/entities/redeem_code.entity';
 import { Semester } from 'src/semester/entities/semester.entity';
 import { Subject } from 'src/subject/entities/subject.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
@@ -12,4 +13,7 @@ export class Year {
   semesters: Semester[];
   @OneToMany(() => Subject, (subject) => subject.year)
   subjects: Subject[];
+
+  @OneToMany(() => RedeemCode, (redeemCode) => redeemCode.year)
+  redeemCodes: RedeemCode[];
 }

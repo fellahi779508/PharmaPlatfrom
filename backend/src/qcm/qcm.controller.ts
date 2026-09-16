@@ -32,10 +32,10 @@ interface File {
   filename?: string;
   path?: string;
 }
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('qcm')
 export class QcmController {
-  constructor(private readonly qcmService: QcmService) {}
+  constructor(private readonly qcmService: QcmService) { }
 
   @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
   @UseGuards(RolesGuard)

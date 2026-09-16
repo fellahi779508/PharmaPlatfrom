@@ -4,17 +4,30 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/auth/enums/role.enum';
+import { Todo } from 'src/todo/entities/todo.entity';
+import { RedeemCode } from 'src/redeem_code/entities/redeem_code.entity';
+import { Session } from 'src/session/entities/session.entity';
+import { Exam } from 'src/exam/entities/exam.entity';
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+  @Column({ default: '' })
+  firstName: string;
+  @Column({ default: '' })
+  lastName: string;
   @Column()
   username: string;
+  @Column({ default: '' })
+  phone: string;
   @Column()
   email: string;
   @Column()
@@ -39,7 +52,29 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   otpExpiresAt: Date | null;
 
-  //triggers
+  @OneToMany(() => Todo, (todo) => todo.user, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  todos: Todo[] | null;
+
+  @OneToOne(() => RedeemCode, (redeemCode) => redeemCode.user, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'redeemCodeId' })
+  redeemCode: RedeemCode | null;
+
+  @OneToMany(() => Session, (session) => session.user, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  sessions: Session[] | null;
+
+  @OneToMany(() => Exam, (exam) => exam.user)
+  exams: Exam[] | null;
+
+  //triggers-
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);

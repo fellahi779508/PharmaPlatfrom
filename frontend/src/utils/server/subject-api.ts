@@ -55,7 +55,7 @@ export async function getSubject(id: number) {
         Authorization: `Bearer ${await GetToken()}`,
       },
     });
-    console.log(response.data);
+    console.log("test" + JSON.stringify(response.data));
 
     return { status: true, response: response.data };
   } catch (error: any) {
@@ -92,6 +92,27 @@ export async function updateSubject(id: number, data: CreateSubject) {
 export async function deleteSubject(id: number) {
   try {
     const response = await api.delete(`/subject/${id}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function getSubjectsByStudent() {
+  try {
+    const response = await api.get("/subject/student/", {
       headers: {
         "Accept-Language": await getLanguage(),
         Authorization: `Bearer ${await GetToken()}`,

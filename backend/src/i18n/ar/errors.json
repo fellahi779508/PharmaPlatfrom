@@ -10,7 +10,10 @@
     "required_password": "كلمة المرور مطلوبة",
     "required_email": "البريد الإلكتروني مطلوب",
     "email_exists": "يوجد مستخدم بهذا البريد الإلكتروني بالفعل",
-    "email_already_verified": "تم التحقق من البريد الإلكتروني مسبقاً"
+    "email_already_verified": "تم التحقق من البريد الإلكتروني مسبقاً",
+    "required_firstName": "الاسم الأول مطلوب",
+    "required_lastName": "الاسم الأخير مطلوب",
+    "required_phone": "رقم الهاتف مطلوب"
   },
   "email": {
     "otp_sent": "فشل إرسال رمز التحقق",
@@ -28,5 +31,8 @@
   },
   "subject": {
     "not_found": "المادة غير موجودة"
+  },
+  "redeem": {
+    "createFailed": "فشل في إنشاء رمز التفعيل"
   }
 }

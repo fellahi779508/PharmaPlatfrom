@@ -14,7 +14,7 @@ export class TpService {
     private readonly tpRepository: Repository<Tp>,
     private readonly i18n: I18nService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -71,5 +71,11 @@ export class TpService {
   async remove(id: number) {
     const tp = await this.findOne(id);
     return this.tpRepository.remove(tp);
+  }
+  async getTpsBySubject(subjectId: number) {
+    return this.tpRepository.find({
+      where: { subject: { id: subjectId } },
+      relations: { qcms: true },
+    });
   }
 }

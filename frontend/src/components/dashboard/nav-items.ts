@@ -4,6 +4,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   ListTodo,
+  Timer,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -14,6 +15,7 @@ export type NavKey =
   | "sessions"
   | "exams"
   | "todos"
+  | "pomodoro"
   | "profile";
 
 export type NavItem = {
@@ -46,6 +48,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/sessions",
     icon: CalendarCheck,
     tone: "var(--primary)",
+  },
+  {
+    key: "pomodoro",
+    href: "/dashboard/pomodoro",
+    icon: Timer,
+    tone: "var(--accent)",
   },
 
   {

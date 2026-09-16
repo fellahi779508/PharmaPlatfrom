@@ -34,7 +34,7 @@ export class QcmService {
     @InjectRepository(Qcm) private qcmRepository: Repository<Qcm>,
     private readonly i18n: I18nService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
   private ai = new GoogleGenAI();
 
   private get currentLang(): string {
@@ -208,12 +208,12 @@ export class QcmService {
     };
   }
   async findAll() {
-    return this.qcmRepository.find();
+    return this.qcmRepository.find({ relations: { answers: true, course: true, td: true, tp: true } });
   }
   async findByCourse(courseId: number) {
     return this.qcmRepository.find({
       where: { course: { id: courseId } },
-      relations: { answers: true },
+      relations: { answers: true, course: true, td: true, tp: true },
     });
   }
 

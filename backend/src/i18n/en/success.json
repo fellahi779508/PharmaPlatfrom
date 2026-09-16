@@ -9,5 +9,14 @@
   },
   "email": {
     "otp_sent": "OTP sent successfully"
+  },
+  "redeem": {
+    "codeCreated": "Redeem code created successfully",
+    "deleted": "Redeem code deleted successfully",
+    "assigned": "Account Activated Successfully",
+    "revoked": "Account Deactivated Successfully"
+  },
+  "session": {
+    "created": "Session created successfully"
   }
 }

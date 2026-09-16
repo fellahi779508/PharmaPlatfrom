@@ -39,6 +39,10 @@ export type Course = {
   qcms?: Qcm[];
 };
 
+export type CourseWithQcmCount = Course & {
+  qcmCount?: number;
+};
+
 export type Qcm = {
   id: number;
   question: string;
@@ -68,12 +72,20 @@ export type Td = {
   qcms?: Qcm[];
 };
 
+export type TdWithQcmCount = Td & {
+  qcmCount?: number;
+};
+
 export type Tp = {
   id: number;
   name: string;
   subjectId?: number;
   subject?: Subject;
   qcms?: Qcm[];
+};
+
+export type TpWithQcmCount = Tp & {
+  qcmCount?: number;
 };
 
 export type Exam = {
@@ -156,15 +168,53 @@ export type CreateExam = {
 export type CreateRedeemCode = Record<string, never>;
 
 export type CreateUser = {
+  firstName: string;
+  lastName: string;
   username: string;
+  phone: string;
   email: string;
   password: string;
   role: string;
 };
 
+export type CreateTodo = {
+  title: string;
+  description: string;
+  status: string;
+};
+export type Todo = {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  tasks?: Task[];
+};
+
+export type Task = {
+  id: number;
+  title: string;
+  description: string;
+  priority: string;
+  startDate?: Date;
+  startTime?: Date;
+  isFinished: boolean;
+};
+export type CreateTask = {
+  title: string;
+  description: string;
+  priority: string;
+  startDate?: Date;
+  startTime?: Date;
+  isFinished: boolean;
+  todoId: number;
+};
+
 /* ------------------------------------------------------------------ */
 /* Update DTO Types (for partial updates)                              */
 /* ------------------------------------------------------------------ */
+export type UpdateTodo = Partial<CreateTodo>;
+
+export type UpdateTask = Partial<CreateTask>;
 
 export type UpdateYear = Partial<CreateYear>;
 
@@ -187,3 +237,71 @@ export type UpdateExam = Partial<CreateExam>;
 export type UpdateRedeemCode = Record<string, never>;
 
 export type UpdateUser = Partial<CreateUser>;
+
+/* ------------------------------------------------------------------ */
+/* Session Related Types                                              */
+/* ------------------------------------------------------------------ */
+
+export type Session = {
+  id: number;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: User;
+  qcms?: Qcm[];
+};
+
+export type CreateSession = {
+  name: string;
+  courseIds: {
+    id: number;
+    qcmQte: number;
+  }[];
+};
+
+export type UpdateSession = Partial<CreateSession>;
+
+export type UserSession = {
+  id: number;
+  isCompleted: boolean;
+  score?: number;
+  startedAt: Date;
+  user?: User;
+  session?: Session;
+  userAnswers?: UserQcmAnswer[];
+};
+
+export type UserQcmAnswer = {
+  id: number;
+  isCorrect: boolean;
+  userSession?: UserSession;
+  qcm?: Qcm;
+  selectedAnswer?: QcmAnswer;
+};
+
+export type SessionStartResponse = {
+  status: boolean;
+  response: {
+    userSessionId: number;
+    sessionName: string;
+    qcms: Qcm[];
+  };
+};
+
+export type AnswerSubmitResponse = {
+  status: boolean;
+  isCorrect: boolean;
+  explanation?: string;
+};
+
+export type SessionProgressResponse = {
+  status: boolean;
+  response: {
+    isCompleted: boolean;
+    totalQuestions: number;
+    answeredQuestions: number;
+    correctAnswers: number;
+    score: number;
+    userAnswers: UserQcmAnswer[];
+  };
+};

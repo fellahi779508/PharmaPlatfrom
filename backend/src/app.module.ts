@@ -22,6 +22,11 @@ import { EmailModule } from './email/email.module';
 import { RedeemCodeModule } from './redeem_code/redeem_code.module';
 import { TdModule } from './td/td.module';
 import { TpModule } from './tp/tp.module';
+import { TodoModule } from './todo/todo.module';
+import { TasksModule } from './tasks/tasks.module';
+import { SessionModule } from './session/session.module';
+import { SessionQuestionModule } from './session-question/session-question.module';
+import { SessionQuestionAnswerModule } from './session-question-answer/session-question-answer.module';
 
 @Module({
   imports: [
@@ -74,6 +79,11 @@ import { TpModule } from './tp/tp.module';
     RedeemCodeModule,
     TdModule,
     TpModule,
+    TodoModule,
+    TasksModule,
+    SessionModule,
+    SessionQuestionModule,
+    SessionQuestionAnswerModule,
   ],
   controllers: [],
   providers: [],

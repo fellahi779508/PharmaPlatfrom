@@ -5,6 +5,9 @@
     "invalid_password": "Invalid password",
     "invalid_username": "Invalid username",
     "required_username": "Username is required",
+    "required_firstName": "first name is required",
+    "required_lastName": "last name is required",
+    "required_phone": "Phone Number is required",
     "invalid_email": "Invalid email address",
     "password_too_short": "Password must be at least 6 characters long",
     "required_password": "Password is required",
@@ -29,5 +32,17 @@
   },
   "subject": {
     "not_found": "Subject not found"
+  },
+  "todo": {
+    "not_found": "Todo not found"
+  },
+  "task": {
+    "not_found": "Task not found"
+  },
+  "redeem": {
+    "createFailed": "Failed to create redeem code",
+    "notFound": "Invalid redeem code",
+    "alreadyAssigned": "This code is already used",
+    "notAssigned": "This Account is not activated"
   }
 }

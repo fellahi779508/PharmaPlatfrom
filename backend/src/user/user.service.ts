@@ -8,21 +8,23 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { ILike, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService, I18nContext } from 'nestjs-i18n';
 import { EmailService } from 'src/email/email.service';
 import { accountVerificationTemplate } from 'src/email/html-templates/account-verification';
 import * as bcrypt from 'bcrypt';
+import { Session, SessionStatus } from 'src/session/entities/session.entity';
+import { Exam } from 'src/exam/entities/exam.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly i18n: I18nService,
-
     private readonly emailService: EmailService,
-  ) {}
+    private readonly dataSource: DataSource
+  ) { }
 
   private generate6DigitOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -184,4 +186,36 @@ export class UserService {
     await this.userRepo.clear();
     return 'done';
   }
+  async getAllUserStats(userEmail: string) {
+    const user = await this.findByEmail(userEmail)
+    const sessions = await this.dataSource.getRepository(Session).count({
+      where: {
+        user: { id: user.id }
+      }
+    })
+    const sessionsDone = await this.dataSource.getRepository(Session).count({
+      where: {
+        user: { id: user.id },
+        status: SessionStatus.COMPLETED
+      }
+    })
+    const sessionsNotStarted = await this.dataSource.getRepository(Session).count({
+      where: {
+        user: { id: user.id },
+        status: SessionStatus.NOT_STARTED
+      }
+    })
+    const sessionsInProgress = await this.dataSource.getRepository(Session).count({
+      where: {
+        user: { id: user.id },
+        status: SessionStatus.IN_PROGRESS
+      }
+    })
+    const exams = await this.dataSource.getRepository(Exam).count({
+      where: {
+        user: { id: user.id }
+      }
+    })
+  }
+
 }

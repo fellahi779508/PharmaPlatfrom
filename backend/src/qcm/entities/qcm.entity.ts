@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Td } from 'src/td/entities/td.entity';
 import { Tp } from 'src/tp/entities/tp.entity';
+import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
 
 @Entity('qcm')
 export class Qcm {
@@ -25,6 +26,10 @@ export class Qcm {
   td: Td;
   @ManyToOne(() => Tp, (tp) => tp.qcms, { nullable: true, onDelete: 'CASCADE' })
   tp: Tp;
+
   @OneToMany(() => QcmAnswer, (answer) => answer.qcm, { nullable: true })
   answers: QcmAnswer[];
+
+  @OneToMany(() => SessionQuestion, (sq) => sq.qcm)
+  sessionQuestions: SessionQuestion[];
 }

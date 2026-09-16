@@ -45,6 +45,27 @@ export async function getSemesters() {
     };
   }
 }
+export async function getSemestersByStudent() {
+  try {
+    const response = await api.get(`/semester/student`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
 export async function getSemester(id: number) {
   try {
     const response = await api.get(`/semester/${id}`, {

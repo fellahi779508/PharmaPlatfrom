@@ -20,6 +20,9 @@ import {
   Moon,
   Shield,
   LayersArrowDownIcon,
+  Home,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 
 import styles from "./quick-nav.module.css";
@@ -29,7 +32,7 @@ import { useLogout } from "./use-logout";
 import { useTheme, type Theme } from "./use-theme";
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { getRole } from "@/utils/server/auth-api";
+import { getRole, GetToken } from "@/utils/server/auth-api";
 
 type QuickNavProps = {
   variant?: "sidebar" | "topbar";
@@ -46,6 +49,18 @@ const THEMES: { key: Theme; icon: typeof Sun }[] = [
   { key: "dark", icon: Moon },
 ];
 
+// Define unauthenticated navigation items
+const UNAUTH_NAV_ITEMS = [
+  { key: "home", href: "/", icon: Home, tone: "var(--primary)" },
+  { key: "login", href: "/login", icon: LogIn, tone: "var(--accent)" },
+  {
+    key: "register",
+    href: "/register",
+    icon: UserPlus,
+    tone: "var(--success)",
+  },
+];
+
 export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
   const t = useTranslations("QuickNav");
   const tDash = useTranslations("Dashboard");
@@ -58,6 +73,7 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
   const { theme, setTheme } = useTheme();
 
   const [currentRole, setRole] = useState<string>("");
+  const [token, setToken] = useState<string>("");
   const [open, setOpen] = useState(false);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -71,10 +87,18 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
     try {
       const role = await getRole();
       // Use fallback to "" so logging out properly clears the UI if role is null/undefined.
-      // React state naturally bails out if the string is identical, preventing unnecessary renders.
       setRole(role || "");
     } catch (error) {
       console.error("Failed to fetch user role:", error);
+    }
+  }, []);
+
+  const fetchToken = useCallback(async () => {
+    try {
+      const fetchedToken = await GetToken();
+      setToken(fetchedToken || "");
+    } catch (error) {
+      console.error("Failed to fetch user token:", error);
     }
   }, []);
 
@@ -84,7 +108,8 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
    */
   useEffect(() => {
     fetchRole();
-  }, [fetchRole, open, pathname]);
+    fetchToken();
+  }, [fetchRole, fetchToken, open, pathname]);
 
   /**
    * 3. Global & Cross-Tab Sync
@@ -92,13 +117,17 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
    */
   useEffect(() => {
     window.addEventListener("focus", fetchRole);
+    window.addEventListener("focus", fetchToken);
     window.addEventListener("role-updated", fetchRole);
+    window.addEventListener("role-updated", fetchToken);
 
     return () => {
       window.removeEventListener("focus", fetchRole);
+      window.removeEventListener("focus", fetchToken);
       window.removeEventListener("role-updated", fetchRole);
+      window.removeEventListener("role-updated", fetchToken);
     };
-  }, [fetchRole]);
+  }, [fetchRole, fetchToken]);
 
   /**
    * Close whenever the person actually navigates.
@@ -191,92 +220,136 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
             </div>
 
             <nav className={styles.list} aria-label={t("heading")}>
-              {NAV_ITEMS.map(({ key, href, icon: Icon, tone }, index) => {
-                const isActive = pathname === href;
+              {/* IF UNAUTHENTICATED */}
+              {!token ? (
+                UNAUTH_NAV_ITEMS.map(
+                  ({ key, href, icon: Icon, tone }, index) => {
+                    const isActive = pathname === href;
 
-                return (
-                  <Link
-                    key={key}
-                    href={href}
-                    className={`${styles.item}${
-                      isActive ? ` ${styles.itemActive}` : ""
-                    }`}
-                    style={
-                      {
-                        "--tone": tone,
-                        "--i": index,
-                      } as CSSProperties
-                    }
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <span className={styles.itemIcon}>
-                      <Icon size={17} />
-                    </span>
+                    return (
+                      <Link
+                        key={key}
+                        href={href}
+                        className={`${styles.item}${
+                          isActive ? ` ${styles.itemActive}` : ""
+                        }`}
+                        style={
+                          {
+                            "--tone": tone,
+                            "--i": index,
+                          } as CSSProperties
+                        }
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <span className={styles.itemIcon}>
+                          <Icon size={17} />
+                        </span>
 
-                    <span className={styles.itemText}>
-                      <span className={styles.itemTitle}>
-                        {tDash(`${key}.title`)}
+                        <span className={styles.itemText}>
+                          <span className={styles.itemTitle}>
+                            {tDash(`${key}.title`)}
+                          </span>
+                          <span className={styles.itemTag}>
+                            {tDash(`${key}.tag`)}
+                          </span>
+                        </span>
+                      </Link>
+                    );
+                  },
+                )
+              ) : (
+                /* IF AUTHENTICATED */
+                <>
+                  {NAV_ITEMS.map(({ key, href, icon: Icon, tone }, index) => {
+                    const isActive = pathname === href;
+
+                    return (
+                      <Link
+                        key={key}
+                        href={href}
+                        className={`${styles.item}${
+                          isActive ? ` ${styles.itemActive}` : ""
+                        }`}
+                        style={
+                          {
+                            "--tone": tone,
+                            "--i": index,
+                          } as CSSProperties
+                        }
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <span className={styles.itemIcon}>
+                          <Icon size={17} />
+                        </span>
+
+                        <span className={styles.itemText}>
+                          <span className={styles.itemTitle}>
+                            {tDash(`${key}.title`)}
+                          </span>
+                          <span className={styles.itemTag}>
+                            {tDash(`${key}.tag`)}
+                          </span>
+                        </span>
+                      </Link>
+                    );
+                  })}
+
+                  {currentRole === "admin" && (
+                    <Link
+                      key="admin"
+                      href="/admin"
+                      className={`${styles.item}`}
+                      style={
+                        {
+                          "--tone": "var(--accent)",
+                          "--i": NAV_ITEMS.length,
+                        } as CSSProperties
+                      }
+                      aria-current="page"
+                    >
+                      <span className={styles.itemIcon}>
+                        <Shield size={17} />
                       </span>
-                      <span className={styles.itemTag}>
-                        {tDash(`${key}.tag`)}
+
+                      <span className={styles.itemText}>
+                        <span className={styles.itemTitle}>
+                          {tDash(`admin.title`)}
+                        </span>
+                        <span className={styles.itemTag}>
+                          {tDash(`admin.tag`)}
+                        </span>
                       </span>
-                    </span>
-                  </Link>
-                );
-              })}
+                    </Link>
+                  )}
 
-              {currentRole === "admin" && (
-                <Link
-                  key="admin"
-                  href="/admin"
-                  className={`${styles.item}`}
-                  style={
-                    {
-                      "--tone": "var(--accent)",
-                      "--i": NAV_ITEMS.length,
-                    } as CSSProperties
-                  }
-                  aria-current="page"
-                >
-                  <span className={styles.itemIcon}>
-                    <Shield size={17} />
-                  </span>
+                  {(currentRole === "teacher" || currentRole === "admin") && (
+                    <Link
+                      key="teacher"
+                      href="/teacher"
+                      className={`${styles.item}`}
+                      style={
+                        {
+                          "--tone": "var(--accent)",
+                          "--i": NAV_ITEMS.length,
+                        } as CSSProperties
+                      }
+                      aria-current="page"
+                    >
+                      <span className={styles.itemIcon}>
+                        <LayersArrowDownIcon size={17} />
+                      </span>
 
-                  <span className={styles.itemText}>
-                    <span className={styles.itemTitle}>
-                      {tDash(`admin.title`)}
-                    </span>
-                    <span className={styles.itemTag}>{tDash(`admin.tag`)}</span>
-                  </span>
-                </Link>
-              )}
-
-              {(currentRole === "teacher" || currentRole === "admin") && (
-                <Link
-                  key="teacher"
-                  href="/teacher"
-                  className={`${styles.item}`}
-                  style={
-                    {
-                      "--tone": "var(--accent)",
-                      "--i": NAV_ITEMS.length,
-                    } as CSSProperties
-                  }
-                  aria-current="page"
-                >
-                  <span className={styles.itemIcon}>
-                    <LayersArrowDownIcon size={17} />
-                  </span>
-
-                  <span className={styles.itemText}>
-                    <span className={styles.itemTitle}>
-                      {tDash(`teacher.title`)}
-                    </span>
-                    <span className={styles.itemTag}>
-                      {tDash(`teacher.tag`)}
-                    </span>
-                  </span>
-                </Link>
+                      <span className={styles.itemText}>
+                        <span className={styles.itemTitle}>
+                          {tDash(`teacher.title`)}
+                        </span>
+                        <span className={styles.itemTag}>
+                          {tDash(`teacher.tag`)}
+                        </span>
+                      </span>
+                    </Link>
+                  )}
+                </>
               )}
             </nav>
 
@@ -349,34 +422,38 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                 </div>
               </div>
 
-              {/* Logout */}
-              <button
-                type="button"
-                className={`${styles.item} ${styles.logout}`}
-                style={{ "--tone": "var(--error)" } as CSSProperties}
-                onClick={logout}
-                disabled={isLoggingOut}
-                aria-busy={isLoggingOut}
-              >
-                <span className={styles.itemIcon}>
-                  {isLoggingOut ? (
-                    <Loader2 size={17} className={styles.spin} />
-                  ) : (
-                    <LogOut size={17} />
-                  )}
-                </span>
+              {/* Logout (Only visible if token is present) */}
+              {token && (
+                <button
+                  type="button"
+                  className={`${styles.item} ${styles.logout}`}
+                  style={{ "--tone": "var(--error)" } as CSSProperties}
+                  onClick={logout}
+                  disabled={isLoggingOut}
+                  aria-busy={isLoggingOut}
+                >
+                  <span className={styles.itemIcon}>
+                    {isLoggingOut ? (
+                      <Loader2 size={17} className={styles.spin} />
+                    ) : (
+                      <LogOut size={17} />
+                    )}
+                  </span>
 
-                <span className={styles.itemText}>
-                  <span className={styles.itemTitle}>
-                    {tDash("logout.title")}
+                  <span className={styles.itemText}>
+                    <span className={styles.itemTitle}>
+                      {tDash("logout.title")}
+                    </span>
+                    <span
+                      className={`${styles.itemTag} ${styles.itemTagDanger}`}
+                    >
+                      {isLoggingOut
+                        ? tDash("logout.signingOut")
+                        : tDash("logout.signOut")}
+                    </span>
                   </span>
-                  <span className={`${styles.itemTag} ${styles.itemTagDanger}`}>
-                    {isLoggingOut
-                      ? tDash("logout.signingOut")
-                      : tDash("logout.signOut")}
-                  </span>
-                </span>
-              </button>
+                </button>
+              )}
             </div>
           </div>
         </div>

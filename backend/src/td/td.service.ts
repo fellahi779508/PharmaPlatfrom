@@ -14,7 +14,7 @@ export class TdService {
     private readonly tdRepository: Repository<Td>,
     private readonly i18n: I18nService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -71,5 +71,11 @@ export class TdService {
   async remove(id: number) {
     const td = await this.findOne(id);
     return this.tdRepository.remove(td);
+  }
+  async getTdsBySubject(subjectId: number) {
+    return this.tdRepository.find({
+      where: { subject: { id: subjectId } },
+      relations: { qcms: true },
+    });
   }
 }

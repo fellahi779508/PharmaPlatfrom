@@ -82,6 +82,17 @@
   gap: 1.25rem;
 }
 
+/* New: Flex container for names */
+.nameRow {
+  display: flex;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.nameRow .inputGroup {
+  flex: 1;
+}
+
 .inputGroup {
   display: flex;
   flex-direction: column;
@@ -105,6 +116,7 @@
   left: 1rem;
   color: var(--muted-foreground);
   pointer-events: none;
+  transition: color 0.2s;
 }
 
 .input {
@@ -117,13 +129,20 @@
   border-radius: 0.5rem;
   outline: none;
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.input:focus ~ .inputIcon,
+.input:not(:placeholder-shown) ~ .inputIcon {
+  color: var(--primary);
 }
 
 .otpInput {
@@ -145,11 +164,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
+  transition:
+    color 0.2s,
+    transform 0.2s;
 }
 
 .passwordToggle:hover {
   color: var(--foreground);
+  transform: scale(1.05);
 }
 
 .hint {
@@ -197,7 +219,8 @@
   cursor: pointer;
   transition:
     background 0.2s,
-    opacity 0.2s;
+    opacity 0.2s,
+    transform 0.1s;
   min-height: 48px;
 }
 
@@ -373,6 +396,12 @@
 
   .formSide {
     padding: 1.5rem 1rem;
+  }
+
+  /* Wrap names nicely on tiny screens */
+  .nameRow {
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
   .illustrationSide {

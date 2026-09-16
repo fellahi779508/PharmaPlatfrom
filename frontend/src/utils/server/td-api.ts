@@ -109,3 +109,23 @@ export async function deleteTd(id: number) {
     };
   }
 }
+export async function getTdsBySubject(subjectId: number) {
+  try {
+    const response = await api.get(`/td/subject/${subjectId}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}

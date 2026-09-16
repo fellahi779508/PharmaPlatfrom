@@ -51,8 +51,10 @@ export class EmailController {
   }
 
   //this endpoint is called when the user wants to change his password
+  @UseGuards(JwtAuthGuard)
   @Get('otpCode/auth')
-  async getOtpCodeAuth(@Body() otpCode: string, @Req() req) {
+  async getOtpCodeAuth(@Req() req) {
+    const otpCode = this.generate6DigitOtp();
     return await this.emailService.sendVerificationOtp(
       req.user.email,
       otpCode,

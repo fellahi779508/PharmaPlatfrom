@@ -6,6 +6,7 @@ import { Semester } from './entities/semester.entity';
 import { DataSource, Repository } from 'typeorm';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { Year } from 'src/year/entities/year.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class SemesterService {
@@ -14,7 +15,7 @@ export class SemesterService {
     private readonly semesterRepository: Repository<Semester>,
     private readonly i18n: I18nService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -81,5 +82,28 @@ export class SemesterService {
   async remove(id: number) {
     const semester = await this.findOne(id);
     return this.semesterRepository.remove(semester);
+  }
+  async getSemestersByStudent(studentId: string) {
+    const user = await this.dataSource.getRepository(User).findOne({
+      where: {
+        id: studentId,
+      },
+      relations: { redeemCode: { year: true } },
+    });
+    if (!user) {
+      throw new NotFoundException(
+        this.i18n.t('errors.user.not_found', { lang: this.currentLang }),
+      );
+    }
+    if (user.redeemCode) {
+
+      const semesters = await this.semesterRepository.find({
+        relations: { year: true },
+        where: { year: { id: user.redeemCode.year.id } },
+      });
+
+      return semesters;
+    }
+
   }
 }

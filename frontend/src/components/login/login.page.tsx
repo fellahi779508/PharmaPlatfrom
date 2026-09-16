@@ -131,15 +131,6 @@ export default function LoginPageComponent() {
               </div>
 
               <div className={styles.optionsRow}>
-                <label className={styles.rememberLabel}>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className={styles.checkbox}
-                  />
-                  <span>{t("rememberMe")}</span>
-                </label>
                 <a href="/forgot-password" className={styles.forgotLink}>
                   {t("forgotPassword")}
                 </a>
