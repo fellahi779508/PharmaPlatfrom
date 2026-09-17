@@ -16,6 +16,11 @@ import { accountVerificationTemplate } from 'src/email/html-templates/account-ve
 import * as bcrypt from 'bcrypt';
 import { Session, SessionStatus } from 'src/session/entities/session.entity';
 import { Exam } from 'src/exam/entities/exam.entity';
+import { ExamSessionStatus } from 'src/exam/entities/examSession.entity';
+import { ExamSessionAnswer } from 'src/exam/entities/examSessionAnswer';
+import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
+import { SessionQuestionAnswer } from 'src/session-question-answer/entities/session-question-answer.entity';
+import { RedeemCode } from 'src/redeem_code/entities/redeem_code.entity';
 
 @Injectable()
 export class UserService {
@@ -93,7 +98,7 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    const user = await this.userRepo.findOne({ where: { id } });
+    const user = await this.userRepo.findOne({ where: { id }, relations: { redeemCode: true } });
     if (!user) {
       throw new NotFoundException(
         this.i18n.translate('errors.user.not_found', {
@@ -216,6 +221,100 @@ export class UserService {
         user: { id: user.id }
       }
     })
+    const examsDone = await this.dataSource.getRepository(Exam).count({
+      where: {
+        user: { id: user.id },
+        sessions: { status: ExamSessionStatus.COMPLETED }
+      }
+    })
+    const examsInProgress = await this.dataSource.getRepository(Exam).count({
+      where: {
+        user: { id: user.id },
+        sessions: { status: ExamSessionStatus.IN_PROGRESS }
+      }
+    })
+    const examsPaused = await this.dataSource.getRepository(Exam).count({
+      where: {
+        user: { id: user.id },
+        sessions: { status: ExamSessionStatus.PAUSED }
+      }
+    })
+    const correctAnswers = await this.dataSource.getRepository(SessionQuestion).count({
+      where: {
+        session: { user: { id: user.id } },
+        isCorrect: true
+      }
+    })
+    const wrongAnswers = await this.dataSource.getRepository(SessionQuestion).count({
+      where: {
+        session: { user: { id: user.id } },
+        isCorrect: false
+      }
+    })
+    const allQuestions = await this.dataSource.getRepository(SessionQuestion).count({
+      where: {
+        session: { user: { id: user.id } }
+      }
+    })
+
+    return {
+      sessions,
+      sessionsDone,
+      sessionsNotStarted,
+      sessionsInProgress,
+      exams,
+      examsDone,
+      examsInProgress,
+      examsPaused,
+      correctAnswers,
+      wrongAnswers,
+      allQuestions,
+    }
   }
 
+  async checkUserActivation(userId: string) {
+    const user = await this.findOne(userId);
+    if (!user.isActive) {
+      return false
+    }
+    return true;
+  }
+  async revokeSubscription(userId: string, password: string) {
+    const user = await this.findOne(userId)
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new BadRequestException(
+        this.i18n.translate('errors.user.invalid_password', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    user.isActive = false;
+    const redeemCode = await this.dataSource.getRepository(RedeemCode).findOne({
+      where: { user: { id: user.id } }
+    })
+    if (!redeemCode) {
+      throw new NotFoundException(
+        this.i18n.translate('errors.redeem_code.not_found', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    redeemCode.user = null;
+    await this.dataSource.getRepository(RedeemCode).save(redeemCode);
+    user.redeemCode = null
+    await this.userRepo.save(user);
+    return {
+      message: this.i18n.translate('success.user.subscription_revoked', {
+        lang: this.currentLang,
+      }),
+    };
+  }
+  async isVerifed(userId: string) {
+    const user = await this.findOne(userId);
+    return user.isVerified;
+  }
 }

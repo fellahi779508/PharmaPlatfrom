@@ -1,5 +1,12 @@
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Todo } from 'src/todo/entities/todo.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('task')
 export class Task {
@@ -9,21 +16,29 @@ export class Task {
   @Column()
   title: string;
 
-  @Column({ nullable: true })
-  description: string;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
-  @Column({ nullable: true })
-  priority: string;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  priority?: string;
 
-  @Column({ nullable: true })
-  startDate: Date;
+  /** Plain YYYY-MM-DD (Postgres `date`). */
+  @Column({ type: 'date', nullable: true })
+  startDate?: string | null;
 
-  @Column({ nullable: true })
-  startTime: Date;
+  /** Plain HH:mm or HH:mm:ss (Postgres `time`). */
+  @Column({ type: 'time', nullable: true })
+  startTime?: string | null;
 
   @Column({ default: false })
   isFinished: boolean;
 
   @ManyToOne(() => Todo, (todo) => todo.tasks, { onDelete: 'CASCADE' })
   todo: Todo;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -19,12 +19,13 @@ import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('redeem-code')
 export class RedeemCodeController {
-  constructor(private readonly redeemCodeService: RedeemCodeService) {}
+  constructor(private readonly redeemCodeService: RedeemCodeService) { }
 
+
+  @Post()
   @Roles(Role.ADMIN, Role.OWNER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Post()
   create(@Body() createRedeemCodeDto: CreateRedeemCodeDto) {
     return this.redeemCodeService.create(createRedeemCodeDto);
   }
@@ -36,10 +37,14 @@ export class RedeemCodeController {
   findAll() {
     return this.redeemCodeService.findAll();
   }
-  @Post('revoke')
+
+
+  @Post('revoke/admin')
+  @Roles(Role.ADMIN, Role.OWNER)
+  @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  revokeSubscription(@Req() req: any) {
-    return this.redeemCodeService.revokeSubscription(req.user.id);
+  revokeSubscriptionAdmin(@Body('userId') userId: string) {
+    return this.redeemCodeService.revokeSubscriptionAdmin(userId);
   }
 
   @Roles(Role.ADMIN, Role.OWNER)

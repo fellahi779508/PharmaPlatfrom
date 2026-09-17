@@ -22,11 +22,17 @@ import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @Post('unsub')
+  @UseGuards(JwtAuthGuard)
+  revokeUser(@Req() req: any, @Body('password') password: string) {
+    return this.userService.revokeSubscription(req.user.id, password);
   }
 
   @Roles(Role.ADMIN, Role.OWNER)
@@ -47,6 +53,24 @@ export class UserController {
     return this.userService.findOne(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('stats')
+  getStats(@Req() req) {
+    return this.userService.getAllUserStats(req.user.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('isActived')
+  isActived(@Req() req: any) {
+    return this.userService.checkUserActivation(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('isVerifed')
+  isVerifed(@Req() req: any) {
+    return this.userService.isVerifed(req.user.id);
+  }
+
   @Roles(Role.ADMIN, Role.OWNER)
   @UseGuards(RolesGuard)
   @Get(':id')
@@ -63,6 +87,7 @@ export class UserController {
       changePasswordDto.newPassword,
     );
   }
+
 
   @Roles(Role.ADMIN, Role.OWNER)
   @UseGuards(RolesGuard)

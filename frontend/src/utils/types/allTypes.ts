@@ -305,3 +305,16 @@ export type SessionProgressResponse = {
     userAnswers: UserQcmAnswer[];
   };
 };
+export type UserStats = {
+  sessions: number;
+  sessionsDone: number;
+  sessionsNotStarted: number;
+  sessionsInProgress: number;
+  exams: number;
+  examsDone: number;
+  examsInProgress: number;
+  examsPaused: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  allQuestions: number;
+}

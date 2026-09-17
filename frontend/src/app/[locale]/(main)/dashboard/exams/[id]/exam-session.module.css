@@ -843,3 +843,41 @@
         position: static;
     }
 }
+
+/* Hint above answers when question not yet answered */
+.multiHint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+/* Bulleted list inside review answers (for multi-answer questions) */
+.reviewAnswerList {
+    margin: 4px 0 0;
+    padding-inline-start: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.reviewAnswerList li {
+    list-style: disc;
+}
+
+/* Info banner used for "unsaved changes" */
+.feedbackInfo {
+    background: color-mix(in srgb, var(--info) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 25%, transparent);
+    color: var(--info);
+}

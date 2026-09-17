@@ -32,7 +32,7 @@
 
 .wrapper {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1700px;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -218,8 +218,8 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
-.input:focus ~ .inputIcon,
-.input:not(:placeholder-shown) ~ .inputIcon {
+.input:focus~.inputIcon,
+.input:not(:placeholder-shown)~.inputIcon {
   color: var(--primary);
 }
 
@@ -289,6 +289,7 @@
   border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
   color: var(--error);
 }
+
 /* Verify Flow Styles */
 .verifyFlow {
   display: flex;

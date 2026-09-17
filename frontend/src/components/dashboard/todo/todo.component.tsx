@@ -8,19 +8,50 @@ import {
   ListTodo,
   X,
   ChevronRight,
+  Trash2,
+  AlertTriangle,
+  Calendar,
+  Clock,
+  Flag,
 } from "lucide-react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { getTodoListsOfUser, createTodo } from "@/utils/server/todo-api";
+import {
+  getTodoListsOfUser,
+  createTodo,
+  deleteTodo,
+} from "@/utils/server/todo-api";
 import {
   getTasksByTodoId,
   createTask,
-  updateTask,
   deleteTask,
+  updateTask,
 } from "@/utils/server/task-api";
 import { Todo, CreateTodo } from "@/utils/types/todo.types";
-import { CreateTask, UpdateTask } from "@/utils/types/task.types";
+import { CreateTask } from "@/utils/types/task.types";
 import styles from "./todo.module.css";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+type Priority = "low" | "medium" | "high";
+
+const PRIORITY_OPTIONS: Priority[] = ["low", "medium", "high"];
+
+const emptyTask = (todoId = 0): CreateTask => ({
+  title: "",
+  description: "",
+  todoId,
+  isFinished: false,
+  priority: "medium",
+  startDate: "",
+  startTime: "",
+});
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
 
 export default function TodoPageComponent() {
   const t = useTranslations("Todo");
@@ -30,12 +61,7 @@ export default function TodoPageComponent() {
   const [expandedTodoId, setExpandedTodoId] = useState<number | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
-  const [taskData, setTaskData] = useState<CreateTask>({
-    title: "",
-    description: "",
-    todoId: 0,
-    isFinished: false,
-  });
+  const [taskData, setTaskData] = useState<CreateTask>(emptyTask());
   const [formData, setFormData] = useState<CreateTodo>({
     title: "",
     description: "",
@@ -43,9 +69,12 @@ export default function TodoPageComponent() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [taskSubmitting, setTaskSubmitting] = useState(false);
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
-  // Fetch todos on mount
+  /* ------------------------- Data ------------------------- */
+
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -54,15 +83,26 @@ export default function TodoPageComponent() {
     try {
       setLoading(true);
       const response = await getTodoListsOfUser();
-      if (response.status) {
-        setTodos(response.response);
-      }
+      if (response.status) setTodos(response.response);
     } catch (error) {
       console.error("Failed to fetch todos:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const refreshTasks = async (todoId: number) => {
+    const res = await getTasksByTodoId(todoId);
+    if (res.status) {
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === todoId ? { ...todo, tasks: res.response } : todo,
+        ),
+      );
+    }
+  };
+
+  /* ------------------------- Todo handlers ------------------------- */
 
   const handleCreateTodo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,12 +121,111 @@ export default function TodoPageComponent() {
     }
   };
 
+  const handleConfirmDeleteTodo = async () => {
+    if (!todoToDelete) return;
+    try {
+      setDeleting(true);
+      const res = await deleteTodo(todoToDelete.id);
+      if (res.status) {
+        setTodos((prev) => prev.filter((t) => t.id !== todoToDelete.id));
+        if (expandedTodoId === todoToDelete.id) setExpandedTodoId(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete todo:", error);
+    } finally {
+      setDeleting(false);
+      setTodoToDelete(null);
+    }
+  };
+
+  const handleOpenDelete = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    todo: Todo,
+  ) => {
+    e.stopPropagation();
+    setTodoToDelete(todo);
+  };
+
+  /* ------------------------- Todo expand ------------------------- */
+
+  const handleTodoClick = async (todoId: number) => {
+    if (expandedTodoId === todoId) {
+      setExpandedTodoId(null);
+      return;
+    }
+    setExpandedTodoId(todoId);
+    try {
+      await refreshTasks(todoId);
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+    }
+  };
+
+  /* ------------------------- Task handlers ------------------------- */
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTodoId) return;
+
+    try {
+      setTaskSubmitting(true);
+      const payload: CreateTask = {
+        title: taskData.title,
+        description: taskData.description || undefined,
+        todoId: selectedTodoId,
+        isFinished: false,
+        priority: taskData.priority || undefined,
+        startDate: taskData.startDate || undefined,
+        startTime: taskData.startTime || undefined,
+      };
+      const response = await createTask(payload);
+      if (response.status) {
+        setShowTaskModal(false);
+        setTaskData(emptyTask());
+        await refreshTasks(selectedTodoId);
+      }
+    } catch (error) {
+      console.error("Failed to create task:", error);
+    } finally {
+      setTaskSubmitting(false);
+    }
+  };
+
+  const handleToggleTask = async (taskId: number, currentStatus: boolean) => {
+    try {
+      const response = await updateTask(taskId, { isFinished: !currentStatus });
+      if (response.status && expandedTodoId) {
+        await refreshTasks(expandedTodoId);
+      }
+    } catch (error) {
+      console.error("Failed to toggle task:", error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      const response = await deleteTask(taskId);
+      if (response.status && expandedTodoId) {
+        await refreshTasks(expandedTodoId);
+      }
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
+  };
+
+  const handleOpenTaskModal = (todoId: number) => {
+    setSelectedTodoId(todoId);
+    setTaskData(emptyTask(todoId));
+    setShowTaskModal(true);
+  };
+
+  /* ------------------------- Tilt effect ------------------------- */
+
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
     if (shouldReduceMotion) return;
 
     const el = event.currentTarget;
     const rect = el.getBoundingClientRect();
-
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
@@ -109,125 +248,40 @@ export default function TodoPageComponent() {
     el.style.setProperty("--my", `${rect.height / 2}px`);
   };
 
+  /* ------------------------- Derived ------------------------- */
+
   const calculateProgress = (todo: Todo) => {
     if (!todo.tasks || todo.tasks.length === 0) return 0;
-    const completedTasks = todo.tasks.filter(
-      (task: any) => task.isFinished,
-    ).length;
-    return Math.round((completedTasks / todo.tasks.length) * 100);
+    const completed = todo.tasks.filter((task: any) => task.isFinished).length;
+    return Math.round((completed / todo.tasks.length) * 100);
   };
 
-  const handleTodoClick = async (todoId: number) => {
-    if (expandedTodoId === todoId) {
-      setExpandedTodoId(null);
-    } else {
-      setExpandedTodoId(todoId);
-      // Fetch tasks for this todo
-      try {
-        const response = await getTasksByTodoId(todoId);
-        if (response.status) {
-          setTodos((prev) =>
-            prev.map((todo) =>
-              todo.id === todoId ? { ...todo, tasks: response.response } : todo,
-            ),
-          );
-        }
-      } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-      }
-    }
-  };
-
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTodoId) return;
-
+  const formatDate = (date?: string) => {
+    if (!date) return null;
     try {
-      setTaskSubmitting(true);
-      const response = await createTask({
-        ...taskData,
-        todoId: selectedTodoId,
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return date;
+      return d.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
       });
-      if (response.status) {
-        setShowTaskModal(false);
-        setTaskData({
-          title: "",
-          description: "",
-          todoId: 0,
-          isFinished: false,
-        });
-        // Refresh tasks for the expanded todo
-        if (expandedTodoId) {
-          const tasksResponse = await getTasksByTodoId(expandedTodoId);
-          if (tasksResponse.status) {
-            setTodos((prev) =>
-              prev.map((todo) =>
-                todo.id === expandedTodoId
-                  ? { ...todo, tasks: tasksResponse.response }
-                  : todo,
-              ),
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to create task:", error);
-    } finally {
-      setTaskSubmitting(false);
+    } catch {
+      return date;
     }
   };
 
-  const handleToggleTask = async (taskId: number, currentStatus: boolean) => {
-    try {
-      const response = await updateTask(taskId, { isFinished: !currentStatus });
-      if (response.status) {
-        // Refresh tasks for the expanded todo
-        if (expandedTodoId) {
-          const tasksResponse = await getTasksByTodoId(expandedTodoId);
-          if (tasksResponse.status) {
-            setTodos((prev) =>
-              prev.map((todo) =>
-                todo.id === expandedTodoId
-                  ? { ...todo, tasks: tasksResponse.response }
-                  : todo,
-              ),
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to toggle task:", error);
-    }
+  const priorityLabel = (p?: string) => {
+    if (!p) return null;
+    return t(`priority.${p}` as any);
   };
 
-  const handleDeleteTask = async (taskId: number) => {
-    try {
-      const response = await deleteTask(taskId);
-      if (response.status) {
-        // Refresh tasks for the expanded todo
-        if (expandedTodoId) {
-          const tasksResponse = await getTasksByTodoId(expandedTodoId);
-          if (tasksResponse.status) {
-            setTodos((prev) =>
-              prev.map((todo) =>
-                todo.id === expandedTodoId
-                  ? { ...todo, tasks: tasksResponse.response }
-                  : todo,
-              ),
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to delete task:", error);
-    }
+  const priorityClass = (p?: string) => {
+    if (p === "high") return styles.priorityHigh;
+    if (p === "low") return styles.priorityLow;
+    return styles.priorityMedium;
   };
 
-  const handleOpenTaskModal = (todoId: number) => {
-    setSelectedTodoId(todoId);
-    setTaskData({ title: "", description: "", todoId, isFinished: false });
-    setShowTaskModal(true);
-  };
+  /* ------------------------- Render ------------------------- */
 
   return (
     <main className={styles.page}>
@@ -283,14 +337,14 @@ export default function TodoPageComponent() {
               const progress = calculateProgress(todo);
               const taskCount = todo.tasks?.length || 0;
               const completedCount =
-                todo.tasks?.filter((t: any) => t.isFinished).length || 0;
+                todo.tasks?.filter((x: any) => x.isFinished).length || 0;
+              const isExpanded = expandedTodoId === todo.id;
 
               return (
                 <div key={todo.id} className={styles.todoWrapper}>
                   <div
-                    className={`${styles.todoCard} ${
-                      expandedTodoId === todo.id ? styles.todoCardExpanded : ""
-                    }`}
+                    className={`${styles.todoCard} ${isExpanded ? styles.todoCardExpanded : ""
+                      }`}
                     onPointerMove={handlePointerMove}
                     onPointerLeave={handlePointerLeave}
                     onClick={() => handleTodoClick(todo.id)}
@@ -299,14 +353,23 @@ export default function TodoPageComponent() {
                       <div className={styles.todoIcon}>
                         <CheckSquare2 size={20} strokeWidth={2.2} />
                       </div>
-                      <ChevronRight
-                        size={20}
-                        className={`${styles.chevron} ${
-                          expandedTodoId === todo.id
-                            ? styles.chevronRotated
-                            : ""
-                        }`}
-                      />
+
+                      <div className={styles.cardHeaderActions}>
+                        <button
+                          type="button"
+                          className={styles.deleteTodoButton}
+                          onClick={(e) => handleOpenDelete(e, todo)}
+                          title={t("deleteTooltip")}
+                          aria-label={t("deleteTooltip")}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                        <ChevronRight
+                          size={20}
+                          className={`${styles.chevron} ${isExpanded ? styles.chevronRotated : ""
+                            }`}
+                        />
+                      </div>
                     </div>
 
                     <h3 className={styles.todoCardTitle}>{todo.title}</h3>
@@ -340,7 +403,7 @@ export default function TodoPageComponent() {
 
                   {/* Tasks Section */}
                   <AnimatePresence>
-                    {expandedTodoId === todo.id && (
+                    {isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
@@ -362,43 +425,81 @@ export default function TodoPageComponent() {
 
                         {todo.tasks && todo.tasks.length > 0 ? (
                           <div className={styles.tasksList}>
-                            {todo.tasks.map((task: any) => (
-                              <div key={task.id} className={styles.taskItem}>
-                                <div className={styles.taskCheckbox}>
-                                  <input
-                                    type="checkbox"
-                                    checked={task.isFinished}
-                                    onChange={() =>
-                                      handleToggleTask(task.id, task.isFinished)
-                                    }
-                                    className={styles.taskInput}
-                                  />
-                                </div>
-                                <div className={styles.taskContent}>
-                                  <span
-                                    className={`${styles.taskTitle} ${
-                                      task.isFinished
-                                        ? styles.taskCompleted
-                                        : ""
-                                    }`}
-                                  >
-                                    {task.title}
-                                  </span>
-                                  {task.description && (
-                                    <span className={styles.taskDescription}>
-                                      {task.description}
+                            {todo.tasks.map((task: any) => {
+                              const dateLabel = formatDate(task.startDate);
+                              const hasMeta =
+                                task.priority || dateLabel || task.startTime;
+
+                              return (
+                                <div key={task.id} className={styles.taskItem}>
+                                  <div className={styles.taskCheckbox}>
+                                    <input
+                                      type="checkbox"
+                                      checked={task.isFinished}
+                                      onChange={() =>
+                                        handleToggleTask(
+                                          task.id,
+                                          task.isFinished,
+                                        )
+                                      }
+                                      className={styles.taskInput}
+                                    />
+                                  </div>
+                                  <div className={styles.taskContent}>
+                                    <span
+                                      className={`${styles.taskTitle} ${task.isFinished
+                                          ? styles.taskCompleted
+                                          : ""
+                                        }`}
+                                    >
+                                      {task.title}
                                     </span>
-                                  )}
+                                    {task.description && (
+                                      <span
+                                        className={styles.taskDescription}
+                                      >
+                                        {task.description}
+                                      </span>
+                                    )}
+
+                                    {hasMeta && (
+                                      <div className={styles.taskMeta}>
+                                        {task.priority && (
+                                          <span
+                                            className={`${styles.priorityBadge} ${priorityClass(
+                                              task.priority,
+                                            )}`}
+                                          >
+                                            <Flag size={10} />
+                                            {priorityLabel(task.priority)}
+                                          </span>
+                                        )}
+                                        {dateLabel && (
+                                          <span className={styles.taskMetaChip}>
+                                            <Calendar size={11} />
+                                            {dateLabel}
+                                          </span>
+                                        )}
+                                        {task.startTime && (
+                                          <span className={styles.taskMetaChip}>
+                                            <Clock size={11} />
+                                            {task.startTime}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteTask(task.id)}
+                                    className={styles.deleteTaskButton}
+                                    aria-label={t("tasks.delete")}
+                                  >
+                                    <X size={16} />
+                                  </button>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteTask(task.id)}
-                                  className={styles.deleteTaskButton}
-                                >
-                                  <X size={16} />
-                                </button>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className={styles.tasksEmpty}>
@@ -554,6 +655,60 @@ export default function TodoPageComponent() {
                 />
               </div>
 
+              {/* Priority */}
+              <div className={styles.formGroup}>
+                <label htmlFor="taskPriority" className={styles.formLabel}>
+                  {t("tasks.modal.priorityLabel")}
+                </label>
+                <select
+                  id="taskPriority"
+                  className={styles.formSelect}
+                  value={taskData.priority ?? "medium"}
+                  onChange={(e) =>
+                    setTaskData({ ...taskData, priority: e.target.value })
+                  }
+                >
+                  {PRIORITY_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {t(`priority.${p}` as any)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date + time side by side */}
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="taskDate" className={styles.formLabel}>
+                    {t("tasks.modal.startDateLabel")}
+                  </label>
+                  <input
+                    type="date"
+                    id="taskDate"
+                    className={styles.formInput}
+                    value={taskData.startDate ?? ""}
+                    onChange={(e) =>
+                      setTaskData({ ...taskData, startDate: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="taskTime" className={styles.formLabel}>
+                    {t("tasks.modal.startTimeLabel")}
+                  </label>
+                  <input
+                    type="time"
+                    id="taskTime"
+                    className={styles.formInput}
+                    value={taskData.startTime ?? ""}
+                    onChange={(e) =>
+                      setTaskData({ ...taskData, startTime: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
               <div className={styles.modalActions}>
                 <button
                   type="button"
@@ -581,6 +736,73 @@ export default function TodoPageComponent() {
           </motion.div>
         </div>
       )}
+
+      {/* Delete Todo Confirmation */}
+      <AnimatePresence>
+        {todoToDelete && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => !deleting && setTodoToDelete(null)}
+          >
+            <motion.div
+              className={styles.confirmModal}
+              initial={
+                shouldReduceMotion
+                  ? undefined
+                  : { opacity: 0, scale: 0.95 }
+              }
+              animate={
+                shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }
+              }
+              exit={
+                shouldReduceMotion
+                  ? undefined
+                  : { opacity: 0, scale: 0.95 }
+              }
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.confirmIcon}>
+                <AlertTriangle size={26} />
+              </div>
+              <h3 className={styles.confirmTitle}>
+                {t("deleteModal.title")}
+              </h3>
+              <p className={styles.confirmText}>
+                {t("deleteModal.text", { title: todoToDelete.title })}
+              </p>
+              <div className={styles.confirmActions}>
+                <button
+                  type="button"
+                  className={styles.cancelButton}
+                  onClick={() => setTodoToDelete(null)}
+                  disabled={deleting}
+                >
+                  {t("deleteModal.cancel")}
+                </button>
+                <button
+                  type="button"
+                  className={styles.dangerButton}
+                  onClick={handleConfirmDeleteTodo}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 size={16} className={styles.spinner} />
+                      {t("deleteModal.deleting")}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      {t("deleteModal.confirm")}
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

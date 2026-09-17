@@ -1,10 +1,12 @@
 import {
   BarChart3,
   CalendarCheck,
+  Crown,
   GraduationCap,
   LayoutDashboard,
   ListTodo,
   Timer,
+  TreePine,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -13,10 +15,12 @@ export type NavKey =
   | "dashboard"
   | "statistics"
   | "sessions"
+  | "mindmaps"
   | "exams"
   | "todos"
   | "pomodoro"
-  | "profile";
+  | "profile"
+  | "subscription";
 
 export type NavItem = {
   key: NavKey;
@@ -50,6 +54,12 @@ export const NAV_ITEMS: NavItem[] = [
     tone: "var(--primary)",
   },
   {
+    key: "exams",
+    href: "/dashboard/exams",
+    icon: GraduationCap,
+    tone: "var(--warning)",
+  },
+  {
     key: "pomodoro",
     href: "/dashboard/pomodoro",
     icon: Timer,
@@ -57,10 +67,10 @@ export const NAV_ITEMS: NavItem[] = [
   },
 
   {
-    key: "exams",
-    href: "/dashboard/exams",
-    icon: GraduationCap,
-    tone: "var(--warning)",
+    key: "mindmaps",
+    href: "/dashboard/mindmaps",
+    icon: TreePine,
+    tone: "var(--primary)",
   },
   {
     key: "todos",
@@ -74,4 +84,10 @@ export const NAV_ITEMS: NavItem[] = [
     icon: UserRound,
     tone: "var(--accent)",
   },
+  {
+    key: "subscription",
+    href: "/dashboard/subscription",
+    icon: Crown,
+    tone: "var(--accent)",
+  }
 ];

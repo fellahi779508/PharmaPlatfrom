@@ -14,16 +14,12 @@
   background-color: var(--background);
   background-image:
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E"),
-    radial-gradient(
-      circle at 8% 0%,
+    radial-gradient(circle at 8% 0%,
       color-mix(in srgb, var(--primary) 7%, transparent),
-      transparent 28rem
-    ),
-    radial-gradient(
-      circle at 92% 18%,
+      transparent 28rem),
+    radial-gradient(circle at 92% 18%,
       color-mix(in srgb, var(--accent) 5%, transparent),
-      transparent 24rem
-    );
+      transparent 24rem);
 
   color: var(--foreground);
   display: flex;
@@ -182,17 +178,14 @@
   text-decoration: none;
   color: var(--foreground);
 
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--surface) 100%, transparent),
-    color-mix(in srgb, var(--surface-hover) 28%, var(--surface))
-  );
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--surface) 100%, transparent),
+      color-mix(in srgb, var(--surface-hover) 28%, var(--surface)));
 
   border: 1px solid var(--border);
   border-radius: 12px;
 
-  transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry))
-    translateZ(0);
+  transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(0);
   transform-style: preserve-3d;
 
   box-shadow:
@@ -213,11 +206,9 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    circle 300px at var(--mx) var(--my),
-    color-mix(in srgb, var(--primary) 12%, transparent),
-    transparent 72%
-  );
+  background: radial-gradient(circle 300px at var(--mx) var(--my),
+      color-mix(in srgb, var(--primary) 12%, transparent),
+      transparent 72%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -239,11 +230,9 @@
 
 .todoCard:hover {
   border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--surface) 100%, transparent),
-    color-mix(in srgb, var(--primary) 3%, var(--surface))
-  );
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--surface) 100%, transparent),
+      color-mix(in srgb, var(--primary) 3%, var(--surface)));
   box-shadow:
     inset 0 1px 1px 0 color-mix(in srgb, white 12%, transparent),
     0 18px 45px -18px color-mix(in srgb, var(--primary) 25%, transparent),
@@ -557,6 +546,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -593,6 +583,7 @@
    ================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+
   .todoCard,
   .todoIcon,
   .progressFill,
@@ -761,4 +752,254 @@
   text-align: center;
   color: var(--muted-foreground);
   font-size: 0.9rem;
+}
+
+/* ==================================================================
+   Card header actions (delete + chevron)
+   ================================================================== */
+
+.cardHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deleteTodoButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.deleteTodoButton:hover {
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  color: var(--error);
+  border-color: color-mix(in srgb, var(--error) 30%, transparent);
+  transform: scale(1.05);
+}
+
+.deleteTodoButton:active {
+  transform: scale(0.95);
+}
+
+/* ==================================================================
+   Form select (priority)
+   ================================================================== */
+
+.formSelect {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--foreground);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-inline-end: 2.25rem;
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* ==================================================================
+   Form row (date + time side by side)
+   ================================================================== */
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================================================================
+   Task meta (priority + date + time)
+   ================================================================== */
+
+.taskMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.taskMetaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 60%, transparent);
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ==================================================================
+   Priority badges
+   ================================================================== */
+
+.priorityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.priorityLow {
+  background: color-mix(in srgb, var(--info) 12%, transparent);
+  color: var(--info);
+}
+
+.priorityMedium {
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  color: var(--warning);
+}
+
+.priorityHigh {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  color: var(--error);
+}
+
+/* ==================================================================
+   Confirm delete modal
+   ================================================================== */
+
+.confirmModal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 20px 50px color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.confirmIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  color: var(--error);
+  margin-bottom: 0.9rem;
+}
+
+.confirmTitle {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.5rem;
+}
+
+.confirmText {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  margin: 0 0 1.5rem;
+  word-break: break-word;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.confirmActions>button {
+  flex: 1;
+}
+
+/* ==================================================================
+   Danger button (delete confirmation)
+   ================================================================== */
+
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--error);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--error-foreground);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--error) 25%, transparent);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--error) 88%, black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--error) 35%, transparent);
+}
+
+.dangerButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==================================================================
+   Reduced motion — include new elements
+   ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .deleteTodoButton,
+  .dangerButton,
+  .confirmModal,
+  .priorityBadge {
+    transition: none !important;
+    transform: none !important;
+  }
 }

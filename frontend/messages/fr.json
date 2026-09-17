@@ -197,6 +197,11 @@
       "searchPlaceholder": "Rechercher ou accéder à...",
       "liveStatus": "Système actif"
     },
+    "mindmaps": {
+      "tag": "Mindmaps",
+      "title": "Mindmaps",
+      "description": "Visualisez vos cours sous forme de cartes mentales."
+    },
     "statistics": {
       "tag": "Analytique",
       "title": "Statistiques",
@@ -211,6 +216,11 @@
       "tag": "Accueil",
       "title": "Accueil",
       "description": "Bienvenue sur votre tableau de bord."
+    },
+    "subscription": {
+      "tag": "Abonnement",
+      "title": "Abonnement",
+      "description": "Activez ou gérez votre abonnement."
     },
     "login": {
       "tag": "Connexion",
@@ -279,6 +289,19 @@
     "title": "Mes listes de tâches",
     "subtitle": "Gérez vos tâches et suivez votre progression grâce à des listes de tâches personnalisées",
     "createButton": "Créer une nouvelle liste de tâches",
+    "deleteTooltip": "Supprimer la liste",
+    "priority": {
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute"
+    },
+    "deleteModal": {
+      "title": "Supprimer cette liste ?",
+      "text": "« {title} » et toutes ses tâches seront définitivement supprimés. Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "deleting": "Suppression…"
+    },
     "empty": {
       "title": "Pas de liste de tâches encore",
       "text": "Créez votre première liste de tâches pour commencer à organiser vos tâches et à suivre votre progression"
@@ -302,9 +325,13 @@
       "title": "Tâches",
       "empty": "Aucune tâche dans cette liste de tâches encore",
       "addTask": "Ajouter une tâche",
+      "delete": "Supprimer la tâche",
       "modal": {
         "title": "Ajouter une nouvelle tâche",
         "titleLabel": "Titre",
+        "priorityLabel": "Priorité",
+        "startDateLabel": "Date de début",
+        "startTimeLabel": "Heure de début",
         "titlePlaceholder": "Entrez le titre de la tâche",
         "descriptionLabel": "Description",
         "descriptionPlaceholder": "Entrez la description de la tâche",
@@ -533,9 +560,12 @@
       "correct": "Correcte",
       "incorrect": "Fausse",
       "skipped": "Passée",
+      "selectOneOrMore": "Sélectionnez une ou plusieurs réponses",
       "unanswered": "Sans réponse",
       "explanation": "Explication",
       "yourAnswer": "Votre réponse",
+      "canChangeAnswer": "Vous pouvez modifier votre réponse à tout moment avant la fin",
+      "unsavedChanges": "Modification non enregistrée — elle sera sauvegardée dès que vous changerez de question",
       "correctAnswerWas": "La bonne réponse était : {answer}",
       "legendAnswered": "Répondu",
       "legendUnanswered": "Sans réponse",
@@ -551,6 +581,91 @@
       "unansweredCount": "Sans réponse",
       "reviewAnswers": "Revoir les réponses",
       "retake": "Refaire l'examen"
+    }
+  },
+  "statistics": {
+    "badge": "Votre progression",
+    "title": "Statistiques",
+    "subtitle": "Suivez votre parcours d'apprentissage en un coup d'œil — de la première session au dernier examen.",
+    "noData": "Aucune donnée disponible",
+    "noDataText": "Démarrez une session ou un examen pour voir vos statistiques ici.",
+    "sessions": "Sessions",
+    "exams": "Examens",
+    "questions": "Questions",
+    "accuracy": "Précision",
+    "done": "Terminé",
+    "inProgress": "En cours",
+    "notStarted": "Non commencé",
+    "paused": "En pause",
+    "correct": "Correct",
+    "wrong": "Incorrect",
+    "overall": "global",
+    "overallMastery": "Maîtrise globale",
+    "answerAccuracy": "Précision des réponses",
+    "completionProgress": "Progression",
+    "sessionProgress": "Progression des sessions",
+    "examProgress": "Progression des examens",
+    "sessionBreakdown": "Répartition des sessions",
+    "examBreakdown": "Répartition des examens",
+    "correctAnswers": "Réponses correctes",
+    "wrongAnswers": "Réponses incorrectes"
+  },
+  "SubscriptionBlocker": {
+    "title": "Votre abonnement a expiré",
+    "description": "Renouvelez votre abonnement pour continuer à utiliser cette page. Vous pouvez toujours consulter le contenu tant que votre accès est suspendu.",
+    "cta": "Renouveler l'abonnement",
+    "hint": "La page est verrouillée jusqu'à l'activation de votre abonnement"
+  },
+  "Subscription": {
+    "badge": "Abonnement",
+    "title": "Gérer votre abonnement",
+    "subtitle": "Utilisez un code pour tout débloquer, ou révoquez votre accès actuel si vous n'en avez plus besoin.",
+    "loading": "Vérification de votre abonnement…",
+    "verifyRequired": {
+      "title": "Vérifiez d'abord votre e-mail",
+      "description": "Vous devez vérifier votre adresse e-mail avant de pouvoir activer ou gérer votre abonnement.",
+      "step1": "Ouvrez votre boîte de réception et trouvez l'e-mail de vérification que nous vous avons envoyé.",
+      "step2": "Cliquez sur le lien de vérification dans l'e-mail.",
+      "step3": "Revenez ici et activez votre abonnement avec votre code.",
+      "cta": "Aller au profil",
+      "footnote": "Vous n'avez pas reçu l'e-mail ? Vous pouvez en demander un nouveau depuis votre page de profil."
+    },
+    "activated": {
+      "title": "Votre abonnement est actif",
+      "description": "Vous avez un accès complet à toutes les fonctionnalités. Profitez-en !",
+      "feature1": "Accès illimité à tous les examens",
+      "feature2": "Suivi de progression et historique des résultats",
+      "feature3": "Support prioritaire",
+      "revoke": "Révoquer l'abonnement",
+      "activatedOn": "Activé le",
+      "expiresOn": "Expire le",
+      "daysLeft": "{count} jours restants",
+      "oneDayLeft": "1 jour restant",
+      "expired": "Expiré"
+    },
+    "inactive": {
+      "title": "Activez votre compte",
+      "description": "Saisissez le code que vous avez reçu pour activer votre abonnement.",
+      "codeLabel": "Code d'activation",
+      "codePlaceholder": "XXXX-XXXX-XXXX",
+      "helper": "Les codes ne sont pas sensibles à la casse, généralement 12 à 16 caractères.",
+      "submit": "Activer l'abonnement",
+      "submitting": "Activation…"
+    },
+    "revokeModal": {
+      "title": "Révoquer l'abonnement ?",
+      "description": "Votre accès prendra fin immédiatement. Vous aurez besoin d'un nouveau code pour réactiver.",
+      "passwordLabel": "Confirmez votre mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "cancel": "Annuler",
+      "confirm": "Révoquer l'accès",
+      "revoking": "Révocation…"
+    },
+    "errors": {
+      "generic": "Une erreur est survenue. Veuillez réessayer.",
+      "redeemFailed": "Ce code est invalide ou déjà utilisé.",
+      "revokeFailed": "Impossible de révoquer votre abonnement. Vérifiez votre mot de passe.",
+      "dismiss": "Fermer l'erreur"
     }
   }
 }

@@ -1,0 +1,727 @@
+/* ==================================================================
+   Subscription Page
+   ================================================================== */
+
+.page {
+    --font-serif:
+        "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia,
+        "Times New Roman", serif;
+
+    min-height: 100vh;
+    width: 100%;
+
+    background-color: var(--background);
+    background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 8% 0%,
+            color-mix(in srgb, var(--primary) 7%, transparent),
+            transparent 28rem),
+        radial-gradient(circle at 92% 18%,
+            color-mix(in srgb, var(--accent) 5%, transparent),
+            transparent 24rem);
+
+    color: var(--foreground);
+    display: flex;
+    flex-direction: column;
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    overflow-x: hidden;
+}
+
+.contentWrapper {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 4vw, 3rem);
+}
+
+/* ---------- Header ---------- */
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+}
+
+.header::before {
+    content: "";
+    position: absolute;
+    width: 72px;
+    height: 3px;
+    left: 0;
+    top: -1rem;
+    background: var(--primary);
+    border-radius: 999px;
+    opacity: 0.8;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: max-content;
+    padding: 0.38rem 0.75rem;
+    border: 1px dashed color-mix(in srgb, var(--accent) 70%, var(--border));
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+    border-radius: 5px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.86rem;
+    transform: rotate(-1deg);
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease;
+}
+
+.badge:hover {
+    transform: rotate(0deg) translateY(-1px);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 4.5vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+}
+
+.subtitle {
+    margin: 0;
+    max-width: 58ch;
+    color: var(--muted-foreground);
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    line-height: 1.65;
+}
+
+/* ---------- Card ---------- */
+
+.card {
+    position: relative;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    background: linear-gradient(145deg,
+            color-mix(in srgb, var(--surface) 100%, transparent),
+            color-mix(in srgb, var(--surface-hover) 28%, var(--surface)));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow:
+        inset 0 1px 1px 0 color-mix(in srgb, white 8%, transparent),
+        0 2px 4px color-mix(in srgb, var(--foreground) 3%, transparent),
+        0 8px 30px color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+/* ---------- Loading ---------- */
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1rem;
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- State wrap (both views) ---------- */
+
+.stateWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.9rem;
+}
+
+.stateIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 0.4rem;
+}
+
+.stateIconSuccess {
+    background: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--success) 5%, transparent);
+}
+
+.stateIconAccent {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.stateTitle {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+}
+
+.stateText {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted-foreground);
+}
+
+/* ---------- Feature list (activated) ---------- */
+
+.featureList {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: start;
+    align-self: stretch;
+    max-width: 360px;
+    margin-inline: auto;
+}
+
+.featureList li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--success) 6%, transparent);
+    color: var(--foreground);
+    font-size: 0.88rem;
+}
+
+.featureList svg {
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+/* ---------- Forms ---------- */
+
+.redeemForm {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: start;
+}
+
+.formLabel {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--foreground);
+    letter-spacing: 0.01em;
+}
+
+.inputWithIcon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--muted-foreground);
+    pointer-events: none;
+}
+
+.formInput {
+    width: 100%;
+    padding: 0.75rem 0.9rem 0.75rem 2.4rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 0.92rem;
+    color: var(--foreground);
+    font-family: inherit;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.codeInput {
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.formInput:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.helper {
+    margin: 0.15rem 0 0;
+    font-size: 0.78rem;
+    color: var(--muted-foreground);
+}
+
+/* ---------- Buttons ---------- */
+
+.primaryButton,
+.ghostDangerBtn,
+.dangerButton,
+.cancelButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+.primaryButton {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
+    width: 100%;
+}
+
+.primaryButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--primary) 88%, black);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 38%, transparent);
+}
+
+.primaryButton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.ghostDangerBtn {
+    background: transparent;
+    color: var(--error);
+    border: 1px solid color-mix(in srgb, var(--error) 35%, transparent);
+    margin-top: 0.75rem;
+}
+
+.ghostDangerBtn:hover {
+    background: color-mix(in srgb, var(--error) 8%, transparent);
+    border-color: var(--error);
+}
+
+.dangerButton {
+    background: var(--error);
+    color: var(--error-foreground);
+    border: none;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--error) 25%, transparent);
+    flex: 1;
+}
+
+.dangerButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--error) 88%, black);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--error) 35%, transparent);
+}
+
+.dangerButton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.cancelButton {
+    background: var(--surface);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    flex: 1;
+}
+
+.cancelButton:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--secondary);
+}
+
+/* ---------- Error box ---------- */
+
+.errorBox {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 1.25rem;
+    padding: 0.7rem 0.9rem;
+    background: color-mix(in srgb, var(--error) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+    color: var(--error);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.errorBox>svg {
+    flex-shrink: 0;
+}
+
+.errorBox>span {
+    flex: 1;
+    text-align: start;
+    line-height: 1.4;
+}
+
+.errorClose {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.errorClose:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--error) 15%, transparent);
+}
+
+/* ---------- Revoke modal ---------- */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.confirmModal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2rem 1.75rem 1.5rem;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    box-shadow: 0 20px 50px color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.confirmIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+    margin-bottom: 0.85rem;
+}
+
+.confirmTitle {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0 0 0.5rem;
+}
+
+.confirmText {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--muted-foreground);
+    margin: 0 0 1.25rem;
+}
+
+.confirmActions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 480px) {
+    .contentWrapper {
+        padding: 1.5rem 1rem 3rem;
+    }
+
+    .card {
+        border-radius: 14px;
+    }
+
+    .stateIcon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .stateTitle {
+        font-size: 1.2rem;
+    }
+
+    .confirmModal {
+        padding: 1.5rem 1.25rem 1.25rem;
+    }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .primaryButton,
+    .ghostDangerBtn,
+    .dangerButton,
+    .cancelButton,
+    .badge {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+/* ==================================================================
+   Subscription period card (activated view)
+   ================================================================== */
+
+.periodCard {
+    width: 100%;
+    max-width: 480px;
+    margin: 0.5rem auto 0.75rem;
+    padding: 1rem 1.1rem 0.9rem;
+
+    background: color-mix(in srgb, var(--success) 5%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--success) 25%, var(--border));
+    border-radius: 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.periodRow {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.periodItem {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex: 1;
+    min-width: 0;
+    text-align: start;
+}
+
+.periodIconWrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+}
+
+.periodText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.periodLabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+.periodValue {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.periodDivider {
+    width: 1px;
+    background: color-mix(in srgb, var(--success) 25%, transparent);
+    align-self: stretch;
+}
+
+/* ---------- Remaining days bar ---------- */
+
+.remainingBar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    align-self: center;
+}
+
+.remainingBar svg {
+    flex-shrink: 0;
+}
+
+.remainingBarOk {
+    background: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+}
+
+.remainingBarWarning {
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+}
+
+.remainingBarExpired {
+    background: color-mix(in srgb, var(--error) 12%, transparent);
+    color: var(--error);
+}
+
+/* ---------- Small screen tweaks ---------- */
+
+@media (max-width: 480px) {
+    .periodRow {
+        flex-direction: column;
+    }
+
+    .periodDivider {
+        width: 100%;
+        height: 1px;
+        align-self: auto;
+    }
+}
+
+/* ==================================================================
+   Verify email state
+   ================================================================== */
+
+.stateIconWarning {
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--warning) 5%, transparent);
+}
+
+/* Numbered steps list */
+.verifySteps {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem auto 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    text-align: start;
+    align-self: stretch;
+    max-width: 420px;
+}
+
+.verifySteps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    background: var(--surface-hover);
+    color: var(--foreground);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.verifyStepNum {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--warning) 20%, transparent);
+    color: var(--warning);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* CTA button in verify view — reuse primaryButton with an extra arrow */
+.verifyFootnote {
+    margin: 0.75rem 0 0;
+    font-size: 0.78rem;
+    color: var(--muted-foreground);
+    line-height: 1.5;
+    max-width: 40ch;
+}
+
+/* The primaryButton is used both as a <button> and as a <Link>.
+   Normalize the Link so it looks identical to the button. */
+a.primaryButton {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 220px;
+    margin-top: 0.5rem;
+}

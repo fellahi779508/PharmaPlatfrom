@@ -19,6 +19,7 @@ export class Todo {
   @Column()
   description: string;
 
+
   @Column({ default: false })
   status: boolean;
 

@@ -1,14 +1,25 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateTaskDto {
   @IsString()
+  @MaxLength(255)
   title: string;
 
   @IsString()
   @IsOptional()
   description?: string;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   todoId: number;
 
   @IsBoolean()
@@ -17,11 +28,22 @@ export class CreateTaskDto {
 
   @IsString()
   @IsOptional()
+  @IsIn(['low', 'medium', 'high'])
   priority?: string;
 
+  /** YYYY-MM-DD */
   @IsOptional()
-  startDate?: Date;
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'startDate must be formatted as YYYY-MM-DD',
+  })
+  startDate?: string;
 
+  /** HH:mm or HH:mm:ss */
   @IsOptional()
-  startTime?: Date;
+  @IsString()
+  @Matches(/^\d{2}:\d{2}(:\d{2})?$/, {
+    message: 'startTime must be formatted as HH:mm or HH:mm:ss',
+  })
+  startTime?: string;
 }

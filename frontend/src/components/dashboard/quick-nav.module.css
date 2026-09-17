@@ -23,11 +23,9 @@
   padding: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--primary) 70%, transparent);
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--primary) 92%, white) 0%,
-    var(--primary) 100%
-  );
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--primary) 92%, white) 0%,
+      var(--primary) 100%);
   color: var(--primary-foreground);
   cursor: pointer;
 
@@ -42,6 +40,7 @@
     background 0.22s ease,
     color 0.22s ease,
     border-color 0.22s ease;
+  z-index: 9999;
 }
 
 .trigger:hover {
@@ -63,11 +62,11 @@
 
 /* Icon inherits a soft rotation hint on hover so the button reads as
    interactive even when the pointer is just passing over it. */
-.trigger > svg {
+.trigger>svg {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.trigger:hover > svg {
+.trigger:hover>svg {
   transform: rotate(-8deg);
 }
 
@@ -82,7 +81,7 @@
     0 8px 20px -10px rgba(0, 0, 0, 0.5);
 }
 
-.trigger[aria-expanded="true"] > svg {
+.trigger[aria-expanded="true"]>svg {
   transform: rotate(90deg);
 }
 
@@ -117,6 +116,7 @@
   backdrop-filter: blur(6px) saturate(120%);
   -webkit-backdrop-filter: blur(6px) saturate(120%);
   animation: overlayIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
 }
 
 /* ============================== Panel ============================== */
@@ -564,6 +564,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -574,6 +575,7 @@
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -584,6 +586,7 @@
   from {
     transform: translateX(var(--qn-offset, 100%));
   }
+
   to {
     transform: translateX(0);
   }
@@ -593,6 +596,7 @@
   from {
     transform: translateY(-100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -602,12 +606,14 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .overlay,
   .panel,
   .trigger,
@@ -631,6 +637,7 @@
     background: var(--surface-hover);
     border-color: var(--border);
   }
+
   .itemActive .itemIcon,
   .logout:hover .itemIcon {
     box-shadow: none;

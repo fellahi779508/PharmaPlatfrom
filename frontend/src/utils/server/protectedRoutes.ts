@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { getLanguage } from "./lang-api";
+import { IsActived } from "./user-api";
 
 async function getVerifiedPayload() {
   const token = (await cookies()).get("token")?.value;
@@ -72,3 +73,14 @@ export async function redirectIfLoggedIn() {
     redirect(`/${locale}/dashboard`);
   }
 }
+
+export async function isActivedRoute() {
+  const resp = await IsActived();
+  if (resp.status) {
+    if (resp.response) {
+      return true
+    }
+    return false;
+  }
+}
+

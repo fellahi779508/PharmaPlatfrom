@@ -72,3 +72,103 @@ export async function ChangePassword(currentPass: string, newPassword: string) {
     };
   }
 }
+export async function GetUserStats() {
+  try {
+    const response = await api.get("/user/stats", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function IsActived() {
+  try {
+    const response = await api.get("/user/isActived", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+export async function RedeemCode(code: string) {
+  try {
+    const response = await api.post("/redeem-code/assign", { code }, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+export async function revokeSubscription(password: string) {
+
+  try {
+    const response = await api.post("/user/unsub", { password }, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error.response.data.message);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+export async function isVerifedUser() {
+  try {
+    const response = await api.get("/user/isVerifed", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}

@@ -1,6 +1,7 @@
 import { User } from 'src/user/entities/user.entity';
 import { Year } from 'src/year/entities/year.entity';
 import {
+  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -27,7 +28,9 @@ export class RedeemCode {
   @ManyToOne(() => Year, (year) => year.redeemCodes)
   year: Year;
 
-  @OneToOne(() => User, (user) => user.redeemCode, { nullable: true })
+  @OneToOne(() => User, (user) => user.redeemCode, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'userId' })
   user: User | null;
+
+
 }

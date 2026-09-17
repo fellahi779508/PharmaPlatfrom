@@ -1,13 +1,15 @@
-import { Qcm } from 'src/qcm/entities/qcm.entity';
-import { QcmAnswer } from 'src/qcm_answer/entities/qcm_answer.entity';
 import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ExamSession } from './examSession.entity';
+import { Qcm } from 'src/qcm/entities/qcm.entity';
+import { QcmAnswer } from 'src/qcm_answer/entities/qcm_answer.entity';
 
 @Entity('exam_session_answer')
 export class ExamSessionAnswer {
@@ -20,8 +22,10 @@ export class ExamSessionAnswer {
     @ManyToOne(() => Qcm, { onDelete: 'CASCADE', eager: true })
     qcm: Qcm;
 
-    @ManyToOne(() => QcmAnswer, { nullable: true, onDelete: 'SET NULL', eager: true })
-    selectedAnswer: QcmAnswer | null;
+    /** All answers the user selected for this question. Empty = skipped. */
+    @ManyToMany(() => QcmAnswer, { eager: true })
+    @JoinTable({ name: 'exam_session_answer_selected' })
+    selectedAnswers: QcmAnswer[];
 
     @Column({ nullable: true })
     isCorrect: boolean;

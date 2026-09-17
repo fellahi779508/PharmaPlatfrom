@@ -1,0 +1,175 @@
+/* ==================================================================
+   Subscription blocker overlay
+   Blocks interaction with the page underneath while keeping it visible.
+   ================================================================== */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+
+    /* The key: capture every pointer event so the page can't be used */
+    pointer-events: auto;
+    touch-action: none;
+    overscroll-behavior: contain;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+
+    /* Semi-transparent so the page is still readable underneath */
+    background: color-mix(in srgb, var(--background) 55%, transparent);
+
+    /* Soft blur + desaturation → content feels "frozen" */
+    backdrop-filter: blur(6px) saturate(0.85);
+    -webkit-backdrop-filter: blur(6px) saturate(0.85);
+
+    /* Subtle noise for a slight paper feel */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+.card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+    padding: 2rem 1.75rem 1.5rem;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    box-shadow:
+        0 1px 0 color-mix(in srgb, white 6%, transparent) inset,
+        0 24px 60px -20px color-mix(in srgb, var(--foreground) 30%, transparent),
+        0 8px 24px -8px color-mix(in srgb, var(--foreground) 12%, transparent);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+}
+
+/* ---------- Icon ---------- */
+
+.iconWrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+    margin-bottom: 0.25rem;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--warning) 6%, transparent);
+}
+
+/* ---------- Copy ---------- */
+
+.title {
+    margin: 0;
+    font-family: var(--font-serif, inherit);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+    line-height: 1.25;
+}
+
+.description {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted-foreground);
+    max-width: 40ch;
+}
+
+/* ---------- CTA ---------- */
+
+.cta {
+    margin-top: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 0.8rem 1.5rem;
+    min-width: 200px;
+
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent);
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.25s ease;
+}
+
+.cta:hover {
+    background: color-mix(in srgb, var(--primary) 88%, black);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 38%, transparent);
+}
+
+.cta:active {
+    transform: translateY(0);
+}
+
+/* ---------- Bottom hint ---------- */
+
+.hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+    width: 100%;
+    justify-content: center;
+
+    font-size: 0.76rem;
+    color: var(--muted-foreground);
+    letter-spacing: 0.01em;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 480px) {
+    .card {
+        padding: 1.5rem 1.25rem 1.25rem;
+        border-radius: 14px;
+    }
+
+    .title {
+        font-size: 1.2rem;
+    }
+
+    .description {
+        font-size: 0.9rem;
+    }
+
+    .cta {
+        width: 100%;
+    }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .cta {
+        transition: none;
+        transform: none !important;
+    }
+}

@@ -197,6 +197,11 @@
       "searchPlaceholder": "Search or jump to...",
       "liveStatus": "System live"
     },
+    "mindmaps": {
+      "tag": "Mindmaps",
+      "title": "Mindmaps",
+      "description": "View and manage your mindmaps."
+    },
     "statistics": {
       "tag": "Analytics",
       "title": "Statistics",
@@ -206,6 +211,11 @@
       "tag": "Focus",
       "title": "Pomodoro",
       "description": "Stay focused with structured work intervals and short breaks."
+    },
+    "subscription": {
+      "tag": "Subscription",
+      "title": "Subscription",
+      "description": "Activate or manage your subscription."
     },
     "sessions": {
       "tag": "Schedule",
@@ -280,6 +290,19 @@
     "title": "My Todo Lists",
     "subtitle": "Manage your tasks and track your progress with personalized todo lists",
     "createButton": "Create New Todo List",
+    "deleteTooltip": "Delete list",
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "deleteModal": {
+      "title": "Delete this list?",
+      "text": "“{title}” and all of its tasks will be permanently removed. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleting": "Deleting…"
+    },
     "empty": {
       "title": "No Todo Lists Yet",
       "text": "Create your first todo list to start organizing your tasks and tracking progress"
@@ -303,6 +326,7 @@
       "title": "Tasks",
       "empty": "No tasks in this todo list yet",
       "addTask": "Add Task",
+      "delete": "Delete task",
       "modal": {
         "title": "Add New Task",
         "titleLabel": "Title",
@@ -310,6 +334,9 @@
         "descriptionLabel": "Description",
         "descriptionPlaceholder": "Enter task description",
         "cancel": "Cancel",
+        "priorityLabel": "Priority",
+        "startDateLabel": "Start date",
+        "startTimeLabel": "Start time",
         "submit": "Add Task",
         "submitting": "Adding..."
       }
@@ -525,10 +552,13 @@
       "of": "of",
       "navigator": "Questions",
       "previous": "Previous",
+      "selectOneOrMore": "Select one or more answers",
       "next": "Next",
       "skip": "Skip",
       "pause": "Pause",
       "resume": "Resume",
+      "canChangeAnswer": "You can change your answer at any time before finishing",
+      "unsavedChanges": "Unsaved change — it will be saved when you move on",
       "finish": "Finish Exam",
       "pausedBanner": "This session is paused. Resume to continue answering.",
       "correct": "Correct",
@@ -552,6 +582,91 @@
       "unansweredCount": "Unanswered",
       "reviewAnswers": "Review Answers",
       "retake": "Retake Exam"
+    }
+  },
+  "statistics": {
+    "badge": "Your Progress",
+    "title": "Statistics",
+    "subtitle": "Track your learning journey at a glance — from first session to final exam.",
+    "noData": "No data available yet",
+    "noDataText": "Start a session or an exam to see your statistics here.",
+    "sessions": "Sessions",
+    "exams": "Exams",
+    "questions": "Questions",
+    "accuracy": "Accuracy",
+    "done": "Done",
+    "inProgress": "In progress",
+    "notStarted": "Not started",
+    "paused": "Paused",
+    "correct": "Correct",
+    "wrong": "Wrong",
+    "overall": "overall",
+    "overallMastery": "Overall mastery",
+    "answerAccuracy": "Answer Accuracy",
+    "completionProgress": "Completion Progress",
+    "sessionProgress": "Session progress",
+    "examProgress": "Exam progress",
+    "sessionBreakdown": "Session Breakdown",
+    "examBreakdown": "Exam Breakdown",
+    "correctAnswers": "Correct answers",
+    "wrongAnswers": "Wrong answers"
+  },
+  "SubscriptionBlocker": {
+    "title": "Your subscription has expired",
+    "description": "Renew your subscription to continue using this page. You can still browse the content while your access is paused.",
+    "cta": "Renew subscription",
+    "hint": "The page is locked until your subscription is active"
+  },
+  "Subscription": {
+    "badge": "Subscription",
+    "title": "Manage your subscription",
+    "subtitle": "Redeem a code to unlock everything, or revoke your current access if you no longer need it.",
+    "loading": "Checking your subscription…",
+    "verifyRequired": {
+      "title": "Verify your email first",
+      "description": "You need to verify your email address before you can activate or manage your subscription.",
+      "step1": "Open your inbox and find the verification email we sent you.",
+      "step2": "Click the verification link inside the email.",
+      "step3": "Come back here and activate your subscription with your redeem code.",
+      "cta": "Go to profile",
+      "footnote": "Didn't receive the email? You can request a new one from your profile page."
+    },
+    "activated": {
+      "title": "Your subscription is active",
+      "description": "You have full access to all features. Enjoy!",
+      "feature1": "Unlimited access to all exams",
+      "feature2": "Progress tracking & results history",
+      "feature3": "Priority support",
+      "revoke": "Revoke subscription",
+      "activatedOn": "Activated on",
+      "expiresOn": "Expires on",
+      "daysLeft": "{count} days left",
+      "oneDayLeft": "1 day left",
+      "expired": "Expired"
+    },
+    "inactive": {
+      "title": "Activate your account",
+      "description": "Enter the redeem code you received to activate your subscription.",
+      "codeLabel": "Redeem code",
+      "codePlaceholder": "XXXX-XXXX-XXXX",
+      "helper": "Codes are case-insensitive and typically 12–16 characters long.",
+      "submit": "Activate subscription",
+      "submitting": "Activating…"
+    },
+    "revokeModal": {
+      "title": "Revoke subscription?",
+      "description": "This will immediately end your access. You'll need a new redeem code to reactivate.",
+      "passwordLabel": "Confirm your password",
+      "passwordPlaceholder": "Enter your password",
+      "cancel": "Cancel",
+      "confirm": "Revoke access",
+      "revoking": "Revoking…"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "redeemFailed": "This code is invalid or already used.",
+      "revokeFailed": "Could not revoke your subscription. Check your password.",
+      "dismiss": "Dismiss error"
     }
   }
 }

@@ -77,8 +77,7 @@ export class ExamService {
   /*  Exam generation                                                   */
   /* ------------------------------------------------------------------ */
 
-  async generateExam(dto: GenerateExamDto, userIdInput: UserIdInput): Promise<Exam> {
-    const userId = this.normalizeUserId(userIdInput);
+  async generateExam(dto: GenerateExamDto, userId: string): Promise<Exam> {
     const { subjectId, semesterId, questionCount = 20, durationMinutes = 60 } = dto;
 
     const subjectRepo = this.dataSource.getRepository(Subject);
@@ -86,6 +85,14 @@ export class ExamService {
     const courseRepo = this.dataSource.getRepository(Course);
     const qcmRepo = this.dataSource.getRepository(Qcm);
     const examQcmRepo = this.dataSource.getRepository(ExamQcm);
+    const userRepo = this.dataSource.getRepository(User);
+
+
+    const user = await userRepo.findOne({
+      where: { id: userId },
+
+    });
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
 
     const subject = await subjectRepo.findOne({
       where: { id: subjectId },
@@ -143,6 +150,7 @@ export class ExamService {
       durationMinutes,
       subject,
       semester,
+      user
     });
     const savedExam = await this.examRepo.save(exam);
 
@@ -315,35 +323,56 @@ export class ExamService {
     });
     if (!examQcm) throw new BadRequestException('QCM does not belong to this exam');
 
+    // ---- normalize input ----
+    const requestedIds = Array.from(new Set(dto.selectedAnswerIds ?? []));
+    const allQcmAnswers = examQcm.qcm.answers ?? [];
+
+    const selectedAnswers = requestedIds
+      .map((id) => allQcmAnswers.find((a) => a.id === id))
+      .filter((a): a is typeof allQcmAnswers[number] => !!a);
+
+    if (selectedAnswers.length !== requestedIds.length) {
+      throw new BadRequestException(
+        'One or more selected answers do not belong to this QCM',
+      );
+    }
+
+    // ---- grade: exact match required ----
+    const correctIds = allQcmAnswers
+      .filter((a) => a.isCorrect)
+      .map((a) => a.id)
+      .sort((a, b) => a - b);
+
+    const sortedSelectedIds = selectedAnswers
+      .map((a) => a.id)
+      .sort((a, b) => a - b);
+
+    const isSkipped = sortedSelectedIds.length === 0;
+
+    const isCorrect =
+      !isSkipped &&
+      correctIds.length === sortedSelectedIds.length &&
+      correctIds.every((id, i) => id === sortedSelectedIds[i]);
+
+    // ---- persist ----
     let answer = await answerRepo.findOne({
       where: { session: { id: session.id }, qcm: { id: dto.qcmId } },
     });
-
-    const correctAnswer = examQcm.qcm.answers.find((a) => a.isCorrect);
-    const selected = dto.selectedAnswerId
-      ? examQcm.qcm.answers.find((a) => a.id === dto.selectedAnswerId)
-      : undefined;
-
-    if (dto.selectedAnswerId && !selected) {
-      throw new BadRequestException('Selected answer does not belong to this QCM');
-    }
-
-    const isCorrect = !!selected && selected.isCorrect;
 
     if (!answer) {
       answer = answerRepo.create({
         session,
         qcm: examQcm.qcm,
-        selectedAnswer: selected ?? null,
+        selectedAnswers,
         isCorrect,
-        isSkipped: !selected,
+        isSkipped,
         timeSpent: dto.timeSpent ?? 0,
       });
     } else {
       if (answer.isCorrect) session.score -= 1;
-      answer.selectedAnswer = selected ?? null;
+      answer.selectedAnswers = selectedAnswers;
       answer.isCorrect = isCorrect;
-      answer.isSkipped = !selected;
+      answer.isSkipped = isSkipped;
       answer.timeSpent = dto.timeSpent ?? answer.timeSpent;
     }
 
@@ -356,12 +385,11 @@ export class ExamService {
     await answerRepo.save(answer);
     await sessionRepo.save(session);
 
-    // ⚠️  No correctness / correct answer / explanation in the response.
-    // The client only learns that the answer was recorded.
+    // No correctness revealed to the client.
     return {
       qcmId: examQcm.qcm.id,
-      selectedAnswerId: selected?.id ?? null,
-      isSkipped: !selected,
+      selectedAnswerIds: sortedSelectedIds,
+      isSkipped,
       currentQuestionIndex: session.currentQuestionIndex,
     };
   }
@@ -379,7 +407,7 @@ export class ExamService {
         semester: true,
         examQcms: { qcm: { answers: true } },
       },
-      answers: { qcm: true, selectedAnswer: true },
+      answers: { qcm: true, selectedAnswers: true },
     });
     session.exam.examQcms.sort((a, b) => a.order - b.order);
 
@@ -395,7 +423,6 @@ export class ExamService {
       completedAt: session.completedAt,
       totalTimeSpent: session.totalTimeSpent,
       currentQuestionIndex: session.currentQuestionIndex,
-      // Only reveal score after completion
       score: reveal ? session.score : undefined,
       totalQuestions: session.exam.questionCount,
       durationMinutes: session.exam.durationMinutes,
@@ -416,17 +443,16 @@ export class ExamService {
           answers: (eq.qcm.answers ?? []).map((a) => ({
             id: a.id,
             answer: a.answer,
-            // correctness / explanation hidden until completion
             ...(reveal
               ? { isCorrect: a.isCorrect, explanation: a.explanation }
               : {}),
           })),
           userAnswer: answered
             ? {
-              selectedAnswerId: given.selectedAnswer?.id ?? null,
+              selectedAnswerIds:
+                given.selectedAnswers?.map((a) => a.id) ?? [],
               isSkipped: given.isSkipped,
               answeredAt: given.answeredAt,
-              // correctness hidden until completion
               ...(reveal ? { isCorrect: given.isCorrect } : {}),
             }
             : null,
@@ -434,7 +460,6 @@ export class ExamService {
       }),
     };
   }
-
   async getSessionResults(sessionId: number, userIdInput: UserIdInput) {
     const userId = this.normalizeUserId(userIdInput);
     const progress = await this.getSessionProgress(sessionId, userId);

@@ -30,11 +30,12 @@ export interface ExamAnswerOption {
 }
 
 export interface UserAnswerFeedback {
-    selectedAnswerId: number | null;
-    isCorrect: boolean;
+    selectedAnswerIds: number[];   // CHANGED from selectedAnswerId
     isSkipped: boolean;
     answeredAt?: string;
+    isCorrect?: boolean;
 }
+
 
 export interface ExamQuestion {
     order: number;
@@ -90,19 +91,14 @@ export interface GenerateExamPayload {
 
 export interface SubmitAnswerPayload {
     qcmId: number;
-    selectedAnswerId?: number | null;
+    selectedAnswerIds?: number[];  // CHANGED
     timeSpent?: number;
 }
-
 export interface SubmitAnswerResponse {
     qcmId: number;
-    selectedAnswerId: number | null;
-    isCorrect: boolean;
+    selectedAnswerIds: number[];   // CHANGED
     isSkipped: boolean;
-    correctAnswerId: number | null;
-    explanation: string | null;
     currentQuestionIndex: number;
-    score: number;
 }
 
 export interface ApiResult<T> {
@@ -144,7 +140,7 @@ export interface UserAnswerFeedback {
     selectedAnswerId: number | null;
     isSkipped: boolean;
     answeredAt?: string;
-    isCorrect: boolean;               // only present when completed
+    isCorrect?: boolean;               // only present when completed
 }
 
 // SubmitAnswerResponse — no correctness anymore

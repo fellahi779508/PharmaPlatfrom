@@ -1,16 +1,17 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsArray, IsInt, IsOptional, Min } from 'class-validator';
 
 export class SubmitAnswerDto {
     @Type(() => Number)
     @IsInt()
     qcmId: number;
 
-    /** null / omitted = skipped */
+    /** Zero or more answer IDs. Empty array (or omitted) = skip. */
     @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
     @Type(() => Number)
-    @IsInt()
-    selectedAnswerId?: number | null;
+    selectedAnswerIds?: number[];
 
     @IsOptional()
     @Type(() => Number)

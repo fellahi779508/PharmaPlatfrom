@@ -39,9 +39,9 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
   @Column({ nullable: true })
-  activationDate: Date;
+  activationDate?: Date;
   @Column({ nullable: true })
-  endDate: Date;
+  endDate?: Date;
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: string;
   @Column({ default: false })

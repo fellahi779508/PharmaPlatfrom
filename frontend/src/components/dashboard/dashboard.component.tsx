@@ -31,9 +31,11 @@ const GRID_CLASS: Record<string, string> = {
   dashboard: styles.cardDashboard,
   statistics: styles.cardStats,
   sessions: styles.cardSessions,
-  exams: styles.cardExams,
+  pomodoro: styles.cardExams,
   todos: styles.cardTodos,
   profile: styles.cardProfile,
+  mindmaps: styles.cardProfile,
+  subscription: styles.cardProfile,
 };
 
 /* ------------------------------------------------------------------ */

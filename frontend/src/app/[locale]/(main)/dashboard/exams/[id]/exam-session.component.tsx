@@ -18,6 +18,7 @@ import {
     Pause,
     Play,
     RotateCcw,
+    Save,
     SkipForward,
     Sparkles,
     Trophy,
@@ -25,9 +26,14 @@ import {
 } from "lucide-react";
 
 import styles from "./exam-session.module.css";
-import { getExamSessionProgress, completeExamSession, submitExamAnswer, pauseExamSession, resumeExamSession } from "@/utils/server/exam-api";
+import {
+    getExamSessionProgress,
+    completeExamSession,
+    submitExamAnswer,
+    pauseExamSession,
+    resumeExamSession,
+} from "@/utils/server/exam-api";
 import { ExamSessionProgress, ExamQuestion } from "@/utils/types/exam.types";
-
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -44,6 +50,14 @@ const formatTime = (seconds: number) => {
 };
 
 const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+/** Compare two answer-id arrays as sets. */
+const sameSet = (a: number[], b: number[]) => {
+    if (a.length !== b.length) return false;
+    const sa = [...a].sort((x, y) => x - y);
+    const sb = [...b].sort((x, y) => x - y);
+    return sa.every((v, i) => v === sb[i]);
+};
 
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
@@ -63,8 +77,11 @@ export default function ExamSessionComponent() {
     const [submitting, setSubmitting] = useState(false);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
 
-    /** pending selection local to the current question (before sending) */
-    const [localSelections, setLocalSelections] = useState<Record<number, number>>(
+    /**
+     * Pending selection(s) per qcmId (before saving).
+     * Only present when the user has toggled something since the last save.
+     */
+    const [localSelections, setLocalSelections] = useState<Record<number, number[]>>(
         {},
     );
 
@@ -96,6 +113,8 @@ export default function ExamSessionComponent() {
             baseTimeRef.current = res.response.totalTimeSpent;
             baseAtRef.current = Date.now();
             setElapsed(res.response.totalTimeSpent);
+            // clear any stale local edits
+            setLocalSelections({});
         } else {
             setError(res.message || "Failed to load session");
         }
@@ -144,6 +163,23 @@ export default function ExamSessionComponent() {
     const currentQuestion: ExamQuestion | undefined = questions[currentIndex];
     const isCurrentAnswered = !!currentQuestion?.userAnswer;
 
+    /** effective selection for the active question (local edit wins) */
+    const effectiveSelection = useMemo<number[]>(() => {
+        if (!currentQuestion) return [];
+        const local = localSelections[currentQuestion.qcmId];
+        if (local !== undefined) return local;
+        return currentQuestion.userAnswer?.selectedAnswerIds ?? [];
+    }, [currentQuestion, localSelections]);
+
+    /** true when the user has made an unsaved edit on the current question */
+    const hasPendingChanges = useMemo(() => {
+        if (!currentQuestion) return false;
+        const local = localSelections[currentQuestion.qcmId];
+        if (local === undefined) return false;
+        const saved = currentQuestion.userAnswer?.selectedAnswerIds ?? [];
+        return !sameSet(local, saved);
+    }, [currentQuestion, localSelections]);
+
     const durationSeconds = (progress?.durationMinutes ?? 60) * 60;
     const remaining = Math.max(0, durationSeconds - elapsed);
     const isLowTime = remaining > 0 && remaining <= 60;
@@ -166,29 +202,124 @@ export default function ExamSessionComponent() {
 
     /* ------------------------- Actions ------------------------- */
 
-    const handleSelectLocal = (answerId: number) => {
+    /**
+     * Toggle an answer.
+     * - On an unanswered question → builds a fresh selection.
+     * - On an already-answered question → seeds from the saved answer set
+     *   and then toggles, so the user can edit their previous choice.
+     */
+    const handleToggleLocal = (answerId: number) => {
         if (!currentQuestion || !progress) return;
         if (progress.status !== "in_progress") return;
-        if (isCurrentAnswered) return;
-        setLocalSelections((prev) => ({ ...prev, [currentQuestion.qcmId]: answerId }));
+        if (submitting) return;
+
+        const qcmId = currentQuestion.qcmId;
+
+        setLocalSelections((prev) => {
+            const base =
+                prev[qcmId] ??
+                currentQuestion.userAnswer?.selectedAnswerIds ??
+                [];
+
+            const has = base.includes(answerId);
+            const next = has
+                ? base.filter((id) => id !== answerId)
+                : [...base, answerId];
+
+            return { ...prev, [qcmId]: next };
+        });
     };
 
-    /** Sends the currently-selected (or skipped) answer for the active question. */
+    /**
+     * Persist the current question's answer if needed.
+     * - Unanswered, empty selection      → save as skip
+     * - Unanswered, non-empty            → save the selection
+     * - Answered, no local edit          → nothing to do
+     * - Answered, local edit differs     → re-save (server rescores)
+     */
     const commitCurrent = async (): Promise<boolean> => {
         if (!currentQuestion || !progress) return false;
         if (progress.status !== "in_progress") return false;
-        if (isCurrentAnswered) return true;
 
-        const selectedId = localSelections[currentQuestion.qcmId];
+        const qcmId = currentQuestion.qcmId;
+        const local = localSelections[qcmId];
+        const saved = currentQuestion.userAnswer?.selectedAnswerIds ?? [];
+
+        const isFirstAnswer = !currentQuestion.userAnswer;
+
+        if (!isFirstAnswer && local === undefined) {
+            // Answered and untouched → nothing to save
+            return true;
+        }
+
+        const selectionToSave = isFirstAnswer
+            ? (local ?? [])
+            : (local ?? saved);
 
         setSubmitting(true);
         const res = await submitExamAnswer(sessionId, {
-            qcmId: currentQuestion.qcmId,
-            selectedAnswerId: selectedId ?? undefined,
+            qcmId,
+            selectedAnswerIds: selectionToSave,
         });
         setSubmitting(false);
 
         if (!res.status || !res.response) return false;
+
+        setProgress((prev: any) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                currentQuestionIndex: res.response!.currentQuestionIndex,
+                questions: prev.questions.map((q: any) =>
+                    q.qcmId !== qcmId
+                        ? q
+                        : {
+                            ...q,
+                            userAnswer: {
+                                selectedAnswerIds: res.response!.selectedAnswerIds,
+                                isSkipped: res.response!.isSkipped,
+                                answeredAt: new Date().toISOString(),
+                            },
+                        },
+                ),
+            };
+        });
+
+        // drop the local edit for this question — it's now the saved answer
+        setLocalSelections((prev) => {
+            if (!(qcmId in prev)) return prev;
+            const next = { ...prev };
+            delete next[qcmId];
+            return next;
+        });
+
+        return true;
+    };
+
+    const goToIndex = async (nextIndex: number) => {
+        if (nextIndex === currentIndex) return;
+        const ok = await commitCurrent();
+        if (!ok) return;
+        setCurrentIndex(nextIndex);
+    };
+
+    const goNext = () => goToIndex(Math.min(total - 1, currentIndex + 1));
+    const goPrev = () => goToIndex(Math.max(0, currentIndex - 1));
+
+    const handleSkip = async () => {
+        if (!currentQuestion || !progress) return;
+        if (progress.status !== "in_progress") return;
+
+        // Explicitly clear local + saved selection, then commit as skip.
+        setLocalSelections((prev) => ({ ...prev, [currentQuestion.qcmId]: [] }));
+
+        setSubmitting(true);
+        const res = await submitExamAnswer(sessionId, {
+            qcmId: currentQuestion.qcmId,
+            selectedAnswerIds: [],
+        });
+        setSubmitting(false);
+        if (!res.status || !res.response) return;
 
         setProgress((prev: any) => {
             if (!prev) return prev;
@@ -201,26 +332,21 @@ export default function ExamSessionComponent() {
                         : {
                             ...q,
                             userAnswer: {
-                                selectedAnswerId: res.response!.selectedAnswerId,
-                                isSkipped: res.response!.isSkipped,
+                                selectedAnswerIds: [],
+                                isSkipped: true,
                                 answeredAt: new Date().toISOString(),
                             },
                         },
                 ),
             };
         });
-        return true;
-    };
+        setLocalSelections((prev) => {
+            const next = { ...prev };
+            delete next[currentQuestion.qcmId];
+            return next;
+        });
 
-    const goNext = async () => {
-        const ok = await commitCurrent();
-        if (!ok && !isCurrentAnswered) return;
-        setCurrentIndex((i) => Math.min(total - 1, i + 1));
-    };
-
-    const goPrev = async () => {
-        if (!isCurrentAnswered) await commitCurrent();
-        setCurrentIndex((i) => Math.max(0, i - 1));
+        if (currentIndex < total - 1) setCurrentIndex((i) => i + 1);
     };
 
     const handlePause = async () => {
@@ -252,7 +378,11 @@ export default function ExamSessionComponent() {
             baseAtRef.current = Date.now();
             setProgress((prev) =>
                 prev
-                    ? { ...prev, status: res.response!.status, pausedAt: res.response!.pausedAt }
+                    ? {
+                        ...prev,
+                        status: res.response!.status,
+                        pausedAt: res.response!.pausedAt,
+                    }
                     : prev,
             );
         }
@@ -269,6 +399,7 @@ export default function ExamSessionComponent() {
             setProgress(refreshed.response);
             baseTimeRef.current = refreshed.response.totalTimeSpent;
             setElapsed(refreshed.response.totalTimeSpent);
+            setLocalSelections({});
         }
         setBusy(false);
         setShowFinishConfirm(false);
@@ -320,6 +451,8 @@ export default function ExamSessionComponent() {
     const timerPillClass = isLowTime
         ? `${styles.statPill} ${styles.statPillError} ${styles.statPillErrorPulse}`
         : `${styles.statPill} ${isPaused ? styles.statPillWarning : styles.statPillInfo}`;
+
+    const selection = effectiveSelection;
 
     return (
         <div className={styles.page}>
@@ -429,12 +562,15 @@ export default function ExamSessionComponent() {
                                     {currentQuestion?.question}
                                 </h2>
 
+                                <div className={styles.multiHint}>
+                                    {isCurrentAnswered
+                                        ? t("canChangeAnswer")
+                                        : t("selectOneOrMore")}
+                                </div>
+
                                 <div className={styles.answers}>
                                     {currentQuestion?.answers.map((a, idx) => {
-                                        const savedId =
-                                            currentQuestion.userAnswer?.selectedAnswerId ?? null;
-                                        const localId = localSelections[currentQuestion.qcmId] ?? null;
-                                        const isSelected = (savedId ?? localId) === a.id;
+                                        const isSelected = selection.includes(a.id);
 
                                         let cls = styles.answer;
                                         if (isSelected) cls += ` ${styles.answerSelected}`;
@@ -443,19 +579,30 @@ export default function ExamSessionComponent() {
                                             <button
                                                 key={a.id}
                                                 className={cls}
-                                                disabled={
-                                                    isCurrentAnswered || submitting || isPaused
-                                                }
-                                                onClick={() => handleSelectLocal(a.id)}
+                                                // Only block while submitting or paused —
+                                                // answered questions are now editable too.
+                                                disabled={submitting || isPaused}
+                                                onClick={() => handleToggleLocal(a.id)}
                                             >
                                                 <span className={styles.answerBullet}>
                                                     {LETTERS[idx] ?? idx + 1}
                                                 </span>
                                                 <span className={styles.answerLabel}>{a.answer}</span>
+                                                {isSelected && (
+                                                    <Check size={16} color="var(--primary)" />
+                                                )}
                                             </button>
                                         );
                                     })}
                                 </div>
+
+                                {hasPendingChanges && (
+                                    <div className={`${styles.feedback} ${styles.feedbackInfo}`}>
+                                        <div className={styles.feedbackTitle}>
+                                            <Save size={14} /> {t("unsavedChanges")}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className={styles.qFooter}>
                                     <button
@@ -470,11 +617,7 @@ export default function ExamSessionComponent() {
                                         {!isCurrentAnswered && (
                                             <button
                                                 className={styles.actionBtn}
-                                                onClick={async () => {
-                                                    await commitCurrent();
-                                                    if (currentIndex < total - 1)
-                                                        setCurrentIndex((i) => i + 1);
-                                                }}
+                                                onClick={handleSkip}
                                                 disabled={submitting || isPaused}
                                             >
                                                 <SkipForward size={14} /> {t("skip")}
@@ -525,7 +668,7 @@ export default function ExamSessionComponent() {
                                     <button
                                         key={q.qcmId}
                                         className={cls}
-                                        onClick={() => setCurrentIndex(i)}
+                                        onClick={() => goToIndex(i)}
                                         title={q.question}
                                     >
                                         {i + 1}
@@ -610,7 +753,7 @@ export default function ExamSessionComponent() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Results view                                                       */
+/*  Results view (unchanged)                                           */
 /* ------------------------------------------------------------------ */
 
 function ResultsView({
@@ -724,9 +867,10 @@ function ResultsView({
                     <div className={styles.reviewList}>
                         {progress.questions.map((q, i) => {
                             const ua = q.userAnswer;
-                            const correctAnswer = q.answers.find((a) => a.isCorrect);
-                            const selectedAnswer = q.answers.find(
-                                (a) => a.id === ua?.selectedAnswerId,
+                            const selectedIds = ua?.selectedAnswerIds ?? [];
+                            const correctAnswers = q.answers.filter((a) => a.isCorrect);
+                            const selectedAnswers = q.answers.filter((a) =>
+                                selectedIds.includes(a.id),
                             );
 
                             let badgeCls = styles.reviewBadgeMuted;
@@ -765,7 +909,7 @@ function ResultsView({
                                     </div>
                                     <p className={styles.reviewQuestion}>{q.question}</p>
 
-                                    {selectedAnswer && !ua?.isSkipped && (
+                                    {selectedAnswers.length > 0 && !ua?.isSkipped && (
                                         <div
                                             className={`${styles.reviewAnswer} ${ua?.isCorrect
                                                 ? styles.reviewAnswerCorrect
@@ -777,31 +921,39 @@ function ResultsView({
                                             ) : (
                                                 <XCircle size={15} color="var(--error)" />
                                             )}
-                                            <span>
-                                                <strong>{t("yourAnswer")}: </strong>
-                                                {selectedAnswer.answer}
-                                            </span>
+                                            <div>
+                                                <strong>{t("yourAnswer")}:</strong>
+                                                <ul className={styles.reviewAnswerList}>
+                                                    {selectedAnswers.map((a) => (
+                                                        <li key={a.id}>{a.answer}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         </div>
                                     )}
 
-                                    {(!ua?.isCorrect || ua?.isSkipped) && correctAnswer && (
+                                    {!ua?.isCorrect && correctAnswers.length > 0 && (
                                         <div
                                             className={`${styles.reviewAnswer} ${styles.reviewAnswerCorrect}`}
                                         >
                                             <CheckCircle2 size={15} color="var(--success)" />
-                                            <span>
+                                            <div>
                                                 <strong>{t("correctAnswerWas", { answer: "" })}</strong>
-                                                {correctAnswer.answer}
-                                            </span>
+                                                <ul className={styles.reviewAnswerList}>
+                                                    {correctAnswers.map((a) => (
+                                                        <li key={a.id}>{a.answer}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         </div>
                                     )}
 
-                                    {correctAnswer?.explanation && (
+                                    {correctAnswers[0]?.explanation && (
                                         <div className={styles.reviewExplanation}>
                                             <div className={styles.reviewExplanationLabel}>
                                                 {t("explanation")}
                                             </div>
-                                            {correctAnswer.explanation}
+                                            {correctAnswers[0].explanation}
                                         </div>
                                     )}
                                 </motion.div>
