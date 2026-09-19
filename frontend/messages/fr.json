@@ -80,6 +80,29 @@
     "subtitle": "Structurez le cursus de pharmacie : années, semestres, matières, cours, TD, TP, QCM et réponses.",
     "loading": "Chargement…",
     "refresh": "Actualiser",
+    "summary": {
+      "title": "Summary & Mind Map",
+      "subtitleExisting": "Edit the summary and its mind map",
+      "subtitleEmpty": "Add a text summary and structured mind map for this course",
+      "add": "Add summary",
+      "edit": "Edit",
+      "save": "Save summary",
+      "emptyText": "No summary yet — click “Add summary” to create one.",
+      "createTitle": "Create Summary & Mind Map",
+      "editTitle": "Edit Summary & Mind Map",
+      "textLabel": "Summary text",
+      "textPlaceholder": "Write the summary of this course…",
+      "mindmapNameLabel": "Mind map name",
+      "mindmapNamePlaceholder": "e.g. Key terminology",
+      "termsLabel": "Terms",
+      "terms": "terms",
+      "addTerm": "Add term",
+      "noTerms": "No terms yet — add one to start building the mind map",
+      "french": "French",
+      "english": "English",
+      "definition": "Definition",
+      "mindmap": "Mind Map"
+    },
     "selectPlaceholder": "Sélectionner…",
     "breadcrumb": {
       "home": "Toutes les années"
@@ -450,7 +473,21 @@
       "nextQuestion": "Question suivante",
       "finishSession": "Terminer la session",
       "loading": "Chargement…",
-      "advanceFailed": "Échec de la progression"
+      "advanceFailed": "Échec de la progression",
+      "eyebrow": "révision rapide",
+      "total": "total",
+      "correctChip": "correctes",
+      "incorrectChip": "incorrectes",
+      "noAnswersTitle": "Aucune réponse reçue du serveur pour cette question.",
+      "noAnswersHint": "Vérifiez que votre backend NestJS inclut la relation answers pour les QCM de TD/TP.",
+      "explainFurther": "Expliquer davantage",
+      "aiTitle": "Explication IA",
+      "aiSubtitle": "une analyse plus approfondie de cette question",
+      "aiThinking": "Analyse des détails…",
+      "aiRegenerate": "Régénérer",
+      "aiRetry": "Réessayer",
+      "aiEmpty": "L'IA n'a pas fourni d'explication. Essayez de régénérer.",
+      "aiFailed": "Impossible de générer une explication. Veuillez réessayer."
     },
     "completion": {
       "title": "Session terminée !",
@@ -666,6 +703,55 @@
       "redeemFailed": "Ce code est invalide ou déjà utilisé.",
       "revokeFailed": "Impossible de révoquer votre abonnement. Vérifiez votre mot de passe.",
       "dismiss": "Fermer l'erreur"
+    }
+  },
+  "Mindmap": {
+    "badge": "fiches de révision",
+    "title": "Cartes mentales",
+    "subtitle": "Choisissez une matière, puis un cours, pour lire son résumé et sa carte mentale bilingue.",
+    "refresh": "Actualiser",
+    "breadcrumb": {
+      "home": "Matières"
+    },
+    "search": {
+      "subjects": "Rechercher une matière…",
+      "courses": "Rechercher un cours…",
+      "clear": "Effacer la recherche"
+    },
+    "loading": {
+      "subjects": "Chargement de vos matières…",
+      "courses": "Chargement des cours…",
+      "detail": "Chargement du résumé et de la carte mentale…"
+    },
+    "cards": {
+      "openSubjects": "Voir les cours",
+      "openCourse": "Ouvrir la carte mentale"
+    },
+    "summary": {
+      "title": "Résumé",
+      "subtitle": "la vue d'ensemble de ce cours"
+    },
+    "mindmap": {
+      "title": "Carte mentale",
+      "subtitle": "terme français → terme anglais, avec définitions",
+      "terms": "termes"
+    },
+    "empty": {
+      "noSubjects": "Aucune matière pour le moment",
+      "noSubjectsHint": "Vos matières apparaîtront ici dès que votre abonnement sera actif.",
+      "noSubjectMatch": "Aucune matière correspondante",
+      "noCourses": "Aucun cours pour le moment",
+      "noCoursesHint": "Cette matière n'a encore aucun cours publié.",
+      "noCourseMatch": "Aucun cours correspondant",
+      "tryDifferentSearch": "Essayez un autre terme de recherche.",
+      "noContent": "Rien ici pour le moment",
+      "noContentHint": "Ce cours n'a encore ni résumé ni carte mentale.",
+      "noMindmap": "Aucune carte mentale n'a encore été ajoutée à ce cours."
+    },
+    "errors": {
+      "generic": "Une erreur est survenue. Veuillez réessayer.",
+      "loadSubjects": "Impossible de charger vos matières.",
+      "loadCourses": "Impossible de charger les cours de cette matière."
     }
   }
 }

@@ -1,6 +1,7 @@
 /* ==================================================================
    Dashboard
    Reading-room ledger meets modern academic console
+   Flexible bento layout via flexbox — cards always fill the row
    ================================================================== */
 
 .page {
@@ -12,7 +13,6 @@
   width: 100%;
 
   background-color: var(--background);
-  /* The SVG adds a subtle texture "noise" to give a classic paper/ledger feel */
   background-image:
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E"),
     radial-gradient(circle at 8% 0%,
@@ -25,6 +25,10 @@
   color: var(--foreground);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  /* ← new: center children horizontally */
+  justify-content: center;
+  /* ← new: center children vertically */
   font-family:
     system-ui,
     -apple-system,
@@ -34,18 +38,25 @@
   overflow-x: hidden;
 }
 
+.page ::selection {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+  color: var(--foreground);
+}
+
 /* ==================================================================
-   Content
+   Content wrapper
    ================================================================== */
 
 .contentWrapper {
   width: 100%;
-  max-width: 1700px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem) clamp(1rem, 3vw, 2.25rem) 3.5rem;
   display: flex;
   flex-direction: column;
-  gap: clamp(2.5rem, 5vw, 4rem);
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+  align-self: center;
+  /* ← new: belt-and-suspenders centering */
 }
 
 /* ==================================================================
@@ -55,22 +66,21 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  max-width: 760px;
+  gap: 0.9rem;
+  max-width: 720px;
   position: relative;
 }
 
-/* Small decorative rule behind the heading. */
 .header::before {
   content: "";
   position: absolute;
-  width: 72px;
+  width: 64px;
   height: 3px;
   left: 0;
-  top: -1rem;
-  background: var(--primary);
+  top: -0.9rem;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   border-radius: 999px;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .badge {
@@ -78,14 +88,14 @@
   align-items: center;
   gap: 0.5rem;
   width: max-content;
-  padding: 0.38rem 0.75rem;
+  padding: 0.32rem 0.65rem;
   border: 1px dashed color-mix(in srgb, var(--accent) 70%, var(--border));
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 4%, transparent);
   border-radius: 5px;
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   box-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 3%, transparent);
   transform: rotate(-1deg);
   transition:
@@ -102,7 +112,7 @@
   margin: 0;
   color: var(--foreground);
   font-family: var(--font-serif);
-  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  font-size: clamp(1.9rem, 4vw, 3rem);
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -112,31 +122,83 @@
   margin: 0;
   max-width: 58ch;
   color: var(--muted-foreground);
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
-  line-height: 1.65;
+  font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+  line-height: 1.6;
 }
 
 /* ==================================================================
-   Bento Grid Layout
+   Bento layout — flexbox, cards grow to fill every row
    ================================================================== */
 
 .bentoGrid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.15rem;
   width: 100%;
 }
 
+@media (min-width: 1024px) {
+  .bentoGrid {
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .bentoGrid {
+    gap: 1.4rem;
+  }
+}
+
+/* Base card wrapper — grows to fill leftovers, but caps out */
 .cardWrap {
   min-width: 0;
   perspective: 1200px;
   position: relative;
-  /* Default mobile span: full width */
-  grid-column: span 12;
+
+  flex: 1 1 260px;
+  max-width: 100%;
+
+  animation: cardEnter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+/* ---------- Size intents ---------- */
+
+.cardWrap[data-size="hero"] {
+  flex: 2 1 420px;
+  max-width: 780px;
+}
+
+.cardWrap[data-size="lg"] {
+  flex: 1.5 1 340px;
+  max-width: 620px;
+}
+
+.cardWrap[data-size="md"] {
+  flex: 1 1 280px;
+  max-width: 520px;
+}
+
+.cardWrap[data-size="sm"] {
+  flex: 1 1 240px;
+  max-width: 420px;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ==================================================================
-   Cards Base
+   Card — base
    ================================================================== */
 
 .card {
@@ -144,16 +206,20 @@
   --ry: 0deg;
   --mx: 50%;
   --my: 50%;
+  --tone: var(--primary);
 
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 215px;
-  padding: 1.5rem;
+  height: 100%;
+  min-height: 180px;
+  padding: 1.25rem 1.35rem;
   overflow: hidden;
   text-decoration: none;
   color: var(--foreground);
+  font: inherit;
+  text-align: start;
 
   background: linear-gradient(145deg,
       color-mix(in srgb, var(--surface) 100%, transparent),
@@ -161,16 +227,16 @@
 
   border: 1px solid var(--border);
   border-radius: 12px;
+  cursor: pointer;
 
-  /* GPU acceleration included with Z-translate */
   transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(0);
   transform-style: preserve-3d;
+  isolation: isolate;
 
-  /* Subtle inner light rim mimicking embossed classic paper */
   box-shadow:
     inset 0 1px 1px 0 color-mix(in srgb, white 8%, transparent),
     0 2px 4px color-mix(in srgb, var(--foreground) 3%, transparent),
-    0 8px 30px color-mix(in srgb, var(--foreground) 4%, transparent);
+    0 8px 24px color-mix(in srgb, var(--foreground) 4%, transparent);
 
   transition:
     border-color 0.3s ease,
@@ -179,7 +245,7 @@
     transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Soft colored atmosphere inside every card */
+/* Cursor spotlight */
 .card::before {
   content: "";
   position: absolute;
@@ -190,15 +256,16 @@
       transparent 72%);
   opacity: 0;
   transition: opacity 0.4s ease;
+  z-index: 1;
 }
 
-/* Small top accent line */
+/* Top accent line */
 .card::after {
   content: "";
   position: absolute;
   top: 0;
-  left: 1.5rem;
-  right: 1.5rem;
+  left: 1.25rem;
+  right: 1.25rem;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--tone), transparent);
   opacity: 0;
@@ -206,6 +273,7 @@
   transition:
     opacity 0.3s ease,
     transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+  z-index: 3;
 }
 
 .card:hover,
@@ -216,8 +284,8 @@
       color-mix(in srgb, var(--tone) 3%, var(--surface)));
   box-shadow:
     inset 0 1px 1px 0 color-mix(in srgb, white 12%, transparent),
-    0 18px 45px -18px color-mix(in srgb, var(--tone) 25%, transparent),
-    0 8px 22px color-mix(in srgb, var(--foreground) 6%, transparent);
+    0 16px 40px -18px color-mix(in srgb, var(--tone) 25%, transparent),
+    0 6px 18px color-mix(in srgb, var(--foreground) 6%, transparent);
 }
 
 .card:hover::before,
@@ -232,12 +300,19 @@
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--highlight);
-  outline-offset: 4px;
+  outline: 2px solid var(--tone);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--tone) 20%, transparent),
+    0 16px 40px -18px color-mix(in srgb, var(--tone) 25%, transparent);
+}
+
+.card:active {
+  transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(0) scale(0.995);
 }
 
 /* ==================================================================
-   Card Layout Internals
+   Card internals
    ================================================================== */
 
 .cardHeader {
@@ -246,8 +321,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.7rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .iconWrap {
@@ -255,8 +330,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   border-radius: 10px;
   background: color-mix(in srgb, var(--tone) 6%, var(--surface-hover));
@@ -275,14 +350,40 @@
   border-color: color-mix(in srgb, var(--tone) 35%, var(--border));
 }
 
+.notificationDot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--error);
+  border: 2px solid var(--surface);
+  animation: pulseDot 2s ease-out infinite;
+}
+
+@keyframes pulseDot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--error) 60%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--error) 0%, transparent);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--error) 0%, transparent);
+  }
+}
+
 .cardTag {
-  max-width: 45%;
-  padding-top: 0.2rem;
-  padding-inline-start: 0.65rem;
+  max-width: 50%;
+  padding-top: 0.15rem;
+  padding-inline-start: 0.6rem;
   border-inline-start: 2px solid var(--tone);
   color: var(--tone);
   font-family: var(--font-serif);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-style: italic;
   line-height: 1.35;
   text-align: end;
@@ -299,15 +400,15 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-grow: 1;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .cardTitle {
   color: var(--foreground);
   font-family: var(--font-serif);
-  font-size: clamp(1.2rem, 2vw, 1.4rem);
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -316,8 +417,8 @@
 .cardDesc {
   max-width: 48ch;
   color: var(--muted-foreground);
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 0.82rem;
+  line-height: 1.55;
 }
 
 .cardFooter {
@@ -326,16 +427,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-top: auto;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
   border-top: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
 }
 
 .actionText {
   color: var(--secondary);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
   transition: color 0.2s ease;
 }
@@ -348,8 +449,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   border-radius: 50%;
   background: color-mix(in srgb, var(--tone) 7%, var(--surface-hover));
@@ -378,19 +479,67 @@
 }
 
 /* ==================================================================
-   Logout Specifics
+   Size variants — hero / sm tweaks
+   ================================================================== */
+
+/* Hero card: bigger everything */
+.cardWrap[data-size="hero"] .card {
+  padding: 1.5rem 1.6rem;
+  min-height: 220px;
+}
+
+.cardWrap[data-size="hero"] .cardTitle {
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+}
+
+.cardWrap[data-size="hero"] .cardDesc {
+  font-size: 0.9rem;
+  max-width: 42ch;
+}
+
+.cardWrap[data-size="hero"] .iconWrap {
+  width: 48px;
+  height: 48px;
+}
+
+.cardWrap[data-size="hero"] .cardBody {
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+/* Small card: compact */
+.cardWrap[data-size="sm"] .card {
+  padding: 1.1rem 1.15rem;
+}
+
+.cardWrap[data-size="sm"] .cardTitle {
+  font-size: 1rem;
+}
+
+.cardWrap[data-size="sm"] .cardDesc {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardWrap[data-size="sm"] .cardTag {
+  font-size: 0.72rem;
+}
+
+/* ==================================================================
+   Logout
    ================================================================== */
 
 .logout {
-  text-align: start;
-  cursor: pointer;
   background: linear-gradient(145deg,
       var(--surface),
       color-mix(in srgb, var(--error) 2%, var(--surface)));
-  font: inherit;
 }
 
-.logout:hover {
+.logout:hover:not(:disabled) {
   background: linear-gradient(145deg,
       var(--surface),
       color-mix(in srgb, var(--error) 7%, var(--surface)));
@@ -423,159 +572,303 @@
 }
 
 /* ==================================================================
-   Responsive Grid Definitions
+   GIF — decorative, layout-stable, sized per variant
    ================================================================== */
 
-/* Tablet (min 640px) */
-@media (min-width: 640px) {
+.cardGif {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+
+  width: 118px;
+  height: 118px;
+  max-width: 118px;
+  max-height: 118px;
+
+  object-fit: contain;
+  display: block;
+
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+
+  z-index: 1;
+  opacity: 0.5;
+  border-radius: 12px;
+
+  transform: translateZ(0) scale(1);
+  transform-origin: bottom right;
+  will-change: opacity, transform;
+
+  transition:
+    opacity 0.4s ease,
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Uncomment to strip a solid white/green/black GIF background:
+     mix-blend-mode: multiply;  (removes white)
+     mix-blend-mode: screen;    (removes black) */
+}
+
+.card:hover .cardGif,
+.card:focus-visible .cardGif {
+  opacity: 0.9;
+  transform: translate(-6px, -6px) scale(1.05);
+}
+
+/* Hero: larger GIF */
+.cardWrap[data-size="hero"] .cardGif {
+  width: 165px;
+  height: 165px;
+  max-width: 165px;
+  max-height: 165px;
+  right: -22px;
+  bottom: -22px;
+  opacity: 0.55;
+}
+
+/* Small: tighter GIF */
+.cardWrap[data-size="sm"] .cardGif {
+  width: 86px;
+  height: 86px;
+  max-width: 86px;
+  max-height: 86px;
+  right: -10px;
+  bottom: -10px;
+  opacity: 0.45;
+}
+
+.cardWrap[data-size="sm"]:hover .cardGif {
+  transform: translate(-4px, -4px) scale(1.04);
+}
+
+/* ==================================================================
+   Responsive — tablet
+   ================================================================== */
+
+@media (min-width: 640px) and (max-width: 1023px) {
   .bentoGrid {
-    gap: 1.15rem;
+    gap: 1.1rem;
   }
 
-  .card {
-    min-height: 220px;
+  .cardWrap {
+    flex: 1 1 300px;
   }
 
-  .cardStats {
-    grid-column: span 8;
+  .cardWrap[data-size="hero"] {
+    flex: 1 1 100%;
+    max-width: 100%;
   }
 
-  .cardSessions {
-    grid-column: span 4;
+  .cardWrap[data-size="lg"],
+  .cardWrap[data-size="md"],
+  .cardWrap[data-size="sm"] {
+    flex: 1 1 300px;
+    max-width: 100%;
   }
 
-  .cardExams {
-    grid-column: span 6;
+  .cardGif {
+    width: 108px;
+    height: 108px;
+    max-width: 108px;
+    max-height: 108px;
+    right: -12px;
+    bottom: -12px;
   }
 
-  .cardTodos {
-    grid-column: span 6;
-  }
-
-  .cardProfile {
-    grid-column: span 6;
-  }
-
-  .cardTeacher {
-    grid-column: span 6;
-  }
-
-  .cardAdmin {
-    grid-column: span 6;
-  }
-
-  .cardLogout {
-    grid-column: span 6;
+  .cardWrap[data-size="hero"] .cardGif {
+    width: 150px;
+    height: 150px;
+    max-width: 150px;
+    max-height: 150px;
   }
 }
 
-/* Desktop (min 1024px) */
-@media (min-width: 1024px) {
-  .bentoGrid {
-    gap: 1.25rem;
-  }
+/* ==================================================================
+   Responsive — large desktop
+   ================================================================== */
 
-  .card {
-    min-height: 230px;
-  }
-
-  /* Row 1 */
-  .cardStats {
-    grid-column: span 8;
-  }
-
-  .cardSessions {
-    grid-column: span 4;
-  }
-
-  /* Row 2 */
-  .cardExams {
-    grid-column: span 4;
-  }
-
-  .cardTodos {
-    grid-column: span 4;
-  }
-
-  .cardProfile {
-    grid-column: span 4;
-  }
-
-  /* Row 3 (dynamic role cards wrap beautifully) */
-  .cardTeacher {
-    grid-column: span 4;
-  }
-
-  .cardAdmin {
-    grid-column: span 4;
-  }
-
-  .cardLogout {
-    grid-column: span 4;
-  }
-}
-
-/* Large Screens */
 @media (min-width: 1280px) {
   .contentWrapper {
-    padding-top: 3.5rem;
-  }
-
-  .bentoGrid {
-    gap: 1.5rem;
+    padding-top: 3rem;
   }
 
   .card {
-    min-height: 245px;
-    padding: 1.75rem;
+    min-height: 200px;
+    padding: 1.5rem;
   }
 
   .iconWrap {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .cardWrap[data-size="hero"] .cardGif {
+    width: 175px;
+    height: 175px;
+    max-width: 175px;
+    max-height: 175px;
   }
 }
 
-/* Mobile Adjustments */
+/* ==================================================================
+   Responsive — mobile
+   ================================================================== */
+
 @media (max-width: 639px) {
   .contentWrapper {
-    padding: 1.5rem 1rem 3rem;
-    gap: 2rem;
+    padding: 1.25rem 1rem 2.5rem;
+    gap: 1.75rem;
   }
 
   .header::before {
-    top: -0.65rem;
+    top: -0.6rem;
   }
 
   .title {
-    font-size: 2.2rem;
+    font-size: 2rem;
   }
 
   .subtitle {
     font-size: 0.95rem;
   }
 
+  .bentoGrid {
+    gap: 0.9rem;
+  }
+
+  .cardWrap,
+  .cardWrap[data-size="hero"],
+  .cardWrap[data-size="lg"],
+  .cardWrap[data-size="md"],
+  .cardWrap[data-size="sm"] {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
   .card {
-    min-height: 205px;
-    padding: 1.25rem;
+    min-height: 170px;
+    padding: 1.15rem;
     border-radius: 10px;
   }
 
   .cardHeader {
-    margin-bottom: 1.4rem;
+    margin-bottom: 0.9rem;
   }
 
   .cardTag {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
   }
 
   .cardDesc {
-    font-size: 0.84rem;
+    font-size: 0.82rem;
+  }
+
+  .arrowWrap {
+    width: 32px;
+    height: 32px;
+  }
+
+  .cardGif,
+  .cardWrap[data-size="hero"] .cardGif,
+  .cardWrap[data-size="sm"] .cardGif {
+    width: 92px;
+    height: 92px;
+    max-width: 92px;
+    max-height: 92px;
+    right: -8px;
+    bottom: -8px;
+    opacity: 0.4;
   }
 }
 
 /* ==================================================================
-   Accessibility / Reduced Motion
+   RTL
+   ================================================================== */
+
+[dir="rtl"] .header::before {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .cardGif {
+  right: auto;
+  left: -14px;
+  transform-origin: bottom left;
+}
+
+[dir="rtl"] .card:hover .cardGif,
+[dir="rtl"] .card:focus-visible .cardGif {
+  transform: translate(6px, -6px) scale(1.05);
+}
+
+[dir="rtl"] .cardWrap[data-size="sm"]:hover .cardGif {
+  transform: translate(4px, -4px) scale(1.04);
+}
+
+[dir="rtl"] .card:hover .arrowWrap {
+  transform: translate(-3px, -3px) scale(1.05);
+}
+
+[dir="rtl"] .card:hover .arrow {
+  transform: translate(-1px, -1px);
+}
+
+/* ==================================================================
+   High contrast
+   ================================================================== */
+
+@media (prefers-contrast: more) {
+  .card {
+    border-width: 2px;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    border-color: var(--foreground);
+  }
+
+  .card:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* ==================================================================
+   Print
+   ================================================================== */
+
+@media print {
+  .page {
+    background: white;
+    color: black;
+  }
+
+  .cardGif,
+  .page::before,
+  .header::before,
+  .badge {
+    display: none;
+  }
+
+  .bentoGrid {
+    display: block;
+  }
+
+  .cardWrap {
+    display: block;
+    margin-bottom: 1rem;
+    break-inside: avoid;
+  }
+
+  .card {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    transform: none !important;
+    background: white;
+  }
+}
+
+/* ==================================================================
+   Reduced motion
    ================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
@@ -586,8 +879,18 @@
   .arrow,
   .badge,
   .card::before,
-  .card::after {
+  .card::after,
+  .cardWrap,
+  .notificationDot,
+  .cardGif {
     transition: none !important;
     transform: none !important;
+    animation: none !important;
+  }
+
+  .card:hover .cardGif,
+  .card:focus-visible .cardGif {
+    transform: none !important;
+    opacity: 0.6 !important;
   }
 }

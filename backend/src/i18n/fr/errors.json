@@ -10,7 +10,8 @@
     "required_password": "Le mot de passe est requis",
     "required_email": "L'email est requis",
     "email_exists": "Un utilisateur avec cet email existe déjà",
-    "email_already_verified": "L'email est déjà vérifié"
+    "email_already_verified": "L'email est déjà vérifié",
+    "ai_generation_limit": "Vous avez atteint la limite de génération quotidienne de l'IA."
   },
   "email": {
     "otp_sent": "Échec de l'envoi du code de vérification",

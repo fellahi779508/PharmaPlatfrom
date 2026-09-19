@@ -13,7 +13,8 @@
     "email_already_verified": "تم التحقق من البريد الإلكتروني مسبقاً",
     "required_firstName": "الاسم الأول مطلوب",
     "required_lastName": "الاسم الأخير مطلوب",
-    "required_phone": "رقم الهاتف مطلوب"
+    "required_phone": "رقم الهاتف مطلوب",
+    "ai_generation_limit": "لقد وصلت إلى الحد الأقصى للتوليد اليومي للذكاء الاصطناعي."
   },
   "email": {
     "otp_sent": "فشل إرسال رمز التحقق",

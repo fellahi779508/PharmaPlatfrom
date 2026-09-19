@@ -49,6 +49,9 @@ export class User {
   @Column({ type: 'varchar', length: 6, nullable: true })
   otpCode: string | null;
 
+  @Column({ default: 0 })
+  aiGenerationCount: number;
+
   @Column({ type: 'timestamp', nullable: true })
   otpExpiresAt: Date | null;
 

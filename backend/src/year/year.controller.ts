@@ -14,7 +14,7 @@ import { UpdateYearDto } from './dto/update-year.dto';
 
 @Controller('year')
 export class YearController {
-  constructor(private readonly yearService: YearService) {}
+  constructor(private readonly yearService: YearService) { }
 
   @Post()
   create(@Body() createYearDto: CreateYearDto) {

@@ -80,6 +80,29 @@
     "subtitle": "Structure the pharmacy curriculum: years, semesters, subjects, courses, TDs, TPs, QCMs and answers.",
     "loading": "Loading…",
     "refresh": "Refresh",
+    "summary": {
+      "title": "Summary & Mind Map",
+      "subtitleExisting": "Edit the summary and its mind map",
+      "subtitleEmpty": "Add a text summary and structured mind map for this course",
+      "add": "Add summary",
+      "edit": "Edit",
+      "save": "Save summary",
+      "emptyText": "No summary yet — click “Add summary” to create one.",
+      "createTitle": "Create Summary & Mind Map",
+      "editTitle": "Edit Summary & Mind Map",
+      "textLabel": "Summary text",
+      "textPlaceholder": "Write the summary of this course…",
+      "mindmapNameLabel": "Mind map name",
+      "mindmapNamePlaceholder": "e.g. Key terminology",
+      "termsLabel": "Terms",
+      "terms": "terms",
+      "addTerm": "Add term",
+      "noTerms": "No terms yet — add one to start building the mind map",
+      "french": "French",
+      "english": "English",
+      "definition": "Definition",
+      "mindmap": "Mind Map"
+    },
     "selectPlaceholder": "Select…",
     "breadcrumb": {
       "home": "All years"
@@ -201,6 +224,11 @@
       "tag": "Mindmaps",
       "title": "Mindmaps",
       "description": "View and manage your mindmaps."
+    },
+    "Up to Date": {
+      "tag": "Up to Date",
+      "title": "Up to Date",
+      "description": "View and manage your up to date."
     },
     "statistics": {
       "tag": "Analytics",
@@ -451,7 +479,21 @@
       "nextQuestion": "Next question",
       "finishSession": "Finish session",
       "loading": "Loading…",
-      "advanceFailed": "Failed to advance"
+      "advanceFailed": "Failed to advance",
+      "eyebrow": "quick review",
+      "total": "total",
+      "correctChip": "correct",
+      "incorrectChip": "incorrect",
+      "noAnswersTitle": "No answers received from the server for this question.",
+      "noAnswersHint": "Check your NestJS backend to ensure the answers relation is included for TD/TP QCMs.",
+      "explainFurther": "Explain further",
+      "aiTitle": "AI Explanation",
+      "aiSubtitle": "a deeper look at this question",
+      "aiThinking": "Thinking through the details…",
+      "aiRegenerate": "Regenerate",
+      "aiRetry": "Retry",
+      "aiEmpty": "The AI didn't return an explanation. Try regenerating.",
+      "aiFailed": "Couldn't generate an explanation. Please try again."
     },
     "completion": {
       "title": "Session Complete!",
@@ -667,6 +709,55 @@
       "redeemFailed": "This code is invalid or already used.",
       "revokeFailed": "Could not revoke your subscription. Check your password.",
       "dismiss": "Dismiss error"
+    }
+  },
+  "Mindmap": {
+    "badge": "study notes",
+    "title": "Mind Maps",
+    "subtitle": "Pick a subject, then a course, to read its summary and its bilingual terminology mind map.",
+    "refresh": "Refresh",
+    "breadcrumb": {
+      "home": "Subjects"
+    },
+    "search": {
+      "subjects": "Search subjects…",
+      "courses": "Search courses…",
+      "clear": "Clear search"
+    },
+    "loading": {
+      "subjects": "Loading your subjects…",
+      "courses": "Loading courses…",
+      "detail": "Loading summary and mind map…"
+    },
+    "cards": {
+      "openSubjects": "View courses",
+      "openCourse": "Open mind map"
+    },
+    "summary": {
+      "title": "Summary",
+      "subtitle": "the full picture of this course"
+    },
+    "mindmap": {
+      "title": "Mind Map",
+      "subtitle": "French term → English term, with definitions",
+      "terms": "terms"
+    },
+    "empty": {
+      "noSubjects": "No subjects yet",
+      "noSubjectsHint": "Your subjects will appear here once your subscription is active.",
+      "noSubjectMatch": "No matching subject",
+      "noCourses": "No courses yet",
+      "noCoursesHint": "This subject doesn't have any courses published yet.",
+      "noCourseMatch": "No matching course",
+      "tryDifferentSearch": "Try a different search term.",
+      "noContent": "Nothing here yet",
+      "noContentHint": "This course doesn't have a summary or mind map published yet.",
+      "noMindmap": "No mind map has been added to this course yet."
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "loadSubjects": "Couldn't load your subjects.",
+      "loadCourses": "Couldn't load the courses of this subject."
     }
   }
 }

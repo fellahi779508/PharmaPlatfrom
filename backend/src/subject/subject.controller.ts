@@ -19,7 +19,7 @@ import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('subject')
 export class SubjectController {
-  constructor(private readonly subjectService: SubjectService) {}
+  constructor(private readonly subjectService: SubjectService) { }
 
   @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
   @UseGuards(RolesGuard)

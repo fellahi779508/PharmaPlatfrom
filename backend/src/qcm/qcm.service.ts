@@ -15,6 +15,8 @@ import { Tp } from 'src/tp/entities/tp.entity';
 import { QcmAnswer } from 'src/qcm_answer/entities/qcm_answer.entity';
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 import * as mammoth from 'mammoth';
+import { User } from 'src/user/entities/user.entity';
+import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
 
 interface File {
   fieldname: string;
@@ -323,7 +325,7 @@ export class QcmService {
       });
       if (!course) {
         throw new NotFoundException(
-          this.i18n.t('errors.course.not_found', { lang: this.currentLang }),
+          this.i18n.translate('errors.course.not_found', { lang: this.currentLang }),
         );
       }
       qcm.course = course;
@@ -334,7 +336,7 @@ export class QcmService {
       });
       if (!td) {
         throw new NotFoundException(
-          this.i18n.t('errors.td.not_found', { lang: this.currentLang }),
+          this.i18n.translate('errors.td.not_found', { lang: this.currentLang }),
         );
       }
       qcm.td = td;
@@ -345,7 +347,7 @@ export class QcmService {
       });
       if (!tp) {
         throw new NotFoundException(
-          this.i18n.t('errors.tp.not_found', { lang: this.currentLang }),
+          this.i18n.translate('errors.tp.not_found', { lang: this.currentLang }),
         );
       }
       qcm.tp = tp;
@@ -357,5 +359,79 @@ export class QcmService {
   async remove(id: number) {
     const qcm = await this.findOne(id);
     await this.qcmRepository.remove(qcm);
+  }
+  async generateAiExplanation(qcmId: number, userId: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.getRepository(User).findOne({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException(
+          this.i18n.translate('errors.user.not_found', { lang: this.currentLang }),
+        );
+      }
+      if (user.aiGenerationCount >= 3) {
+        throw new BadRequestException(
+          this.i18n.translate('errors.user.ai_generation_limit', { lang: this.currentLang }),
+        );
+      }
+      const qcm = await manager.getRepository(SessionQuestion).findOne({
+        where: { id: qcmId },
+        relations: { qcm: { answers: true } }
+      });
+
+
+
+      if (!qcm) {
+        throw new NotFoundException(
+          this.i18n.translate('errors.qcm.not_found', { lang: this.currentLang }),
+        );
+      }
+      const lang = this.currentLang
+
+      const question = qcm.qcm.question;
+
+      // Properly format answers into readable strings for the AI prompt
+      const formattedAnswers = qcm.qcm.answers
+        .map((ans, index) => `Option ${index + 1}: ${ans.answer} (Correct: ${ans.isCorrect})`)
+        .join('\n');
+
+      // Crafting the prompt for student clarity + dev mode pharmacy fallback
+      const prompt = `
+      You are an expert clinical pharmacy tutor. Your goal is to provide a clear, concise explanation that is just enough for a student to easily understand the core concept.
+
+      IMPORTANT DEV MODE INSTRUCTION: 
+      If the question or answers below contain placeholder text like "test", ignore the placeholder content and instead generate a random, fascinating pharmacy/pharmacology fact along with a brief explanation of why it matters clinically.
+
+      Question: ${question}
+      
+      Answers:
+      ${formattedAnswers}
+      
+      response language : ${lang}
+
+      give an answer and dont request any more questions from the user just only give him the explanation
+    `;
+
+      const explanation = await this.ai.models.generateContent({
+        model: process.env.AI_MODEL!,
+        contents: [
+          {
+            text: prompt,
+          },
+        ],
+        config: {
+          temperature: 0.4,
+        },
+      });
+
+      if (!explanation.text) {
+        throw new BadRequestException('AI returned an empty response.');
+      }
+      user.aiGenerationCount++;
+      await manager.getRepository(User).save(user);
+
+      return explanation.text;
+    });
   }
 }

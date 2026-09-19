@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BookAudioIcon,
   CalendarCheck,
   Crown,
   GraduationCap,
@@ -19,7 +20,7 @@ export type NavKey =
   | "exams"
   | "todos"
   | "pomodoro"
-  | "profile"
+  | "profile" | "Up to Date"
   | "subscription";
 
 export type NavItem = {
@@ -82,6 +83,12 @@ export const NAV_ITEMS: NavItem[] = [
     key: "profile",
     href: "/dashboard/profile",
     icon: UserRound,
+    tone: "var(--accent)",
+  },
+  {
+    key: "Up to Date",
+    href: "/dashboard/uptodate",
+    icon: BookAudioIcon,
     tone: "var(--accent)",
   },
   {

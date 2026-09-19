@@ -5,6 +5,7 @@
   position: relative;
   overflow-x: hidden;
 }
+
 .stackedSections {
   display: flex;
   flex-direction: column;
@@ -17,11 +18,9 @@
   right: -10%;
   width: 60%;
   height: 120%;
-  background: radial-gradient(
-    circle at center,
-    var(--primary) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle at center,
+      var(--primary) 0%,
+      transparent 70%);
   opacity: 0.06;
   pointer-events: none;
   z-index: 0;
@@ -966,5 +965,420 @@
     right: 1rem;
     left: 1rem;
     max-width: none;
+  }
+}
+
+/* ==================================================================
+   Summary & Mind Map section (course detail)
+   ================================================================== */
+
+.summarySection {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--surface) 100%, transparent),
+      color-mix(in srgb, var(--surface-hover) 30%, var(--surface)));
+  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 1px 1px 0 color-mix(in srgb, white 6%, transparent),
+    0 2px 6px color-mix(in srgb, var(--foreground) 3%, transparent),
+    0 10px 30px -12px color-mix(in srgb, var(--primary) 20%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.summarySection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  background: linear-gradient(90deg,
+      transparent,
+      var(--primary),
+      var(--accent),
+      transparent);
+  opacity: 0.65;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+  flex-wrap: wrap;
+}
+
+.summaryHeaderLeft {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.summaryHeaderIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--primary) 14%, var(--surface-hover)),
+      color-mix(in srgb, var(--primary) 4%, var(--surface-hover)));
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--border));
+  color: var(--primary);
+}
+
+.summaryTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.summarySubtitle {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+
+.summaryLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--muted-foreground);
+}
+
+.summaryEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.75rem 1rem;
+  text-align: center;
+  border: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--background) 40%, transparent);
+}
+
+.summaryEmptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: color-mix(in srgb, var(--primary) 80%, transparent);
+}
+
+.summaryEmpty p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.88rem;
+  max-width: 46ch;
+}
+
+.summaryBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.summaryText {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  background: color-mix(in srgb, var(--background) 55%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--foreground);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ==================================================================
+   Mind map display
+   ================================================================== */
+
+.mindmapWrap {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 60%);
+}
+
+.mindmapHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.mindmapHeaderIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.mindmapName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--foreground);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mindmapCount {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.mindmapTerms {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.65rem;
+}
+
+.mindmapTerm {
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.mindmapTerm:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.mindmapTermHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mindmapTermFrench {
+  font-weight: 700;
+  color: var(--foreground);
+  font-size: 0.92rem;
+}
+
+.mindmapArrow {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.mindmapTermEnglish {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--primary) 90%, var(--foreground));
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.mindmapTermDefinition {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+/* ==================================================================
+   Summary modal
+   ================================================================== */
+
+.summaryModalTitleRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.summaryModalIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: var(--primary-foreground);
+  box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--primary) 50%, transparent);
+}
+
+.summaryModalSubtitle {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-serif, inherit);
+  font-style: italic;
+}
+
+/* Terms builder */
+
+.answerBuilderLabelRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+}
+
+.answerBuilderCount {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.termsHeader {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr 34px;
+  gap: 0.5rem;
+  padding: 0.35rem 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.termRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr 34px;
+  gap: 0.5rem;
+  align-items: start;
+  padding: 0.5rem 0;
+  border-top: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.termRow:first-of-type {
+  border-top: none;
+}
+
+.textareaSmall {
+  width: 100%;
+  min-height: 40px;
+  max-height: 90px;
+  resize: vertical;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  line-height: 1.4;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.textareaSmall:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.termsEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 10px;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  background: color-mix(in srgb, var(--background) 40%, transparent);
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+  .termsHeader {
+    display: none;
+  }
+
+  .termRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--background) 40%, transparent);
+    border: 1px solid var(--border);
+    margin-top: 0.5rem;
+  }
+
+  .termRow .textareaSmall {
+    grid-column: 1 / -1;
+  }
+
+  .termRow>button:last-child {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .mindmapTerms {
+    grid-template-columns: 1fr;
+  }
+
+  .summarySection {
+    padding: 1.1rem;
+    border-radius: 14px;
+  }
+
+  .summaryHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .mindmapTerm,
+  .summarySection,
+  .summaryHeaderIcon {
+    transition: none !important;
+    transform: none !important;
   }
 }

@@ -14,5 +14,6 @@ export async function setLanguage(locale: string) {
 }
 export async function getLanguage() {
   const cookieStore = await cookies();
+  console.log(cookieStore);
   return cookieStore.get("lang")?.value;
 }

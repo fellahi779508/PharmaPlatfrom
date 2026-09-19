@@ -58,6 +58,7 @@ import {
 import { Subject, Course, Td, Tp } from "@/utils/types/allTypes";
 import { getTdsBySubject } from "@/utils/server/td-api";
 import { getTpsBySubject } from "@/utils/server/tp-api";
+import { generateExplanation } from "@/utils/server/qcm-api";
 
 // ===========================================================================
 // Small helpers
@@ -870,6 +871,39 @@ function CreateSessionModal({
 // Play session modal
 // ===========================================================================
 
+// ===========================================================================
+// Typewriter hook — writes out text character by character
+// ===========================================================================
+
+function useTypewriter(text: string | null, speed = 10) {
+  const [displayed, setDisplayed] = useState("");
+
+  useEffect(() => {
+    if (!text) {
+      setDisplayed("");
+      return;
+    }
+    let i = 0;
+    setDisplayed("");
+    const interval = window.setInterval(() => {
+      i += 2; // 2 chars per tick → ~200 chars/sec at 10ms
+      if (i >= text.length) {
+        setDisplayed(text);
+        window.clearInterval(interval);
+      } else {
+        setDisplayed(text.slice(0, i));
+      }
+    }, speed);
+    return () => window.clearInterval(interval);
+  }, [text, speed]);
+
+  return displayed;
+}
+
+// ===========================================================================
+// Play session modal
+// ===========================================================================
+
 function PlaySessionModal({
   sessionId,
   onClose,
@@ -888,7 +922,12 @@ function PlaySessionModal({
   const [revealing, setRevealing] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
-  // --- AUDIO SETUP ---------------------------------------------------------
+  /* -------- AI explanation state -------- */
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  /* -------- Audio -------- */
   const correctSound = useRef<HTMLAudioElement | null>(null);
   const wrongSound = useRef<HTMLAudioElement | null>(null);
   const finishSound = useRef<HTMLAudioElement | null>(null);
@@ -914,11 +953,11 @@ function PlaySessionModal({
       console.error("Audio error", e);
     }
   }, []);
-  // -------------------------------------------------------------------------
 
   const question = state?.question;
   const isRevealed = !!question?.isRevealed;
 
+  /* -------- Load play state -------- */
   const loadPlay = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -945,6 +984,14 @@ function PlaySessionModal({
     setSelected(question?.selectedAnswerIds ?? []);
   }, [question?.id, question?.isRevealed]);
 
+  /* -------- Reset AI panel when question changes -------- */
+  useEffect(() => {
+    setAiExplanation(null);
+    setAiError(null);
+    setAiLoading(false);
+  }, [question?.id]);
+
+  /* -------- Draft autosave -------- */
   const draftTimer = useRef<number | null>(null);
   useEffect(() => {
     if (!question || isRevealed) return;
@@ -967,6 +1014,7 @@ function PlaySessionModal({
     );
   };
 
+  /* -------- Reveal -------- */
   const handleReveal = async () => {
     if (!question || selected.length === 0) return;
     setRevealing(true);
@@ -993,6 +1041,7 @@ function PlaySessionModal({
     }
   };
 
+  /* -------- Next -------- */
   const handleNext = async () => {
     setAdvancing(true);
     setError(null);
@@ -1016,14 +1065,67 @@ function PlaySessionModal({
     }
   };
 
+  /* -------- AI: explain further -------- */
+  const handleExplainFurther = async () => {
+    if (!question || aiLoading) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    setAiExplanation(null);
+
+    try {
+      const qcmId = (question as any).qcmId ?? question.id;
+      const res = await generateExplanation(qcmId);
+
+      if ((res as any).status === true) {
+        // Try every reasonable shape the API might return.
+        const raw =
+          (res as any).response ??
+          (res as any).result ??
+          (res as any).data;
+
+        const text =
+          (raw && (raw.explanation ?? raw.text ?? raw.content)) ??
+          (typeof raw === "string" ? raw : null);
+
+        setAiExplanation(
+          text && String(text).trim().length > 0
+            ? String(text)
+            : t("play.aiEmpty"),
+        );
+      } else {
+        setAiError((res as any).message ?? t("play.aiFailed"));
+      }
+    } catch (e: any) {
+      setAiError(e?.message ?? t("play.aiFailed"));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+
+
+  /* -------- Progress derived -------- */
   const total = state?.session?.totalQuestions ?? 0;
-  const currentPosition = question ? question.position : state?.session?.currentPosition ?? total;
+  const currentPosition = question
+    ? question.position
+    : state?.session?.currentPosition ?? total;
   const correctCount = state?.session?.correctCount ?? 0;
-  const progressPct = total > 0 ? Math.min(100, (currentPosition / total) * 100) : 0;
+  const progressPct =
+    total > 0 ? Math.min(100, (currentPosition / total) * 100) : 0;
+
+  const typedExplanation = useTypewriter(aiExplanation, 8);
+
+  /* =================================================================== */
+  /*  Render                                                             */
+  /* =================================================================== */
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.sessionModal} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.sessionModal}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           className={`${styles.closeButton} ${styles.closeButtonAbs}`}
           onClick={onClose}
@@ -1032,12 +1134,40 @@ function PlaySessionModal({
           <X size={18} />
         </button>
 
+        {/* ---------- Header ---------- */}
         <div className={styles.sessionModalHeader}>
-          <h2 className={styles.sessionModalTitle}>
-            {state?.session?.name ?? t("play.session")}
-          </h2>
+          <div className={styles.sessionModalTitleBlock}>
+            <span className={styles.sessionModalEyebrow}>
+              <Sparkles size={12} />
+              {t("play.eyebrow")}
+            </span>
+            <h2 className={styles.sessionModalTitle}>
+              {state?.session?.name ?? t("play.session")}
+            </h2>
+          </div>
+
+          {question && (
+            <div className={styles.headerStats}>
+              <span className={styles.headerStat}>
+                <span className={styles.headerStatValue}>
+                  {correctCount}
+                </span>
+                <span className={styles.headerStatLabel}>
+                  {t("play.correct")}
+                </span>
+              </span>
+              <span className={styles.headerStatDivider} />
+              <span className={styles.headerStat}>
+                <span className={styles.headerStatValue}>{total}</span>
+                <span className={styles.headerStatLabel}>
+                  {t("play.total")}
+                </span>
+              </span>
+            </div>
+          )}
         </div>
 
+        {/* ---------- Loading / Error ---------- */}
         {loading ? (
           <div className={styles.loading}>
             <Loader2 className={styles.spinner} size={28} />
@@ -1049,6 +1179,7 @@ function PlaySessionModal({
             <p className={styles.emptyStateText}>{error}</p>
           </div>
         ) : state?.completed && !question ? (
+          /* ---------- Completion screen ---------- */
           <div className={styles.completionScreen}>
             <div className={styles.completionIcon}>
               <CheckCircle2 size={44} />
@@ -1060,21 +1191,35 @@ function PlaySessionModal({
 
             <div className={styles.completionStats}>
               <div className={styles.completionStat}>
-                <span className={styles.completionStatValue}>{state.session.correctCount}</span>
-                <span className={styles.completionStatLabel}>{t("completion.correct")}</span>
+                <span className={styles.completionStatValue}>
+                  {state.session.correctCount}
+                </span>
+                <span className={styles.completionStatLabel}>
+                  {t("completion.correct")}
+                </span>
               </div>
               <div className={styles.completionStat}>
-                <span className={styles.completionStatValue}>{state.session.totalQuestions}</span>
-                <span className={styles.completionStatLabel}>{t("completion.totalQuestions")}</span>
+                <span className={styles.completionStatValue}>
+                  {state.session.totalQuestions}
+                </span>
+                <span className={styles.completionStatLabel}>
+                  {t("completion.totalQuestions")}
+                </span>
               </div>
               <div className={styles.completionStat}>
                 <span className={styles.completionStatValue}>
                   {state.session.totalQuestions > 0
-                    ? Math.round((state.session.correctCount / state.session.totalQuestions) * 100)
+                    ? Math.round(
+                      (state.session.correctCount /
+                        state.session.totalQuestions) *
+                      100,
+                    )
                     : 0}
                   %
                 </span>
-                <span className={styles.completionStatLabel}>{t("completion.finalScore")}</span>
+                <span className={styles.completionStatLabel}>
+                  {t("completion.finalScore")}
+                </span>
               </div>
             </div>
 
@@ -1089,16 +1234,22 @@ function PlaySessionModal({
                   onClose();
                 }}
               >
-                <RefreshCw size={14} style={{ marginRight: 6 }} /> {t("completion.restartSession")}
+                <RefreshCw size={14} style={{ marginRight: 6 }} />
+                {t("completion.restartSession")}
               </button>
             </div>
           </div>
         ) : question ? (
+          /* ---------- Question screen ---------- */
           <>
+            {/* Progress */}
             <div className={styles.progressSection}>
               <div className={styles.progressInfo}>
-                <span style={{ fontWeight: 600 }}>
-                  {t("play.questionOf", { current: currentPosition, total: total })}
+                <span className={styles.progressLabel}>
+                  {t("play.questionOf", {
+                    current: currentPosition,
+                    total,
+                  })}
                 </span>
                 <span className={styles.correctTracker}>
                   <Sparkles size={14} /> {correctCount} {t("play.correct")}
@@ -1112,10 +1263,32 @@ function PlaySessionModal({
               </div>
             </div>
 
+            {/* Question body */}
             <div className={styles.questionSection}>
-              <span className={styles.questionNumber}>
-                {t("play.questionNum", { num: currentPosition })}
-              </span>
+              <div className={styles.questionHeader}>
+                <span className={styles.questionNumber}>
+                  {t("play.questionNum", { num: currentPosition })}
+                </span>
+                {isRevealed && (
+                  <span
+                    className={`${styles.revealChip} ${question.isCorrect
+                      ? styles.revealChipCorrect
+                      : styles.revealChipIncorrect
+                      }`}
+                  >
+                    {question.isCorrect ? (
+                      <>
+                        <CheckCircle2 size={12} /> {t("play.correctChip")}
+                      </>
+                    ) : (
+                      <>
+                        <XCircle size={12} /> {t("play.incorrectChip")}
+                      </>
+                    )}
+                  </span>
+                )}
+              </div>
+
               <h3 className={styles.questionText}>{question.question}</h3>
 
               {isRevealed && (
@@ -1135,35 +1308,29 @@ function PlaySessionModal({
                 </div>
               )}
 
+              {/* Answers */}
               <div className={styles.answersList}>
                 {!question.answers || question.answers.length === 0 ? (
-                  <div
-                    style={{
-                      padding: "1rem",
-                      textAlign: "center",
-                      backgroundColor: "color-mix(in srgb, #ef4444 10%, transparent)",
-                      color: "#ef4444",
-                      borderRadius: "8px",
-                      border: "1px dashed #ef4444",
-                    }}
-                  >
-                    <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: 500 }}>
-                      ⚠️ No answers received from the server for this question.
+                  <div className={styles.noAnswersWarning}>
+                    <p className={styles.noAnswersTitle}>
+                      ⚠️ {t("play.noAnswersTitle")}
                     </p>
-                    <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.8rem", opacity: 0.8 }}>
-                      Check your NestJS backend to ensure the <code>answers</code> relation is included for TD/TP QCMs.
+                    <p className={styles.noAnswersHint}>
+                      {t("play.noAnswersHint")}
                     </p>
                   </div>
                 ) : (
                   question.answers.map((answer: SessionAnswer) => {
                     const isSelected = selected.includes(answer.id);
                     const showCorrect = isRevealed && answer.isCorrect;
-                    const showWrong = isRevealed && isSelected && !answer.isCorrect;
+                    const showWrong =
+                      isRevealed && isSelected && !answer.isCorrect;
 
                     let cls = styles.answerButton;
                     if (isRevealed) cls += ` ${styles.answerDisabled}`;
                     if (showCorrect) cls += ` ${styles.answerCorrectRevealed}`;
-                    else if (showWrong) cls += ` ${styles.answerIncorrectSelected}`;
+                    else if (showWrong)
+                      cls += ` ${styles.answerIncorrectSelected}`;
                     else if (isSelected) cls += ` ${styles.answerSelected}`;
 
                     return (
@@ -1180,17 +1347,29 @@ function PlaySessionModal({
                                 }`}
                             >
                               {isSelected && (
-                                <Check size={14} className={styles.answerCheckIcon} />
+                                <Check
+                                  size={14}
+                                  className={styles.answerCheckIcon}
+                                />
                               )}
                             </span>
-                            <span className={styles.answerText}>{answer.answer}</span>
+                            <span className={styles.answerText}>
+                              {answer.answer}
+                            </span>
                           </span>
 
                           {showCorrect && (
-                            <CheckCircle2 size={20} className={styles.correctIcon} />
+                            <CheckCircle2
+                              size={20}
+                              className={styles.correctIcon}
+                            />
                           )}
                           {showWrong && (
-                            <XCircle size={20} className={styles.correctIcon} style={{ color: "#ef4444" }} />
+                            <XCircle
+                              size={20}
+                              className={styles.correctIcon}
+                              style={{ color: "var(--error)" }}
+                            />
                           )}
                         </button>
 
@@ -1216,6 +1395,61 @@ function PlaySessionModal({
                 )}
               </div>
 
+              {/* ---------- AI explanation panel ---------- */}
+              {isRevealed && (aiLoading || aiExplanation || aiError) && (
+                <div className={styles.aiCard}>
+                  <div className={styles.aiCardHeader}>
+                    <div className={styles.aiCardIconWrap}>
+                      <Sparkles size={14} />
+                    </div>
+                    <div className={styles.aiCardTitleBlock}>
+                      <span className={styles.aiCardTitle}>
+                        {t("play.aiTitle")}
+                      </span>
+                      <span className={styles.aiCardSubtitle}>
+                        {t("play.aiSubtitle")}
+                      </span>
+                    </div>
+
+                  </div>
+
+                  <div className={styles.aiCardBody}>
+                    {aiLoading ? (
+                      <div className={styles.aiLoading}>
+                        <div className={styles.aiLoadingDots}>
+                          <span />
+                          <span />
+                          <span />
+                        </div>
+                        <span className={styles.aiLoadingText}>
+                          {t("play.aiThinking")}
+                        </span>
+                      </div>
+                    ) : aiError ? (
+                      <div className={styles.aiError}>
+                        <XCircle size={14} />
+                        <span>{aiError}</span>
+                        <button
+                          type="button"
+                          className={styles.aiRetryBtn}
+                          onClick={handleExplainFurther}
+                        >
+                          {t("play.aiRetry")}
+                        </button>
+                      </div>
+                    ) : (
+                      <p className={styles.aiText}>
+                        {typedExplanation}
+                        {typedExplanation !== aiExplanation && (
+                          <span className={styles.aiCursor}>▍</span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ---------- Navigation ---------- */}
               <div className={styles.questionNavigation}>
                 {!isRevealed ? (
                   <button
@@ -1225,7 +1459,8 @@ function PlaySessionModal({
                   >
                     {revealing ? (
                       <>
-                        <Loader2 size={14} className={styles.spinner} /> {t("play.checking")}
+                        <Loader2 size={14} className={styles.spinner} />{" "}
+                        {t("play.checking")}
                       </>
                     ) : (
                       <>
@@ -1234,25 +1469,41 @@ function PlaySessionModal({
                     )}
                   </button>
                 ) : (
-                  <button
-                    className={styles.nextButton}
-                    disabled={advancing}
-                    onClick={handleNext}
-                  >
-                    {advancing ? (
-                      <>
-                        <Loader2 size={14} className={styles.spinner} /> {t("play.loading")}
-                      </>
-                    ) : currentPosition >= total ? (
-                      <>
-                        {t("play.finishSession")} <CheckCircle2 size={14} />
-                      </>
-                    ) : (
-                      <>
-                        {t("play.nextQuestion")} <ArrowRight size={14} />
-                      </>
+                  <>
+                    {/* Explain further — only if there's no AI text yet */}
+                    {!aiExplanation && !aiLoading && !aiError && (
+                      <button
+                        type="button"
+                        className={styles.explainFurtherButton}
+                        onClick={handleExplainFurther}
+                      >
+                        <Sparkles size={15} />
+                        {t("play.explainFurther")}
+                      </button>
                     )}
-                  </button>
+
+                    <button
+                      className={styles.nextButton}
+                      disabled={advancing}
+                      onClick={handleNext}
+                    >
+                      {advancing ? (
+                        <>
+                          <Loader2 size={14} className={styles.spinner} />{" "}
+                          {t("play.loading")}
+                        </>
+                      ) : currentPosition >= total ? (
+                        <>
+                          {t("play.finishSession")}{" "}
+                          <CheckCircle2 size={14} />
+                        </>
+                      ) : (
+                        <>
+                          {t("play.nextQuestion")} <ArrowRight size={14} />
+                        </>
+                      )}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -1266,3 +1517,5 @@ function PlaySessionModal({
     </div>
   );
 }
+
+

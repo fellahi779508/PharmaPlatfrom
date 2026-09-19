@@ -13,8 +13,8 @@
     "required_password": "Password is required",
     "required_email": "Email is required",
     "email_exists": "A user with this email already exists",
-
-    "email_already_verified": "Email is already verified"
+    "email_already_verified": "Email is already verified",
+    "ai_generation_limit": "You have reached the limit of the daily AI generation. "
   },
   "email": {
     "otp_sent": "Failed to send verification code",
@@ -44,5 +44,14 @@
     "notFound": "Invalid redeem code",
     "alreadyAssigned": "This code is already used",
     "notAssigned": "This Account is not activated"
+  },
+  "qcm": {
+    "not_found": "QCM not found"
+  },
+  "mindmap": {
+    "not_found": "Mindmap not found"
+  },
+  "summary": {
+    "not_found": "Summary not found"
   }
 }

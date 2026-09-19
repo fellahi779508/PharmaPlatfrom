@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { QcmService } from './qcm.service';
 import { CreateQcmDto } from './dto/create-qcm.dto';
@@ -122,6 +123,13 @@ export class QcmController {
       tdId ? parseInt(tdId, 10) : undefined,
       tpId ? parseInt(tpId, 10) : undefined,
     );
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/generate-explanation')
+  generateExplanation(@Param('id') id: string, @Req() req) {
+    return this.qcmService.generateAiExplanation(+id, req.user.id);
   }
 
   @Get('course/:courseId')

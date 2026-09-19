@@ -1,13 +1,16 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Subject } from 'src/subject/entities/subject.entity';
 import { Qcm } from 'src/qcm/entities/qcm.entity';
 import { Semester } from 'src/semester/entities/semester.entity';
+import { Summary } from 'src/summary/entities/summary.entity';
 
 @Entity('course')
 export class Course {
@@ -30,4 +33,11 @@ export class Course {
     onDelete: 'SET NULL',
   })
   semester: Semester;
+
+  @OneToOne(() => Summary, summary => summary.course, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn()
+  summary: Summary;
 }

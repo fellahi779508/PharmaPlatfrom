@@ -33,6 +33,7 @@ import { useTheme, type Theme } from "./use-theme";
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { getRole, GetToken } from "@/utils/server/auth-api";
+import { setLanguage } from "@/utils/server/lang-api";
 
 type QuickNavProps = {
   variant?: "sidebar" | "topbar";
@@ -166,11 +167,12 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
     };
   }, [open]);
 
-  const switchLocale = (locale: string) => {
+  const switchLocale = async (locale: string) => {
     if (locale === currentLocale) {
       setOpen(false);
       return;
     }
+    await setLanguage(locale);
     router.replace(pathname, { locale });
     setOpen(false);
   };
@@ -230,9 +232,8 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                       <Link
                         key={key}
                         href={href}
-                        className={`${styles.item}${
-                          isActive ? ` ${styles.itemActive}` : ""
-                        }`}
+                        className={`${styles.item}${isActive ? ` ${styles.itemActive}` : ""
+                          }`}
                         style={
                           {
                             "--tone": tone,
@@ -267,9 +268,8 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                       <Link
                         key={key}
                         href={href}
-                        className={`${styles.item}${
-                          isActive ? ` ${styles.itemActive}` : ""
-                        }`}
+                        className={`${styles.item}${isActive ? ` ${styles.itemActive}` : ""
+                          }`}
                         style={
                           {
                             "--tone": tone,
@@ -382,9 +382,8 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                         role="radio"
                         aria-checked={isActive}
                         aria-label={t(key, { fallback: key })}
-                        className={`${styles.segment} ${
-                          isActive ? styles.segmentActive : ""
-                        }`}
+                        className={`${styles.segment} ${isActive ? styles.segmentActive : ""
+                          }`}
                         onClick={() => setTheme(key)}
                       >
                         <Icon size={15} />
@@ -410,9 +409,8 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                         key={loc.code}
                         type="button"
                         onClick={() => switchLocale(loc.code)}
-                        className={`${styles.langBtn} ${
-                          isActive ? styles.langBtnActive : ""
-                        }`}
+                        className={`${styles.langBtn} ${isActive ? styles.langBtnActive : ""
+                          }`}
                         aria-pressed={isActive}
                       >
                         {loc.label}

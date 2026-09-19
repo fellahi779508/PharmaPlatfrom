@@ -27,6 +27,8 @@ import { TasksModule } from './tasks/tasks.module';
 import { SessionModule } from './session/session.module';
 import { SessionQuestionModule } from './session-question/session-question.module';
 import { SessionQuestionAnswerModule } from './session-question-answer/session-question-answer.module';
+import { SummaryModule } from './summary/summary.module';
+import { MindmapModule } from './mindmap/mindmap.module';
 
 @Module({
   imports: [
@@ -84,6 +86,8 @@ import { SessionQuestionAnswerModule } from './session-question-answer/session-q
     SessionModule,
     SessionQuestionModule,
     SessionQuestionAnswerModule,
+    SummaryModule,
+    MindmapModule,
   ],
   controllers: [],
   providers: [],
