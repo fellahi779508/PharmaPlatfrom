@@ -8,6 +8,7 @@ import {
   ListTodo,
   Timer,
   TreePine,
+  Trophy,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -20,7 +21,9 @@ export type NavKey =
   | "exams"
   | "todos"
   | "pomodoro"
-  | "profile" | "Up to Date"
+  | "leaderboard"
+  | "profile"
+  | "Up to Date"
   | "subscription";
 
 export type NavItem = {
@@ -80,15 +83,22 @@ export const NAV_ITEMS: NavItem[] = [
     tone: "var(--success)",
   },
   {
-    key: "profile",
-    href: "/dashboard/profile",
-    icon: UserRound,
-    tone: "var(--accent)",
+    key: "leaderboard",
+    href: "/dashboard/leaderboard",
+    icon: Trophy,
+    tone: "var(--success)",
   },
+
   {
     key: "Up to Date",
     href: "/dashboard/uptodate",
     icon: BookAudioIcon,
+    tone: "var(--accent)",
+  },
+  {
+    key: "profile",
+    href: "/dashboard/profile",
+    icon: UserRound,
     tone: "var(--accent)",
   },
   {

@@ -1,4 +1,5 @@
 import { Course } from "src/course/entities/course.entity";
+import { Image } from "src/image/entities/image.entity";
 import { Mindmap } from "src/mindmap/entities/mindmap.entity";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -17,4 +18,6 @@ export class Summary {
     @JoinColumn()
     mindmap: Mindmap;
 
+    @OneToOne(() => Image, (image) => image.summary)
+    image: Image | null;
 }

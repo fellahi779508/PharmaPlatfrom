@@ -21,7 +21,6 @@ import { Role } from 'src/auth/enums/role.enum';
 export class RedeemCodeController {
   constructor(private readonly redeemCodeService: RedeemCodeService) { }
 
-
   @Post()
   @Roles(Role.ADMIN, Role.OWNER)
   @UseGuards(RolesGuard)
@@ -37,7 +36,13 @@ export class RedeemCodeController {
   findAll() {
     return this.redeemCodeService.findAll();
   }
-
+  @Roles(Role.ADMIN, Role.OWNER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('year/:yearId')
+  getRedeemCDByYear(@Param('yearId') yearId: number) {
+    return this.redeemCodeService.getRedeemCDByYear(yearId);
+  }
 
   @Post('revoke/admin')
   @Roles(Role.ADMIN, Role.OWNER)
@@ -61,6 +66,13 @@ export class RedeemCodeController {
     console.log(code);
 
     return this.redeemCodeService.assignCodeToUser(code, req.user.id);
+  }
+  @Patch(':id')
+  @Roles(Role.ADMIN, Role.OWNER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  update(@Param('id') id: string, @Body() updateRedeemCodeDto: UpdateRedeemCodeDto) {
+    return this.redeemCodeService.updateCode(+id, updateRedeemCodeDto);
   }
 
   @Roles(Role.ADMIN, Role.OWNER)

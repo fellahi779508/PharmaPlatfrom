@@ -287,13 +287,23 @@ export class ExamService {
   ): Promise<{ success: true }> {
     const userId = this.normalizeUserId(userIdInput);
     const sessionRepo = this.dataSource.getRepository(ExamSession);
+    const examRepo = this.dataSource.getRepository(Exam);
 
     const session = await sessionRepo.findOne({
       where: { id: sessionId, user: { id: userId } },
+      relations: { exam: true },
     });
     if (!session) throw new NotFoundException('Session not found');
-
-    await sessionRepo.remove(session);
+    const exam = await examRepo.findOne({
+      where: { id: session.exam.id },
+      relations: { sessions: true },
+    });
+    if (!exam) throw new NotFoundException('Exam not found');
+    if (exam.sessions?.length === 1) {
+      await examRepo.remove(exam);
+    } else {
+      await sessionRepo.remove(session);
+    }
     return { success: true };
   }
 

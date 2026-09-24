@@ -156,3 +156,45 @@ export async function getRole(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get("role")?.value || null;
 }
+export async function ForgotPasswordOtp(email: string) {
+  try {
+    const response = await api.post(
+      "/email/otpCode/password",
+      { email },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": await getLanguage(),
+        },
+      },
+    );
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response?.data?.message || "Une erreur est survenue",
+    };
+  }
+}
+export async function verifyOtpPassword(email: string, otp: string) {
+  try {
+    const response = await api.post(
+      "/email/verify-otp/password",
+      { email, otp },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": await getLanguage(),
+        },
+      },
+    );
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response?.data?.message || "Une erreur est survenue",
+    };
+  }
+}

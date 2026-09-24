@@ -78,7 +78,7 @@ export default async function RootLayout({ children, params }: Props) {
         <NextIntlClientProvider locale={locale}>
           {/* <TopBar /> */}
           <main>{children}</main>
-          <QuickNav variant="sidebar" />
+
         </NextIntlClientProvider>
       </body>
     </html>

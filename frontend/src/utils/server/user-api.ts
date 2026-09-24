@@ -72,6 +72,34 @@ export async function ChangePassword(currentPass: string, newPassword: string) {
     };
   }
 }
+
+export async function changePasswordByEmail(email: string, newPassword: string) {
+  try {
+    const response = await api.put(
+      "/user/reset-password",
+      {
+        email: email,
+        password: newPassword,
+      },
+      {
+        headers: {
+          "Accept-Language": await getLanguage(),
+        },
+      },
+    );
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
 export async function GetUserStats() {
   try {
     const response = await api.get("/user/stats", {
@@ -172,3 +200,37 @@ export async function isVerifedUser() {
     };
   }
 }
+export async function GetLeaderboard() {
+  try {
+    const response = await api.get("/user/leaderboard", {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+export async function getUserByEmail(email: string) {
+  try {
+    const response = await api.get(`/user/email/${email}`, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+      },
+    });
+    return { status: true, response: true };
+  } catch (error: any) {
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+

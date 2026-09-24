@@ -16,6 +16,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { SubscriptionGuard } from 'src/auth/guards/jwt-auth/subscription.guard';
 
 @Controller('subject')
 export class SubjectController {
@@ -37,13 +38,13 @@ export class SubjectController {
     return this.subjectService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('student/')
   getSubjectsByStudent(@Req() req: any) {
     return this.subjectService.getSubjectsByStudent(req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.subjectService.findOne(+id);

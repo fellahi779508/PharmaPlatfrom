@@ -4,6 +4,7 @@
     "not_deleted": "Failed to delete user",
     "invalid_password": "Invalid password",
     "invalid_username": "Invalid username",
+    "invalid_phone": "Invalid phone number",
     "required_username": "Username is required",
     "required_firstName": "first name is required",
     "required_lastName": "last name is required",

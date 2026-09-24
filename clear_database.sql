@@ -1,0 +1,49 @@
+-- ============================================
+-- CLEAR ALL DATA FROM DATABASE
+-- ============================================
+-- This script deletes all data from all tables and resets sequences
+
+-- Truncate all tables with RESTART IDENTITY to reset sequences
+TRUNCATE TABLE session_question_answer RESTART IDENTITY CASCADE;
+TRUNCATE TABLE session_question RESTART IDENTITY CASCADE;
+TRUNCATE TABLE session RESTART IDENTITY CASCADE;
+TRUNCATE TABLE exam_session_answer RESTART IDENTITY CASCADE;
+TRUNCATE TABLE exam_session RESTART IDENTITY CASCADE;
+TRUNCATE TABLE exam_qcm RESTART IDENTITY CASCADE;
+TRUNCATE TABLE exam RESTART IDENTITY CASCADE;
+TRUNCATE TABLE qcm_answer RESTART IDENTITY CASCADE;
+TRUNCATE TABLE qcm RESTART IDENTITY CASCADE;
+TRUNCATE TABLE task RESTART IDENTITY CASCADE;
+TRUNCATE TABLE todo RESTART IDENTITY CASCADE;
+TRUNCATE TABLE redeem_code RESTART IDENTITY CASCADE;
+TRUNCATE TABLE "user" CASCADE;
+TRUNCATE TABLE course RESTART IDENTITY CASCADE;
+TRUNCATE TABLE subject RESTART IDENTITY CASCADE;
+TRUNCATE TABLE semester RESTART IDENTITY CASCADE;
+TRUNCATE TABLE year RESTART IDENTITY CASCADE;
+
+-- Verification: Check that all tables are empty
+SELECT 
+    'year' as table_name, COUNT(*) as count FROM year
+UNION ALL
+SELECT 'semester', COUNT(*) FROM semester
+UNION ALL
+SELECT 'subject', COUNT(*) FROM subject
+UNION ALL
+SELECT 'course', COUNT(*) FROM course
+UNION ALL
+SELECT 'user', COUNT(*) FROM "user"
+UNION ALL
+SELECT 'redeem_code', COUNT(*) FROM redeem_code
+UNION ALL
+SELECT 'qcm', COUNT(*) FROM qcm
+UNION ALL
+SELECT 'qcm_answer', COUNT(*) FROM qcm_answer
+UNION ALL
+SELECT 'exam', COUNT(*) FROM exam
+UNION ALL
+SELECT 'session', COUNT(*) FROM session
+UNION ALL
+SELECT 'todo', COUNT(*) FROM todo
+UNION ALL
+SELECT 'task', COUNT(*) FROM task;

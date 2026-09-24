@@ -27,6 +27,10 @@ import {
   Beaker,
   Network,
   Languages,
+  Image as ImageIcon,
+  Upload,
+  Pill,
+  Search,
 } from "lucide-react";
 
 import {
@@ -88,11 +92,25 @@ import {
   createSummary,
   deleteMindMap,
   deleteSummary,
+  deleteSummaryImage,
   getMindMapByCourseId,
   getSummaryByCourse,
+  getSummaryImage,
   updateMindMap,
   updateSummary,
+  uploadSummaryImage,
 } from "@/utils/server/summary-api";
+import {
+  getMedicaments,
+  createMedicament,
+  updateMedicament,
+  deleteMedicament,
+  uploadMedicamentImage,
+  getMedicamentImage,
+  deleteMedicamentImage,
+  type Medicament,
+  type CreateMedicament,
+} from "@/utils/server/medicament-api";
 
 import styles from "./teacher.module.css";
 import {
@@ -147,12 +165,36 @@ type MindMapContent = {
   }[];
 };
 
+type SummaryImage = {
+  id: number;
+  url: string;
+  publicId?: string;
+  format?: string | null;
+  width?: number;
+  height?: number;
+  bytes?: number;
+  originalName?: string | null;
+};
+
+type MedicamentImage = {
+  id: number;
+  url: string;
+  publicId?: string;
+  width?: number;
+  height?: number;
+};
+
+type MedicamentFormData = CreateMedicament & { id?: number };
+
+type TopView = "curriculum" | "medicaments";
+
 type ViewMode =
   | "years"
   | "year-detail"
   | "subject-detail"
   | "container-detail"
-  | "qcm-detail";
+  | "qcm-detail"
+  | "medicaments";
 
 /* ------------------------------------------------------------------ */
 /* API map                                                             */
@@ -200,17 +242,11 @@ const toArray = <T,>(v: any): T[] => {
     if (Array.isArray(v.courses)) return v.courses;
     if (Array.isArray(v.qcms)) return v.qcms;
     if (Array.isArray(v.answers)) return v.answers;
+    if (Array.isArray(v.medicaments)) return v.medicaments;
   }
   return [];
 };
 
-/**
- * Normalizes a single entity from a wide range of API response shapes:
- *   - plain object          → itself
- *   - array (single-item)   → first element
- *   - { data: {...} }       → the inner object
- *   - null / undefined      → null
- */
 const unwrapEntity = <T,>(v: any): T | null => {
   if (v == null) return null;
 
@@ -239,7 +275,7 @@ const unwrapEntity = <T,>(v: any): T | null => {
 };
 
 /* ------------------------------------------------------------------ */
-/* ID resolution helpers (defensive)                                   */
+/* ID resolution helpers                                               */
 /* ------------------------------------------------------------------ */
 
 const subjectYearId = (s: Subject): number | undefined =>
@@ -272,17 +308,6 @@ const emptyTerm = (i = 0): MindMapTerm => ({
   definition: "",
 });
 
-/**
- * Parses a Mindmap entity into builder-friendly term rows.
- *
- * Handles:
- *   - jsonContent as an object  → { terms: [...] }
- *   - jsonContent as a string   → JSON.parse(...)
- *   - bare array                → [{...}, ...]
- *   - alternate field names     → json / content / data
- *   - missing fields            → default to empty strings
- *   - blank rows                → dropped
- */
 function readTermsFromMindmap(mindmap: Mindmap | null): MindMapTerm[] {
   if (!mindmap) return [];
 
@@ -325,7 +350,10 @@ function readTermsFromMindmap(mindmap: Mindmap | null): MindMapTerm[] {
 export default function TeacherPageComponent() {
   const t = useTranslations("teacher");
 
-  /* ---------- Navigation ---------- */
+  /* ---------- Top-level navigation ---------- */
+  const [topView, setTopView] = useState<TopView>("curriculum");
+
+  /* ---------- Curriculum navigation ---------- */
   const [selectedYear, setSelectedYear] = useState<Year | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -348,9 +376,10 @@ export default function TeacherPageComponent() {
   const [loadingTp, setLoadingTp] = useState(false);
   const [loadingQcm, setLoadingQcm] = useState(false);
 
-  /* ---------- Summary + Mindmap (course only) ---------- */
+  /* ---------- Summary + Mindmap + Image (course only) ---------- */
   const [courseSummary, setCourseSummary] = useState<Summary | null>(null);
   const [courseMindmap, setCourseMindmap] = useState<Mindmap | null>(null);
+  const [courseImage, setCourseImage] = useState<SummaryImage | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [summaryText, setSummaryText] = useState("");
@@ -359,6 +388,42 @@ export default function TeacherPageComponent() {
   const [savingSummary, setSavingSummary] = useState(false);
   const [deletingSummary, setDeletingSummary] = useState(false);
   const [confirmDeleteSummary, setConfirmDeleteSummary] = useState(false);
+
+  /* ---------- Summary image upload ---------- */
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+
+  /* ---------- Medicaments ---------- */
+  const [medicaments, setMedicaments] = useState<Medicament[]>([]);
+  const [medicamentSearch, setMedicamentSearch] = useState("");
+  const [medicamentModalOpen, setMedicamentModalOpen] = useState(false);
+  const [editingMedicament, setEditingMedicament] =
+    useState<MedicamentFormData | null>(null);
+  const [medicamentForm, setMedicamentForm] = useState<MedicamentFormData>({
+    name: "",
+    dci: "",
+    therapeuticClass: "",
+    form: "",
+    dosage: "",
+    indication: "",
+    contraindications: "",
+    sideEffects: "",
+    posology: "",
+    notes: "",
+  });
+  const [confirmDeleteMedicament, setConfirmDeleteMedicament] =
+    useState<Medicament | null>(null);
+
+  const [medicamentImagePreview, setMedicamentImagePreview] = useState<
+    string | null
+  >(null);
+  const [medicamentPendingFile, setMedicamentPendingFile] =
+    useState<File | null>(null);
+  const [medicamentImage, setMedicamentImage] =
+    useState<MedicamentImage | null>(null);
+  const [uploadingMedicamentImage, setUploadingMedicamentImage] =
+    useState(false);
 
   /* ---------- Flat data ---------- */
   const [years, setYears] = useState<Year[]>([]);
@@ -400,7 +465,7 @@ export default function TeacherPageComponent() {
   );
 
   /* ------------------------------------------------------------------ */
-  /* Summary + Mindmap API helpers                                      */
+  /* Summary + Mindmap + Image loaders                                  */
   /* ------------------------------------------------------------------ */
 
   const loadCourseSummary = useCallback(async (courseId: number) => {
@@ -411,7 +476,7 @@ export default function TeacherPageComponent() {
         getMindMapByCourseId(courseId),
       ]);
 
-      // ---- Summary ----
+      /* ---- Summary ---- */
       let loadedSummary: Summary | null = null;
       if (summaryRes.status) {
         const raw: any = summaryRes.response;
@@ -424,7 +489,7 @@ export default function TeacherPageComponent() {
       }
       setCourseSummary(loadedSummary);
 
-      // ---- Mindmap (dedicated endpoint first) ----
+      /* ---- Mindmap ---- */
       let loadedMindmap: Mindmap | null = null;
       if (mindmapRes.status) {
         const raw: any = mindmapRes.response;
@@ -435,14 +500,28 @@ export default function TeacherPageComponent() {
           unwrapEntity<Mindmap>(raw?.data) ??
           null;
       }
-
-      // ---- Fallback: mindmap embedded inside the summary ----
       if (!loadedMindmap && loadedSummary) {
         const s: any = loadedSummary;
         loadedMindmap = s.mindmap ?? s.mindMap ?? s.Mindmap ?? null;
       }
-
       setCourseMindmap(loadedMindmap);
+
+      /* ---- Image ---- */
+      if (loadedSummary?.id) {
+        try {
+          const imgRes = await getSummaryImage(loadedSummary.id);
+          if (imgRes.status) {
+            const img = unwrapEntity<SummaryImage>(imgRes.response);
+            setCourseImage(img ?? null);
+          } else {
+            setCourseImage(null);
+          }
+        } catch {
+          setCourseImage(null);
+        }
+      } else {
+        setCourseImage(null);
+      }
     } catch (e) {
       console.error("Failed to load summary/mindmap", e);
     } finally {
@@ -450,13 +529,24 @@ export default function TeacherPageComponent() {
     }
   }, []);
 
+  /* ------------------------------------------------------------------ */
+  /* Open summary modal                                                 */
+  /* ------------------------------------------------------------------ */
+
   const openSummaryModal = useCallback(() => {
     setSummaryText(courseSummary?.text ?? "");
     setMindmapName(courseMindmap?.name ?? "");
     const loaded = readTermsFromMindmap(courseMindmap);
     setTerms(loaded.length > 0 ? loaded : [emptyTerm(0), emptyTerm(1)]);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    setPendingImageFile(null);
     setSummaryModalOpen(true);
-  }, [courseSummary, courseMindmap]);
+  }, [courseSummary, courseMindmap, imagePreview]);
+
+  /* ------------------------------------------------------------------ */
+  /* Mindmap term helpers                                               */
+  /* ------------------------------------------------------------------ */
 
   const addTerm = () => setTerms((prev) => [...prev, emptyTerm(prev.length)]);
 
@@ -467,6 +557,51 @@ export default function TeacherPageComponent() {
     setTerms((prev) =>
       prev.map((x) => (x._key === key ? { ...x, ...patch } : x)),
     );
+
+  /* ------------------------------------------------------------------ */
+  /* Image pick / clear (summary)                                       */
+  /* ------------------------------------------------------------------ */
+
+  const handlePickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("error", "Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "Image must be under 5 MB");
+      return;
+    }
+
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setPendingImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const clearPendingImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    setPendingImageFile(null);
+  };
+
+  const handleRemoveExistingImage = async () => {
+    if (!courseSummary?.id) return;
+    try {
+      const res = await deleteSummaryImage(courseSummary.id);
+      if (!res.status) throw new Error(res.message ?? "Failed to remove image");
+      setCourseImage(null);
+      showToast("success", t("success.deleted"));
+    } catch (e: any) {
+      showToast("error", e?.message ?? t("error.generic"));
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Save summary + mindmap + image                                     */
+  /* ------------------------------------------------------------------ */
 
   const handleSaveSummary = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -479,7 +614,6 @@ export default function TeacherPageComponent() {
 
     setSavingSummary(true);
     try {
-      // ---- 1. Create or update summary ----
       let summaryId = courseSummary?.id;
       if (summaryId) {
         const res = await updateSummary(summaryId, {
@@ -500,7 +634,18 @@ export default function TeacherPageComponent() {
 
       if (!summaryId) throw new Error("Could not resolve summary id");
 
-      // ---- 2. Build mindmap content from terms ----
+      if (pendingImageFile) {
+        setUploadingImage(true);
+        const imgRes = await uploadSummaryImage(summaryId, pendingImageFile);
+        setUploadingImage(false);
+        if (!imgRes.status) {
+          throw new Error(imgRes.message ?? "Failed to upload image");
+        }
+        const saved = unwrapEntity<SummaryImage>(imgRes.response);
+        if (saved) setCourseImage(saved);
+        clearPendingImage();
+      }
+
       const cleanTerms = terms
         .filter(
           (x) =>
@@ -517,7 +662,6 @@ export default function TeacherPageComponent() {
       const content: MindMapContent = { terms: cleanTerms };
       const name = mindmapName.trim() || "Mind Map";
 
-      // ---- 3. Create or update mindmap ----
       if (courseMindmap?.id) {
         const res = await updateMindMap(courseMindmap.id, {
           name,
@@ -537,21 +681,32 @@ export default function TeacherPageComponent() {
 
       showToast("success", t("success.updated"));
       setSummaryModalOpen(false);
+      clearPendingImage();
       await loadCourseSummary(selectedCourse.id);
     } catch (e: any) {
       showToast("error", e?.message ?? t("error.generic"));
     } finally {
       setSavingSummary(false);
+      setUploadingImage(false);
     }
   };
+
+  /* ------------------------------------------------------------------ */
+  /* Delete summary + mindmap + image                                   */
+  /* ------------------------------------------------------------------ */
 
   const handleDeleteSummary = async () => {
     if (!selectedCourse) return;
 
     setDeletingSummary(true);
     try {
-      // Delete the mindmap first (child), then the summary (parent).
-      // Tolerate "not found" on either so a partial state still cleans up.
+      if (courseSummary?.id) {
+        const imgRes = await deleteSummaryImage(courseSummary.id);
+        if (!imgRes.status && !/not.*found/i.test(imgRes.message ?? "")) {
+          console.warn("Image delete failed:", imgRes.message);
+        }
+      }
+
       if (courseMindmap?.id) {
         const res = await deleteMindMap(courseMindmap.id);
         if (!res.status && !/not.*found/i.test(res.message ?? "")) {
@@ -566,20 +721,213 @@ export default function TeacherPageComponent() {
         }
       }
 
-      // Clear local state immediately
       setCourseSummary(null);
       setCourseMindmap(null);
+      setCourseImage(null);
+      clearPendingImage();
       setConfirmDeleteSummary(false);
       setSummaryModalOpen(false);
 
       showToast("success", t("success.deleted"));
-
-      // Sync with the server
       await loadCourseSummary(selectedCourse.id);
     } catch (e: any) {
       showToast("error", e?.message ?? t("error.generic"));
     } finally {
       setDeletingSummary(false);
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Medicament handlers                                                */
+  /* ------------------------------------------------------------------ */
+
+  const emptyMedicamentForm = (): MedicamentFormData => ({
+    name: "",
+    dci: "",
+    therapeuticClass: "",
+    form: "",
+    dosage: "",
+    indication: "",
+    contraindications: "",
+    sideEffects: "",
+    posology: "",
+    notes: "",
+  });
+
+  const openCreateMedicament = () => {
+    setEditingMedicament(null);
+    setMedicamentForm(emptyMedicamentForm());
+    setMedicamentImage(null);
+    setMedicamentImagePreview(null);
+    setMedicamentPendingFile(null);
+    setMedicamentModalOpen(true);
+  };
+
+  const openEditMedicament = async (medicament: Medicament) => {
+    setEditingMedicament(medicament as any);
+    setMedicamentForm({
+      id: medicament.id,
+      name: medicament.name ?? "",
+      dci: medicament.dci ?? "",
+      therapeuticClass: medicament.therapeuticClass ?? "",
+      form: medicament.form ?? "",
+      dosage: medicament.dosage ?? "",
+      indication: medicament.indication ?? "",
+      contraindications: medicament.contraindications ?? "",
+      sideEffects: medicament.sideEffects ?? "",
+      posology: medicament.posology ?? "",
+      notes: medicament.notes ?? "",
+    });
+    setMedicamentImagePreview(null);
+    setMedicamentPendingFile(null);
+
+    try {
+      const res = await getMedicamentImage(medicament.id);
+      if (res.status) {
+        const img = unwrapEntity<MedicamentImage>(res.response);
+        setMedicamentImage(img);
+      } else {
+        setMedicamentImage(null);
+      }
+    } catch {
+      setMedicamentImage(null);
+    }
+
+    setMedicamentModalOpen(true);
+  };
+
+  const handlePickMedicamentImage = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("error", "Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "Image must be under 5 MB");
+      return;
+    }
+
+    if (medicamentImagePreview) URL.revokeObjectURL(medicamentImagePreview);
+    setMedicamentPendingFile(file);
+    setMedicamentImagePreview(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const clearMedicamentPendingImage = () => {
+    if (medicamentImagePreview) URL.revokeObjectURL(medicamentImagePreview);
+    setMedicamentImagePreview(null);
+    setMedicamentPendingFile(null);
+  };
+
+  const handleRemoveMedicamentImage = async () => {
+    if (!editingMedicament?.id) return;
+    try {
+      const res = await deleteMedicamentImage(editingMedicament.id);
+      if (!res.status) throw new Error(res.message ?? "Failed to remove image");
+      setMedicamentImage(null);
+      showToast("success", t("success.deleted"));
+    } catch (e: any) {
+      showToast("error", e?.message ?? t("error.generic"));
+    }
+  };
+
+  const handleSaveMedicament = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!medicamentForm.name.trim()) {
+      showToast("error", "Name is required");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload: any = {};
+      (
+        [
+          "name",
+          "dci",
+          "therapeuticClass",
+          "form",
+          "dosage",
+          "indication",
+          "contraindications",
+          "sideEffects",
+          "posology",
+          "notes",
+        ] as const
+      ).forEach((k) => {
+        const v = (medicamentForm as any)[k];
+        if (typeof v === "string" && v.trim()) payload[k] = v.trim();
+        else if (k === "name") payload[k] = "";
+      });
+
+      let medicamentId = editingMedicament?.id;
+
+      if (medicamentId) {
+        const res = await updateMedicament(medicamentId, payload);
+        if (!res.status)
+          throw new Error(res.message ?? "Failed to update medicament");
+      } else {
+        const res = await createMedicament(payload);
+        if (!res.status)
+          throw new Error(res.message ?? "Failed to create medicament");
+        const created = unwrapEntity<Medicament>(res.response);
+        medicamentId = created?.id;
+      }
+
+      if (!medicamentId) throw new Error("Could not resolve medicament id");
+
+      if (medicamentPendingFile) {
+        setUploadingMedicamentImage(true);
+        const imgRes = await uploadMedicamentImage(
+          medicamentId,
+          medicamentPendingFile,
+        );
+        setUploadingMedicamentImage(false);
+        if (!imgRes.status) {
+          throw new Error(imgRes.message ?? "Failed to upload image");
+        }
+        clearMedicamentPendingImage();
+      }
+
+      showToast(
+        "success",
+        editingMedicament ? t("success.updated") : t("success.created"),
+      );
+      setMedicamentModalOpen(false);
+      setEditingMedicament(null);
+      clearMedicamentPendingImage();
+      await fetchAll(true);
+    } catch (e: any) {
+      showToast("error", e?.message ?? t("error.generic"));
+    } finally {
+      setSaving(false);
+      setUploadingMedicamentImage(false);
+    }
+  };
+
+  const handleDeleteMedicament = async () => {
+    if (!confirmDeleteMedicament) return;
+    setDeleting(true);
+    try {
+      const imgRes = await deleteMedicamentImage(confirmDeleteMedicament.id);
+      if (!imgRes.status && !/not.*found/i.test(imgRes.message ?? "")) {
+        console.warn("Image delete failed:", imgRes.message);
+      }
+
+      const res = await deleteMedicament(confirmDeleteMedicament.id);
+      if (!res.status) throw new Error(res.message ?? "Failed to delete");
+
+      showToast("success", t("success.deleted"));
+      setConfirmDeleteMedicament(null);
+      await fetchAll(true);
+    } catch (e: any) {
+      showToast("error", e?.message ?? t("error.generic"));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -591,7 +939,7 @@ export default function TeacherPageComponent() {
     async (silent = false) => {
       silent ? setRefreshing(true) : setLoading(true);
       try {
-        const [y, se, su, c, td, tp, q, a] = await Promise.all([
+        const [y, se, su, c, td, tp, q, a, meds] = await Promise.all([
           getYears(),
           getSemesters(),
           getSubjects(),
@@ -600,6 +948,7 @@ export default function TeacherPageComponent() {
           getTps(),
           getQcms(),
           getQcmAnswers(),
+          getMedicaments(),
         ]);
         if (y.status) setYears(toArray<Year>(y.response));
         if (se.status) setSemesters(toArray<Semester>(se.response));
@@ -609,6 +958,7 @@ export default function TeacherPageComponent() {
         if (tp.status) setTps(toArray<Tp>(tp.response));
         if (q.status) setQcms(toArray<Qcm>(q.response));
         if (a.status) setAnswers(toArray<QcmAnswer>(a.response));
+        if (meds.status) setMedicaments(toArray<Medicament>(meds.response));
       } catch {
         showToast("error", t("error.generic"));
       } finally {
@@ -761,6 +1111,7 @@ export default function TeacherPageComponent() {
     setQcmDetail(null);
     setCourseSummary(null);
     setCourseMindmap(null);
+    setCourseImage(null);
   };
 
   const openYear = useCallback(
@@ -814,6 +1165,7 @@ export default function TeacherPageComponent() {
       setQcmDetail(null);
       setCourseSummary(null);
       setCourseMindmap(null);
+      setCourseImage(null);
       setSelectedTd(td);
       await refreshTdDetail(td.id);
     },
@@ -831,6 +1183,7 @@ export default function TeacherPageComponent() {
       setQcmDetail(null);
       setCourseSummary(null);
       setCourseMindmap(null);
+      setCourseImage(null);
       setSelectedTp(tp);
       await refreshTpDetail(tp.id);
     },
@@ -851,9 +1204,12 @@ export default function TeacherPageComponent() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (!saving && modalType) setModalType(null);
+        else if (!saving && medicamentModalOpen) setMedicamentModalOpen(false);
         else if (!savingSummary && summaryModalOpen) setSummaryModalOpen(false);
         else if (!deletingSummary && confirmDeleteSummary)
           setConfirmDeleteSummary(false);
+        else if (!deleting && confirmDeleteMedicament)
+          setConfirmDeleteMedicament(null);
         else if (!deleting && confirmDelete) setConfirmDelete(null);
       }
     };
@@ -868,9 +1224,11 @@ export default function TeacherPageComponent() {
     savingSummary,
     confirmDeleteSummary,
     deletingSummary,
+    medicamentModalOpen,
+    confirmDeleteMedicament,
   ]);
 
-  /* ---------- Derived lists from detail responses ---------- */
+  /* ---------- Derived lists ---------- */
   const yearSemesters = useMemo<Semester[]>(
     () => (Array.isArray(yearDetail?.semesters) ? yearDetail!.semesters! : []),
     [yearDetail],
@@ -917,7 +1275,7 @@ export default function TeacherPageComponent() {
     [qcmDetail],
   );
 
-  /* ---------- Active container (course / td / tp) ---------- */
+  /* ---------- Active container ---------- */
   const activeContainer = useMemo(() => {
     if (selectedCourse)
       return {
@@ -1218,15 +1576,18 @@ export default function TeacherPageComponent() {
   };
 
   /* ---------- View mode ---------- */
-  const viewMode: ViewMode = !selectedYear
-    ? "years"
-    : !selectedSubject
-      ? "year-detail"
-      : !activeContainer
-        ? "subject-detail"
-        : !selectedQcm
-          ? "container-detail"
-          : "qcm-detail";
+  const viewMode: ViewMode =
+    topView === "medicaments"
+      ? "medicaments"
+      : !selectedYear
+        ? "years"
+        : !selectedSubject
+          ? "year-detail"
+          : !activeContainer
+            ? "subject-detail"
+            : !selectedQcm
+              ? "container-detail"
+              : "qcm-detail";
 
   /* ---------- Breadcrumbs ---------- */
   const breadcrumbs = useMemo(() => {
@@ -1305,44 +1666,75 @@ export default function TeacherPageComponent() {
       <div className={styles.bgDecoration} aria-hidden />
 
       <div className={styles.wrapper}>
-        {/* Header */}
+        {/* ============ Header with view tabs ============ */}
         <header className={styles.header}>
           <div>
             <h1 className={styles.pageTitle}>{t("title")}</h1>
             <p className={styles.pageSubtitle}>{t("subtitle")}</p>
           </div>
-          <button
-            onClick={refreshLoadedDetails}
-            className={styles.iconButton}
-            aria-label={t("refresh")}
-            disabled={refreshing}
-          >
-            <RefreshCw
-              size={18}
-              className={refreshing ? styles.spinning : ""}
-            />
-          </button>
-        </header>
 
-        {/* Breadcrumb */}
-        <nav className={styles.breadcrumb} aria-label="breadcrumb">
-          {breadcrumbs.map((b, i) => (
-            <div key={i} className={styles.breadcrumbItem}>
-              {i > 0 && (
-                <ChevronRight size={15} className={styles.breadcrumbSep} />
-              )}
+          <div className={styles.headerRight}>
+            <div className={styles.viewTabs}>
               <button
-                onClick={b.onClick}
-                className={`${styles.breadcrumbButton} ${b.active ? styles.breadcrumbActive : ""
+                type="button"
+                onClick={() => setTopView("curriculum")}
+                className={`${styles.viewTab} ${topView === "curriculum" ? styles.viewTabActive : ""
                   }`}
-                disabled={b.active}
               >
-                {i === 0 && <Home size={13} />}
-                <span>{b.label}</span>
+                <GraduationCap size={14} />
+                <span>Curriculum</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTopView("medicaments")}
+                className={`${styles.viewTab} ${topView === "medicaments" ? styles.viewTabActive : ""
+                  }`}
+              >
+                <Pill size={14} />
+                <span>Medicaments</span>
+                {medicaments.length > 0 && (
+                  <span className={styles.viewTabCount}>
+                    {medicaments.length}
+                  </span>
+                )}
               </button>
             </div>
-          ))}
-        </nav>
+
+            <button
+              onClick={refreshLoadedDetails}
+              className={styles.iconButton}
+              aria-label={t("refresh")}
+              disabled={refreshing}
+            >
+              <RefreshCw
+                size={18}
+                className={refreshing ? styles.spinning : ""}
+              />
+            </button>
+          </div>
+        </header>
+
+        {/* ============ Breadcrumb (curriculum only) ============ */}
+        {topView === "curriculum" && (
+          <nav className={styles.breadcrumb} aria-label="breadcrumb">
+            {breadcrumbs.map((b, i) => (
+              <div key={i} className={styles.breadcrumbItem}>
+                {i > 0 && (
+                  <ChevronRight size={15} className={styles.breadcrumbSep} />
+                )}
+                <button
+                  onClick={b.onClick}
+                  className={`${styles.breadcrumbButton} ${b.active ? styles.breadcrumbActive : ""
+                    }`}
+                  disabled={b.active}
+                >
+                  {i === 0 && <Home size={13} />}
+                  <span>{b.label}</span>
+                </button>
+              </div>
+            ))}
+          </nav>
+        )}
 
         {loading ? (
           <div className={styles.loadingState}>
@@ -1351,7 +1743,140 @@ export default function TeacherPageComponent() {
           </div>
         ) : (
           <AnimatePresence mode="wait">
-            {/* ========== YEARS ========== */}
+            {/* ==================== MEDICAMENTS ==================== */}
+            {viewMode === "medicaments" && (
+              <motion.section
+                key="medicaments"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className={styles.sectionHeader}>
+                  <div className={styles.sectionHeaderLeft}>
+                    <h2 className={styles.sectionTitle}>Medicaments</h2>
+                    <span className={styles.sectionCount}>
+                      {medicaments.length}
+                    </span>
+                  </div>
+                  <button
+                    onClick={openCreateMedicament}
+                    className={styles.primaryButton}
+                  >
+                    <Plus size={14} />
+                    <span>New medicament</span>
+                  </button>
+                </div>
+
+                <div className={styles.filters} style={{ marginBottom: "1.25rem" }}>
+                  <div className={styles.searchBox}>
+                    <Search size={16} />
+                    <input
+                      type="text"
+                      placeholder="Search by name or DCI…"
+                      value={medicamentSearch}
+                      onChange={(e) => setMedicamentSearch(e.target.value)}
+                      className={styles.searchInput}
+                    />
+                  </div>
+                </div>
+
+                {medicaments.length === 0 ? (
+                  <EmptyState
+                    icon={<Pill size={52} />}
+                    title="No medicaments yet"
+                    description="Add your first medicament — it will appear in the daily flashcard."
+                    action={
+                      <button
+                        onClick={openCreateMedicament}
+                        className={styles.primaryButton}
+                      >
+                        <Plus size={16} />
+                        <span>New medicament</span>
+                      </button>
+                    }
+                  />
+                ) : (
+                  <ul className={styles.medicamentGrid}>
+                    {medicaments
+                      .filter((m) => {
+                        if (!medicamentSearch.trim()) return true;
+                        const q = medicamentSearch.toLowerCase();
+                        return (
+                          m.name?.toLowerCase().includes(q) ||
+                          (m.dci ?? "").toLowerCase().includes(q)
+                        );
+                      })
+                      .map((m) => (
+                        <motion.li
+                          key={m.id}
+                          layout
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className={styles.medicamentCard}
+                        >
+                          <div className={styles.medicamentImageBox}>
+                            {m.image?.url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={m.image.url}
+                                alt={m.name}
+                                className={styles.medicamentImage}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            ) : (
+                              <div className={styles.medicamentImageEmpty}>
+                                <Pill size={24} />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className={styles.medicamentInfo}>
+                            <h3 className={styles.medicamentName}>{m.name}</h3>
+                            {m.dci && (
+                              <p className={styles.medicamentDci}>{m.dci}</p>
+                            )}
+                            <div className={styles.medicamentChips}>
+                              {m.therapeuticClass && (
+                                <span className={styles.chip}>
+                                  {m.therapeuticClass}
+                                </span>
+                              )}
+                              {m.form && (
+                                <span className={styles.chip}>{m.form}</span>
+                              )}
+                              {m.dosage && (
+                                <span className={styles.chip}>{m.dosage}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className={styles.medicamentActions}>
+                            <button
+                              onClick={() => openEditMedicament(m)}
+                              className={styles.iconButton}
+                              aria-label={t("actions.edit")}
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteMedicament(m)}
+                              className={`${styles.iconButton} ${styles.danger}`}
+                              aria-label={t("actions.delete")}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </motion.li>
+                      ))}
+                  </ul>
+                )}
+              </motion.section>
+            )}
+
+            {/* ==================== YEARS ==================== */}
             {viewMode === "years" && (
               <motion.section
                 key="years"
@@ -1415,7 +1940,7 @@ export default function TeacherPageComponent() {
               </motion.section>
             )}
 
-            {/* ========== YEAR DETAIL ========== */}
+            {/* ==================== YEAR DETAIL ==================== */}
             {viewMode === "year-detail" && selectedYear && (
               <motion.section
                 key={`year-${selectedYear.id}`}
@@ -1431,7 +1956,6 @@ export default function TeacherPageComponent() {
                   </div>
                 ) : (
                   <div className={styles.twoColumn}>
-                    {/* Semesters */}
                     <div className={styles.column}>
                       <SectionHeader
                         title={t("tabs.semesters")}
@@ -1484,7 +2008,6 @@ export default function TeacherPageComponent() {
                       )}
                     </div>
 
-                    {/* Subjects */}
                     <div className={styles.column}>
                       <SectionHeader
                         title={t("tabs.subjects")}
@@ -1539,7 +2062,7 @@ export default function TeacherPageComponent() {
               </motion.section>
             )}
 
-            {/* ========== SUBJECT DETAIL ========== */}
+            {/* ==================== SUBJECT DETAIL ==================== */}
             {viewMode === "subject-detail" && selectedSubject && (
               <motion.section
                 key={`subject-${selectedSubject.id}`}
@@ -1606,27 +2129,17 @@ export default function TeacherPageComponent() {
                                         onClick={() => openCourse(c)}
                                       >
                                         <div className={styles.listItemBody}>
-                                          <div
-                                            className={styles.listItemIcon}
-                                          >
+                                          <div className={styles.listItemIcon}>
                                             <GraduationCap size={16} />
                                           </div>
                                           <div>
-                                            <h4
-                                              className={
-                                                styles.listItemTitle
-                                              }
-                                            >
+                                            <h4 className={styles.listItemTitle}>
                                               {c.name}
                                             </h4>
                                           </div>
                                         </div>
                                         <div className={styles.listItemRight}>
-                                          {renderActions(
-                                            "course",
-                                            c,
-                                            c.name,
-                                          )}
+                                          {renderActions("course", c, c.name)}
                                           <ChevronRight
                                             size={16}
                                             className={styles.chevron}
@@ -1665,19 +2178,13 @@ export default function TeacherPageComponent() {
                                             <GraduationCap size={16} />
                                           </div>
                                           <div>
-                                            <h4
-                                              className={styles.listItemTitle}
-                                            >
+                                            <h4 className={styles.listItemTitle}>
                                               {c.name}
                                             </h4>
                                           </div>
                                         </div>
                                         <div className={styles.listItemRight}>
-                                          {renderActions(
-                                            "course",
-                                            c,
-                                            c.name,
-                                          )}
+                                          {renderActions("course", c, c.name)}
                                           <ChevronRight
                                             size={16}
                                             className={styles.chevron}
@@ -1796,7 +2303,7 @@ export default function TeacherPageComponent() {
               </motion.section>
             )}
 
-            {/* ========== CONTAINER DETAIL ========== */}
+            {/* ==================== CONTAINER DETAIL ==================== */}
             {viewMode === "container-detail" && activeContainer && (
               <motion.section
                 key={`container-${activeContainer.type}-${(activeContainer.item as any).id
@@ -1813,7 +2320,7 @@ export default function TeacherPageComponent() {
                   </div>
                 ) : (
                   <>
-                    {/* --- Summary + Mind Map (course only) --- */}
+                    {/* Summary + Mind Map (course only) */}
                     {activeContainer.type === "course" && (
                       <div className={styles.summarySection}>
                         <div className={styles.summaryHeader}>
@@ -1918,6 +2425,17 @@ export default function TeacherPageComponent() {
                           </div>
                         ) : (
                           <div className={styles.summaryBody}>
+                            {courseImage?.url && (
+                              <div className={styles.summaryImageWrap}>
+                                <img
+                                  src={courseImage.url}
+                                  alt={courseSummary.text.slice(0, 60)}
+                                  className={styles.summaryImage}
+                                  loading="lazy"
+                                />
+                              </div>
+                            )}
+
                             <p className={styles.summaryText}>
                               {courseSummary.text}
                             </p>
@@ -2006,7 +2524,7 @@ export default function TeacherPageComponent() {
                       </div>
                     )}
 
-                    {/* --- QCMs --- */}
+                    {/* QCMs */}
                     <SectionHeader
                       title={t("tabs.qcms")}
                       count={activeContainer.qcms.length}
@@ -2077,7 +2595,7 @@ export default function TeacherPageComponent() {
               </motion.section>
             )}
 
-            {/* ========== QCM DETAIL ========== */}
+            {/* ==================== QCM DETAIL ==================== */}
             {viewMode === "qcm-detail" && selectedQcm && (
               <motion.section
                 key={`qcm-${selectedQcm.id}`}
@@ -2137,8 +2655,8 @@ export default function TeacherPageComponent() {
                             <div className={styles.listItemBody}>
                               <div
                                 className={`${styles.listItemIcon} ${a.isCorrect
-                                  ? styles.iconCorrect
-                                  : styles.iconIncorrect
+                                    ? styles.iconCorrect
+                                    : styles.iconIncorrect
                                   }`}
                               >
                                 {a.isCorrect ? (
@@ -2352,8 +2870,8 @@ export default function TeacherPageComponent() {
                                     })
                                   }
                                   className={`${styles.toggleCorrect} ${draft.isCorrect
-                                    ? styles.toggleCorrectOn
-                                    : ""
+                                      ? styles.toggleCorrectOn
+                                      : ""
                                     }`}
                                   aria-label={t("fields.isCorrect")}
                                   title={t("fields.isCorrect")}
@@ -2464,15 +2982,15 @@ export default function TeacherPageComponent() {
         )}
       </AnimatePresence>
 
-      {/* ==================== Summary + Mindmap Modal ==================== */}
+      {/* ==================== Medicament Modal ==================== */}
       <AnimatePresence>
-        {summaryModalOpen && (
+        {medicamentModalOpen && (
           <motion.div
             className={styles.overlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => !savingSummary && setSummaryModalOpen(false)}
+            onClick={() => !saving && setMedicamentModalOpen(false)}
           >
             <motion.div
               className={`${styles.modal} ${styles.modalWide}`}
@@ -2483,29 +3001,11 @@ export default function TeacherPageComponent() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className={styles.modalHeader}>
-                <div className={styles.summaryModalTitleRow}>
-                  <div className={styles.summaryModalIcon}>
-                    <Network size={18} />
-                  </div>
-                  <div>
-                    <h2 className={styles.modalTitle}>
-                      {courseSummary
-                        ? t.has("summary.editTitle")
-                          ? t("summary.editTitle")
-                          : "Edit Summary & Mind Map"
-                        : t.has("summary.createTitle")
-                          ? t("summary.createTitle")
-                          : "Create Summary & Mind Map"}
-                    </h2>
-                    <p className={styles.summaryModalSubtitle}>
-                      {selectedCourse?.name}
-                    </p>
-                  </div>
-                </div>
+                <h2 className={styles.modalTitle}>
+                  {editingMedicament ? "Edit medicament" : "New medicament"}
+                </h2>
                 <button
-                  onClick={() =>
-                    !savingSummary && setSummaryModalOpen(false)
-                  }
+                  onClick={() => !saving && setMedicamentModalOpen(false)}
                   className={styles.iconButton}
                   aria-label={t("actions.close")}
                 >
@@ -2513,197 +3013,176 @@ export default function TeacherPageComponent() {
                 </button>
               </div>
 
-              <form onSubmit={handleSaveSummary} className={styles.form}>
-                {/* Summary text */}
+              <form onSubmit={handleSaveMedicament} className={styles.form}>
+                {/* Image uploader */}
                 <div className={styles.inputGroup}>
-                  <label className={styles.label}>
-                    {t.has("summary.textLabel")
-                      ? t("summary.textLabel")
-                      : "Summary text"}
-                    <span className={styles.required}>*</span>
-                  </label>
-                  <textarea
-                    value={summaryText}
-                    onChange={(e) => setSummaryText(e.target.value)}
-                    rows={5}
-                    required
-                    className={styles.textarea}
-                    placeholder={
-                      t.has("summary.textPlaceholder")
-                        ? t("summary.textPlaceholder")
-                        : "Write the summary of this course…"
-                    }
-                  />
-                </div>
-
-                {/* Mindmap name */}
-                <div className={styles.inputGroup}>
-                  <label className={styles.label}>
-                    {t.has("summary.mindmapNameLabel")
-                      ? t("summary.mindmapNameLabel")
-                      : "Mind map name"}
-                  </label>
-                  <input
-                    type="text"
-                    value={mindmapName}
-                    onChange={(e) => setMindmapName(e.target.value)}
-                    className={styles.input}
-                    placeholder={
-                      t.has("summary.mindmapNamePlaceholder")
-                        ? t("summary.mindmapNamePlaceholder")
-                        : "e.g. Key terminology"
-                    }
-                  />
-                </div>
-
-                {/* Terms builder */}
-                <div className={styles.answerBuilder}>
-                  <div className={styles.answerBuilderHeader}>
-                    <div className={styles.answerBuilderLabelRow}>
-                      <Languages size={15} />
-                      <span className={styles.answerBuilderLabel}>
-                        {t.has("summary.termsLabel")
-                          ? t("summary.termsLabel")
-                          : "Terms"}
-                      </span>
-                      <span className={styles.answerBuilderCount}>
-                        {terms.length}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={addTerm}
-                      className={styles.ghostButton}
-                    >
-                      <Plus size={14} />
-                      {t.has("summary.addTerm")
-                        ? t("summary.addTerm")
-                        : "Add term"}
-                    </button>
-                  </div>
-
-                  <div className={styles.termsHeader}>
-                    <span>
-                      {t.has("summary.french")
-                        ? t("summary.french")
-                        : "French"}
-                    </span>
-                    <span>
-                      {t.has("summary.english")
-                        ? t("summary.english")
-                        : "English"}
-                    </span>
-                    <span>
-                      {t.has("summary.definition")
-                        ? t("summary.definition")
-                        : "Definition"}
-                    </span>
-                    <span />
-                  </div>
-
-                  <AnimatePresence initial={false}>
-                    {terms.map((term) => (
-                      <motion.div
-                        key={term._key}
-                        layout
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className={styles.termRow}
-                      >
-                        <input
-                          type="text"
-                          value={term.french}
-                          onChange={(e) =>
-                            updateTerm(term._key, {
-                              french: e.target.value,
-                            })
-                          }
-                          className={styles.input}
-                          placeholder="Terme"
-                        />
-                        <input
-                          type="text"
-                          value={term.english}
-                          onChange={(e) =>
-                            updateTerm(term._key, {
-                              english: e.target.value,
-                            })
-                          }
-                          className={styles.input}
-                          placeholder="Term"
-                        />
-                        <textarea
-                          value={term.definition}
-                          onChange={(e) =>
-                            updateTerm(term._key, {
-                              definition: e.target.value,
-                            })
-                          }
-                          className={styles.textareaSmall}
-                          placeholder={
-                            t.has("summary.definition")
-                              ? t("summary.definition")
-                              : "Definition"
-                          }
-                          rows={2}
+                  <label className={styles.label}>Photo</label>
+                  <div className={styles.imageUploader}>
+                    {medicamentImagePreview || medicamentImage?.url ? (
+                      <div className={styles.imagePreviewWrap}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={medicamentImagePreview ?? medicamentImage?.url}
+                          alt=""
+                          className={styles.imagePreview}
                         />
                         <button
                           type="button"
-                          onClick={() => removeTerm(term._key)}
-                          className={`${styles.iconButton} ${styles.danger}`}
-                          aria-label={t("actions.delete")}
-                          disabled={terms.length <= 1}
+                          className={styles.imageRemove}
+                          onClick={async () => {
+                            if (medicamentPendingFile) {
+                              clearMedicamentPendingImage();
+                              return;
+                            }
+                            await handleRemoveMedicamentImage();
+                          }}
+                          aria-label="Remove image"
                         >
-                          <Trash2 size={14} />
+                          <X size={14} />
                         </button>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-
-                  {terms.length === 0 && (
-                    <div className={styles.termsEmpty}>
-                      <Languages size={20} />
-                      <span>
-                        {t.has("summary.noTerms")
-                          ? t("summary.noTerms")
-                          : "No terms yet — add one to start building the mind map"}
-                      </span>
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <label className={styles.imageDropZone}>
+                        {uploadingMedicamentImage ? (
+                          <Loader2 size={22} className={styles.spinning} />
+                        ) : (
+                          <Upload size={22} />
+                        )}
+                        <span>
+                          Click to upload an image (JPG, PNG, WebP — max 5 MB)
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className={styles.imageInput}
+                          onChange={handlePickMedicamentImage}
+                          disabled={uploadingMedicamentImage || saving}
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
+
+                <div className={styles.formRow}>
+                  <TextField
+                    label="Commercial name"
+                    value={medicamentForm.name ?? ""}
+                    onChange={(v) =>
+                      setMedicamentForm({ ...medicamentForm, name: v })
+                    }
+                    required
+                  />
+                  <TextField
+                    label="DCI (molecule)"
+                    value={medicamentForm.dci ?? ""}
+                    onChange={(v) =>
+                      setMedicamentForm({ ...medicamentForm, dci: v })
+                    }
+                  />
+                </div>
+
+                <div className={styles.formRow3}>
+                  <TextField
+                    label="Therapeutic class"
+                    value={medicamentForm.therapeuticClass ?? ""}
+                    onChange={(v) =>
+                      setMedicamentForm({
+                        ...medicamentForm,
+                        therapeuticClass: v,
+                      })
+                    }
+                  />
+                  <TextField
+                    label="Form"
+                    value={medicamentForm.form ?? ""}
+                    onChange={(v) =>
+                      setMedicamentForm({ ...medicamentForm, form: v })
+                    }
+                  />
+                  <TextField
+                    label="Dosage"
+                    value={medicamentForm.dosage ?? ""}
+                    onChange={(v) =>
+                      setMedicamentForm({ ...medicamentForm, dosage: v })
+                    }
+                  />
+                </div>
+
+                <TextField
+                  label="Indication"
+                  value={medicamentForm.indication ?? ""}
+                  onChange={(v) =>
+                    setMedicamentForm({ ...medicamentForm, indication: v })
+                  }
+                  textarea
+                />
+
+                <TextField
+                  label="Posology"
+                  value={medicamentForm.posology ?? ""}
+                  onChange={(v) =>
+                    setMedicamentForm({ ...medicamentForm, posology: v })
+                  }
+                  textarea
+                />
+
+                <TextField
+                  label="Contraindications"
+                  value={medicamentForm.contraindications ?? ""}
+                  onChange={(v) =>
+                    setMedicamentForm({
+                      ...medicamentForm,
+                      contraindications: v,
+                    })
+                  }
+                  textarea
+                />
+
+                <TextField
+                  label="Side effects"
+                  value={medicamentForm.sideEffects ?? ""}
+                  onChange={(v) =>
+                    setMedicamentForm({ ...medicamentForm, sideEffects: v })
+                  }
+                  textarea
+                />
+
+                <TextField
+                  label="Notes"
+                  value={medicamentForm.notes ?? ""}
+                  onChange={(v) =>
+                    setMedicamentForm({ ...medicamentForm, notes: v })
+                  }
+                  textarea
+                />
 
                 <div className={styles.modalFooter}>
                   <button
                     type="button"
-                    onClick={() =>
-                      !savingSummary && setSummaryModalOpen(false)
-                    }
+                    onClick={() => !saving && setMedicamentModalOpen(false)}
                     className={styles.secondaryButton}
-                    disabled={savingSummary}
+                    disabled={saving}
                   >
                     {t("actions.cancel")}
                   </button>
-                  <motion.button
+                  <button
                     type="submit"
                     className={styles.primaryButton}
-                    disabled={savingSummary}
-                    whileHover={{ scale: savingSummary ? 1 : 1.02 }}
-                    whileTap={{ scale: savingSummary ? 1 : 0.98 }}
+                    disabled={saving || uploadingMedicamentImage}
                   >
-                    {savingSummary ? (
+                    {saving ? (
                       <Loader2 className={styles.spinning} size={16} />
                     ) : (
                       <>
                         <Save size={16} />
                         <span>
-                          {t.has("summary.save")
-                            ? t("summary.save")
-                            : "Save summary"}
+                          {editingMedicament
+                            ? t("actions.save")
+                            : t("actions.createShort")}
                         </span>
                       </>
                     )}
-                  </motion.button>
+                  </button>
                 </div>
               </form>
             </motion.div>
@@ -2766,6 +3245,59 @@ export default function TeacherPageComponent() {
         )}
       </AnimatePresence>
 
+      {/* ==================== Confirm delete medicament ==================== */}
+      <AnimatePresence>
+        {confirmDeleteMedicament && (
+          <motion.div
+            className={styles.overlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !deleting && setConfirmDeleteMedicament(null)}
+          >
+            <motion.div
+              className={styles.modalSmall}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.confirmIcon}>
+                <AlertCircle size={32} />
+              </div>
+              <h2 className={styles.confirmTitle}>Delete medicament?</h2>
+              <p className={styles.confirmText}>
+                "{confirmDeleteMedicament.name}" and its photo will be
+                permanently removed. This action cannot be undone.
+              </p>
+              <div className={styles.modalFooter}>
+                <button
+                  onClick={() => setConfirmDeleteMedicament(null)}
+                  className={styles.secondaryButton}
+                  disabled={deleting}
+                >
+                  {t("actions.cancel")}
+                </button>
+                <button
+                  onClick={handleDeleteMedicament}
+                  className={styles.dangerButton}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <Loader2 className={styles.spinning} size={16} />
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      <span>{t("actions.delete")}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ==================== Confirm delete summary ==================== */}
       <AnimatePresence>
         {confirmDeleteSummary && (
@@ -2796,7 +3328,7 @@ export default function TeacherPageComponent() {
               <p className={styles.confirmText}>
                 {t.has("summary.deleteMessage")
                   ? t("summary.deleteMessage")
-                  : "This will permanently delete the summary and its mind map. This action cannot be undone."}
+                  : "This will permanently delete the summary, its mind map, and its cover image. This action cannot be undone."}
               </p>
               <div className={styles.modalFooter}>
                 <button
@@ -2832,8 +3364,8 @@ export default function TeacherPageComponent() {
         {toast && (
           <motion.div
             className={`${styles.toast} ${toast.type === "success"
-              ? styles.toastSuccess
-              : styles.toastError
+                ? styles.toastSuccess
+                : styles.toastError
               }`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

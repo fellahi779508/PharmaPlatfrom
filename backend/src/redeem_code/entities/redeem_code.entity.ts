@@ -25,7 +25,7 @@ export class RedeemCode {
   @Column({ nullable: true })
   expiryDate: Date;
 
-  @ManyToOne(() => Year, (year) => year.redeemCodes)
+  @ManyToOne(() => Year, (year) => year.redeemCodes, { onDelete: 'CASCADE' })
   year: Year;
 
   @OneToOne(() => User, (user) => user.redeemCode, { nullable: true, onDelete: 'SET NULL' })

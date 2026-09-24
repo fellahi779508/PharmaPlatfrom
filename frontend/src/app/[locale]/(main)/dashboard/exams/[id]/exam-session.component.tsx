@@ -59,6 +59,123 @@ const sameSet = (a: number[], b: number[]) => {
     return sa.every((v, i) => v === sb[i]);
 };
 
+/** Format a fractional score nicely: 0.5, 1, 1.25, 2.67 → keep up to 2 decimals. */
+const formatScore = (n: number) => {
+    if (Number.isInteger(n)) return n.toString();
+    return Number(n.toFixed(2)).toString();
+};
+
+/* ------------------------------------------------------------------ */
+/*  Grading — pure frontend computation                                */
+/* ------------------------------------------------------------------ */
+
+type GradingMode = "all-or-nothing" | "negative-partial" | "partial";
+
+/** Penalty multiplier for "negative-partial". 0.5 = −0.5 per wrong pick. */
+const NEGATIVE_PENALTY = 0.5;
+
+/**
+ * Returns a 0..1 score for a single question under the given grading mode.
+ * Requires the session to be COMPLETED (correctness is only exposed then).
+ */
+function gradeQuestion(question: ExamQuestion, mode: GradingMode): number {
+    const ua = question.userAnswer;
+
+    // No answer or skipped → 0 under every scheme
+    if (!ua || ua.isSkipped) return 0;
+
+    const selectedIds = ua.selectedAnswerIds ?? [];
+    if (selectedIds.length === 0) return 0;
+
+    const correctIds = question.answers
+        .filter((a) => a.isCorrect === true)
+        .map((a) => a.id);
+
+    const correctSet = new Set(correctIds);
+    const selectedSet = new Set(selectedIds);
+
+    let correctSelected = 0;
+    let wrongSelected = 0;
+
+    selectedSet.forEach((id) => {
+        if (correctSet.has(id)) correctSelected++;
+        else wrongSelected++;
+    });
+
+    const totalCorrect = correctSet.size;
+    if (totalCorrect === 0) return 0;
+
+    switch (mode) {
+        case "all-or-nothing":
+            return correctSelected === totalCorrect && wrongSelected === 0 ? 1 : 0;
+
+        case "partial":
+            // Forgiving: only counts how much of the correct set was captured
+            return correctSelected / totalCorrect;
+
+        case "negative-partial": {
+            // Rewards correct picks, punishes wrong ones, floored at 0
+            const raw = correctSelected - wrongSelected * NEGATIVE_PENALTY;
+            return Math.max(0, raw) / totalCorrect;
+        }
+
+        default:
+            return 0;
+    }
+}
+
+interface ScoreBreakdown {
+    /** Sum of per-question scores, in units of "questions". */
+    earned: number;
+    /** Score out of 20, 2 decimals. */
+    outOf20: number;
+    /** Score out of 20 rounded to nearest 0.5 (FR/MA convention). */
+    outOf20Rounded: number;
+    /** Percentage 0–100. */
+    percentage: number;
+    /** Number of questions considered fully correct under this mode. */
+    fullyCorrect: number;
+    /** Per-question scores, same index as `progress.questions`. */
+    perQuestion: number[];
+}
+
+/** Computes the score for a completed session under a given mode. */
+function computeScore(
+    questions: ExamQuestion[],
+    mode: GradingMode,
+): ScoreBreakdown {
+    const perQuestion = questions.map((q) => gradeQuestion(q, mode));
+    const earned = perQuestion.reduce((sum, s) => sum + s, 0);
+    const total = questions.length;
+    const rawPct = total > 0 ? (earned / total) * 100 : 0;
+    const outOf20 = (rawPct / 100) * 20;
+    const outOf20Rounded = Math.round(outOf20 * 2) / 2;
+
+    const fullyCorrect = perQuestion.filter((s) => s === 1).length;
+
+    return {
+        earned,
+        outOf20: Math.round(outOf20 * 100) / 100,
+        outOf20Rounded,
+        percentage: Math.round(rawPct),
+        fullyCorrect,
+        perQuestion,
+    };
+}
+
+/** A short semantic label for a single-question score under a mode. */
+function questionOutcome(
+    score: number,
+    hasAnswer: boolean,
+    isSkipped: boolean,
+): "skipped" | "unanswered" | "correct" | "partial" | "wrong" {
+    if (isSkipped) return "skipped";
+    if (!hasAnswer) return "unanswered";
+    if (score >= 1) return "correct";
+    if (score > 0) return "partial";
+    return "wrong";
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
@@ -81,9 +198,9 @@ export default function ExamSessionComponent() {
      * Pending selection(s) per qcmId (before saving).
      * Only present when the user has toggled something since the last save.
      */
-    const [localSelections, setLocalSelections] = useState<Record<number, number[]>>(
-        {},
-    );
+    const [localSelections, setLocalSelections] = useState<
+        Record<number, number[]>
+    >({});
 
     /** running timer in seconds */
     const [elapsed, setElapsed] = useState(0);
@@ -113,7 +230,6 @@ export default function ExamSessionComponent() {
             baseTimeRef.current = res.response.totalTimeSpent;
             baseAtRef.current = Date.now();
             setElapsed(res.response.totalTimeSpent);
-            // clear any stale local edits
             setLocalSelections({});
         } else {
             setError(res.message || "Failed to load session");
@@ -163,7 +279,6 @@ export default function ExamSessionComponent() {
     const currentQuestion: ExamQuestion | undefined = questions[currentIndex];
     const isCurrentAnswered = !!currentQuestion?.userAnswer;
 
-    /** effective selection for the active question (local edit wins) */
     const effectiveSelection = useMemo<number[]>(() => {
         if (!currentQuestion) return [];
         const local = localSelections[currentQuestion.qcmId];
@@ -171,7 +286,6 @@ export default function ExamSessionComponent() {
         return currentQuestion.userAnswer?.selectedAnswerIds ?? [];
     }, [currentQuestion, localSelections]);
 
-    /** true when the user has made an unsaved edit on the current question */
     const hasPendingChanges = useMemo(() => {
         if (!currentQuestion) return false;
         const local = localSelections[currentQuestion.qcmId];
@@ -202,12 +316,6 @@ export default function ExamSessionComponent() {
 
     /* ------------------------- Actions ------------------------- */
 
-    /**
-     * Toggle an answer.
-     * - On an unanswered question → builds a fresh selection.
-     * - On an already-answered question → seeds from the saved answer set
-     *   and then toggles, so the user can edit their previous choice.
-     */
     const handleToggleLocal = (answerId: number) => {
         if (!currentQuestion || !progress) return;
         if (progress.status !== "in_progress") return;
@@ -217,9 +325,7 @@ export default function ExamSessionComponent() {
 
         setLocalSelections((prev) => {
             const base =
-                prev[qcmId] ??
-                currentQuestion.userAnswer?.selectedAnswerIds ??
-                [];
+                prev[qcmId] ?? currentQuestion.userAnswer?.selectedAnswerIds ?? [];
 
             const has = base.includes(answerId);
             const next = has
@@ -230,13 +336,6 @@ export default function ExamSessionComponent() {
         });
     };
 
-    /**
-     * Persist the current question's answer if needed.
-     * - Unanswered, empty selection      → save as skip
-     * - Unanswered, non-empty            → save the selection
-     * - Answered, no local edit          → nothing to do
-     * - Answered, local edit differs     → re-save (server rescores)
-     */
     const commitCurrent = async (): Promise<boolean> => {
         if (!currentQuestion || !progress) return false;
         if (progress.status !== "in_progress") return false;
@@ -248,13 +347,10 @@ export default function ExamSessionComponent() {
         const isFirstAnswer = !currentQuestion.userAnswer;
 
         if (!isFirstAnswer && local === undefined) {
-            // Answered and untouched → nothing to save
             return true;
         }
 
-        const selectionToSave = isFirstAnswer
-            ? (local ?? [])
-            : (local ?? saved);
+        const selectionToSave = isFirstAnswer ? local ?? [] : local ?? saved;
 
         setSubmitting(true);
         const res = await submitExamAnswer(sessionId, {
@@ -285,7 +381,6 @@ export default function ExamSessionComponent() {
             };
         });
 
-        // drop the local edit for this question — it's now the saved answer
         setLocalSelections((prev) => {
             if (!(qcmId in prev)) return prev;
             const next = { ...prev };
@@ -310,7 +405,6 @@ export default function ExamSessionComponent() {
         if (!currentQuestion || !progress) return;
         if (progress.status !== "in_progress") return;
 
-        // Explicitly clear local + saved selection, then commit as skip.
         setLocalSelections((prev) => ({ ...prev, [currentQuestion.qcmId]: [] }));
 
         setSubmitting(true);
@@ -450,7 +544,8 @@ export default function ExamSessionComponent() {
 
     const timerPillClass = isLowTime
         ? `${styles.statPill} ${styles.statPillError} ${styles.statPillErrorPulse}`
-        : `${styles.statPill} ${isPaused ? styles.statPillWarning : styles.statPillInfo}`;
+        : `${styles.statPill} ${isPaused ? styles.statPillWarning : styles.statPillInfo
+        }`;
 
     const selection = effectiveSelection;
 
@@ -579,8 +674,6 @@ export default function ExamSessionComponent() {
                                             <button
                                                 key={a.id}
                                                 className={cls}
-                                                // Only block while submitting or paused —
-                                                // answered questions are now editable too.
                                                 disabled={submitting || isPaused}
                                                 onClick={() => handleToggleLocal(a.id)}
                                             >
@@ -717,7 +810,9 @@ export default function ExamSessionComponent() {
                             <div className={styles.modalIcon}>
                                 <AlertTriangle size={26} />
                             </div>
-                            <h3 className={styles.modalTitle}>{t("confirmFinishTitle")}</h3>
+                            <h3 className={styles.modalTitle}>
+                                {t("confirmFinishTitle")}
+                            </h3>
                             <p className={styles.modalText}>
                                 {answeredCount < total
                                     ? t("confirmFinishText", { count: total - answeredCount })
@@ -753,7 +848,7 @@ export default function ExamSessionComponent() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Results view (unchanged)                                           */
+/*  Results view                                                       */
 /* ------------------------------------------------------------------ */
 
 function ResultsView({
@@ -767,20 +862,46 @@ function ResultsView({
 }) {
     const t = useTranslations("exams.session");
 
+    const [mode, setMode] = useState<GradingMode>("all-or-nothing");
+
+    const questions = progress.questions;
     const total = progress.totalQuestions;
-    const correct = progress.score ?? 0;
-    const wrong = progress.questions.filter(
-        (q) => q.userAnswer && !q.userAnswer.isCorrect && !q.userAnswer.isSkipped,
+
+    /* --- Breakdowns for every mode (computed once) --- */
+    const breakdowns = useMemo(
+        () => ({
+            "all-or-nothing": computeScore(questions, "all-or-nothing"),
+            "negative-partial": computeScore(questions, "negative-partial"),
+            partial: computeScore(questions, "partial"),
+        }),
+        [questions],
+    );
+
+    const current = breakdowns[mode];
+
+    /* --- Stats that don't depend on mode --- */
+    const skipped = questions.filter((q) => q.userAnswer?.isSkipped).length;
+    const unanswered = questions.filter((q) => !q.userAnswer).length;
+
+    /* --- Wrong count depends on mode (partial ≠ wrong) --- */
+    const wrong = questions.filter(
+        (q, i) =>
+            q.userAnswer && !q.userAnswer.isSkipped && current.perQuestion[i] < 1,
     ).length;
-    const skipped = progress.questions.filter((q) => q.userAnswer?.isSkipped).length;
-    const unanswered = progress.questions.filter((q) => !q.userAnswer).length;
-    const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
-    const passed = pct >= 50;
+
+    const passed = current.outOf20 >= 10;
+
+    const MODES: GradingMode[] = [
+        "all-or-nothing",
+        "negative-partial",
+        "partial",
+    ];
 
     return (
         <div className={styles.page}>
             <div className={styles.body}>
                 <div className={styles.resultsWrap}>
+                    {/* ================= Hero ================= */}
                     <motion.div
                         className={styles.resultsHero}
                         initial={{ opacity: 0, y: 12 }}
@@ -793,10 +914,60 @@ function ResultsView({
                         >
                             {passed ? <Trophy size={32} /> : <Sparkles size={32} />}
                         </div>
+
                         <h1 className={styles.resultsTitle}>{t("results")}</h1>
                         <p className={styles.resultsSubtitle}>{progress.exam.title}</p>
-                        <div className={styles.resultsPct}>{pct}%</div>
 
+                        {/* ---- Mode picker ---- */}
+                        <div className={styles.modePicker} role="tablist">
+                            {MODES.map((m) => (
+                                <button
+                                    key={m}
+                                    role="tab"
+                                    aria-selected={mode === m}
+                                    className={`${styles.modeBtn} ${mode === m ? styles.modeBtnActive : ""
+                                        }`}
+                                    onClick={() => setMode(m)}
+                                >
+                                    {t(`grading.${m}` as any)}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* ---- Big score /20 ---- */}
+                        <div className={styles.scoreHeroRow}>
+                            <div className={styles.scoreHeroMain}>
+                                <AnimatePresence mode="wait" initial={false}>
+                                    <motion.span
+                                        key={`score-${mode}`}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -8 }}
+                                        transition={{ duration: 0.2 }}
+                                        className={styles.scoreHeroValue}
+                                    >
+                                        {formatScore(current.outOf20)}
+                                    </motion.span>
+                                </AnimatePresence>
+                                <span className={styles.scoreHeroUnit}>/20</span>
+                            </div>
+
+                            <div className={styles.scoreHeroSide}>
+                                <span className={styles.scoreHeroPct}>
+                                    {current.percentage}%
+                                </span>
+                                <span className={styles.scoreHeroRounded}>
+                                    ≈ {formatScore(current.outOf20Rounded)}/20
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* ---- Mode hint ---- */}
+                        <p className={styles.modeHint}>
+                            {t(`grading.hint.${mode}` as any)}
+                        </p>
+
+                        {/* ---- Stat grid ---- */}
                         <div className={styles.resultsStats}>
                             <div className={styles.resultStat}>
                                 <span className={styles.resultStatLabel}>
@@ -805,7 +976,7 @@ function ResultsView({
                                 <span
                                     className={`${styles.resultStatValue} ${styles.resultStatSuccess}`}
                                 >
-                                    {correct}
+                                    {current.fullyCorrect}
                                 </span>
                             </div>
                             <div className={styles.resultStat}>
@@ -853,19 +1024,41 @@ function ResultsView({
                         </div>
                     </motion.div>
 
-                    <h2
-                        style={{
-                            fontSize: 16,
-                            fontWeight: 700,
-                            margin: "24px 0 12px",
-                            color: "var(--foreground)",
-                        }}
-                    >
+                    {/* ================= Comparison strip ================= */}
+                    <div className={styles.comparisonStrip}>
+                        <div className={styles.comparisonTitle}>
+                            {t("grading.comparison")}
+                        </div>
+                        <div className={styles.comparisonGrid}>
+                            {MODES.map((m) => {
+                                const b = breakdowns[m];
+                                return (
+                                    <button
+                                        key={m}
+                                        className={`${styles.comparisonCard} ${mode === m ? styles.comparisonCardActive : ""
+                                            }`}
+                                        onClick={() => setMode(m)}
+                                    >
+                                        <span className={styles.comparisonLabel}>
+                                            {t(`grading.${m}` as any)}
+                                        </span>
+                                        <span className={styles.comparisonValue}>
+                                            {formatScore(b.outOf20)}
+                                            <span className={styles.comparisonUnit}>/20</span>
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* ================= Review list ================= */}
+                    <h2 className={styles.reviewSectionTitle}>
                         {t("reviewAnswers")}
                     </h2>
 
                     <div className={styles.reviewList}>
-                        {progress.questions.map((q, i) => {
+                        {questions.map((q, i) => {
                             const ua = q.userAnswer;
                             const selectedIds = ua?.selectedAnswerIds ?? [];
                             const correctAnswers = q.answers.filter((a) => a.isCorrect);
@@ -873,22 +1066,33 @@ function ResultsView({
                                 selectedIds.includes(a.id),
                             );
 
+                            const qScore = current.perQuestion[i];
+                            const outcome = questionOutcome(
+                                qScore,
+                                !!ua,
+                                !!ua?.isSkipped,
+                            );
+
                             let badgeCls = styles.reviewBadgeMuted;
                             let badgeIcon = <HelpCircle size={12} />;
-                            let badgeLabel = t("unanswered");
+                            let badgeLabel: string = t("unanswered");
 
-                            if (ua?.isSkipped) {
+                            if (outcome === "skipped") {
                                 badgeCls = styles.reviewBadgeWarning;
                                 badgeIcon = <SkipForward size={12} />;
                                 badgeLabel = t("skipped");
-                            } else if (ua?.isCorrect) {
+                            } else if (outcome === "correct") {
                                 badgeCls = styles.reviewBadgeSuccess;
                                 badgeIcon = <CheckCircle2 size={12} />;
-                                badgeLabel = t("correct");
-                            } else if (ua) {
+                                badgeLabel = `1 ${t("points")}`;
+                            } else if (outcome === "partial") {
+                                badgeCls = styles.reviewBadgeWarning;
+                                badgeIcon = <Sparkles size={12} />;
+                                badgeLabel = `${formatScore(qScore)} ${t("points")}`;
+                            } else if (outcome === "wrong") {
                                 badgeCls = styles.reviewBadgeError;
                                 badgeIcon = <XCircle size={12} />;
-                                badgeLabel = t("incorrect");
+                                badgeLabel = `0 ${t("points")}`;
                             }
 
                             return (
@@ -903,7 +1107,9 @@ function ResultsView({
                                         <span className={styles.reviewNum}>
                                             <BookOpen size={12} /> {t("question")} {i + 1}
                                         </span>
-                                        <span className={`${styles.reviewBadge} ${badgeCls}`}>
+                                        <span
+                                            className={`${styles.reviewBadge} ${badgeCls}`}
+                                        >
                                             {badgeIcon} {badgeLabel}
                                         </span>
                                     </div>
@@ -911,13 +1117,17 @@ function ResultsView({
 
                                     {selectedAnswers.length > 0 && !ua?.isSkipped && (
                                         <div
-                                            className={`${styles.reviewAnswer} ${ua?.isCorrect
+                                            className={`${styles.reviewAnswer} ${outcome === "correct"
                                                 ? styles.reviewAnswerCorrect
-                                                : styles.reviewAnswerIncorrect
+                                                : outcome === "partial"
+                                                    ? styles.reviewAnswerPartial
+                                                    : styles.reviewAnswerIncorrect
                                                 }`}
                                         >
-                                            {ua?.isCorrect ? (
+                                            {outcome === "correct" ? (
                                                 <CheckCircle2 size={15} color="var(--success)" />
+                                            ) : outcome === "partial" ? (
+                                                <Sparkles size={15} color="var(--warning)" />
                                             ) : (
                                                 <XCircle size={15} color="var(--error)" />
                                             )}
@@ -932,13 +1142,15 @@ function ResultsView({
                                         </div>
                                     )}
 
-                                    {!ua?.isCorrect && correctAnswers.length > 0 && (
+                                    {outcome !== "correct" && correctAnswers.length > 0 && (
                                         <div
                                             className={`${styles.reviewAnswer} ${styles.reviewAnswerCorrect}`}
                                         >
                                             <CheckCircle2 size={15} color="var(--success)" />
                                             <div>
-                                                <strong>{t("correctAnswerWas", { answer: "" })}</strong>
+                                                <strong>
+                                                    {t("correctAnswerWas", { answer: "" })}
+                                                </strong>
                                                 <ul className={styles.reviewAnswerList}>
                                                     {correctAnswers.map((a) => (
                                                         <li key={a.id}>{a.answer}</li>

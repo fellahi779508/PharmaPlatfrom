@@ -50,6 +50,9 @@ const THEMES: { key: Theme; icon: typeof Sun }[] = [
   { key: "dark", icon: Moon },
 ];
 
+/** Must match the duration of the exit animations in the CSS. */
+const CLOSE_DURATION_MS = 240;
+
 // Define unauthenticated navigation items
 const UNAUTH_NAV_ITEMS = [
   { key: "home", href: "/", icon: Home, tone: "var(--primary)" },
@@ -76,18 +79,19 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
   const [currentRole, setRole] = useState<string>("");
   const [token, setToken] = useState<string>("");
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
 
-  /**
-   * 1. Core Fetch Logic
-   * Wrapped in useCallback so it can be safely used in multiple effects.
-   */
+  /* ------------------------------------------------------------------ */
+  /* Fetch user + token                                                  */
+  /* ------------------------------------------------------------------ */
+
   const fetchRole = useCallback(async () => {
     try {
       const role = await getRole();
-      // Use fallback to "" so logging out properly clears the UI if role is null/undefined.
       setRole(role || "");
     } catch (error) {
       console.error("Failed to fetch user role:", error);
@@ -103,19 +107,11 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
     }
   }, []);
 
-  /**
-   * 2. Trigger on Interactions & Navigation
-   * Re-evaluates role whenever the panel is opened, or the user changes routes.
-   */
   useEffect(() => {
     fetchRole();
     fetchToken();
   }, [fetchRole, fetchToken, open, pathname]);
 
-  /**
-   * 3. Global & Cross-Tab Sync
-   * Listens for window focus (cross-tab sync) or custom manual events emitted from other components.
-   */
   useEffect(() => {
     window.addEventListener("focus", fetchRole);
     window.addEventListener("focus", fetchToken);
@@ -130,28 +126,65 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
     };
   }, [fetchRole, fetchToken]);
 
+  /* ------------------------------------------------------------------ */
+  /* Open / close with exit animation                                    */
+  /* ------------------------------------------------------------------ */
+
+  const openPanel = useCallback(() => {
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setIsClosing(false);
+    setOpen(true);
+  }, []);
+
   /**
-   * Close whenever the person actually navigates.
+   * Starts the closing animation. The panel stays mounted for
+   * CLOSE_DURATION_MS, then unmounts. Repeated calls while already
+   * closing are ignored.
    */
+  const closePanel = useCallback(() => {
+    if (isClosing) return;
+
+    setIsClosing(true);
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsClosing(false);
+      setOpen(false);
+      closeTimerRef.current = null;
+    }, CLOSE_DURATION_MS);
+  }, [isClosing]);
+
+  /* Cleanup timer on unmount */
   useEffect(() => {
-    setOpen(false);
+    return () => {
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
+
+  /* Close whenever the person actually navigates (animates too) */
+  useEffect(() => {
+    if (!open) return;
+    closePanel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, currentLocale]);
 
+  /* Focus trigger once fully closed */
   useEffect(() => {
-    if (open) {
+    if (!open) {
       triggerRef.current?.focus();
     }
   }, [open]);
 
-  /**
-   * Escape-to-close, background scroll lock, and focus handling while open.
-   */
+  /* Escape-to-close, scroll lock while open */
   useEffect(() => {
     if (!open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        closePanel();
       }
     };
 
@@ -163,59 +196,94 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
-      triggerRef.current?.focus();
     };
-  }, [open]);
+  }, [open, closePanel]);
 
   const switchLocale = async (locale: string) => {
     if (locale === currentLocale) {
-      setOpen(false);
+      closePanel();
       return;
     }
     await setLanguage(locale);
     router.replace(pathname, { locale });
-    setOpen(false);
+    closePanel();
   };
 
   const panelVariantClass =
     variant === "sidebar" ? styles.panelSidebar : styles.panelTopbar;
 
+  const panelClosingClass =
+    variant === "sidebar"
+      ? styles.panelSidebarClosing
+      : styles.panelTopbarClosing;
+
+  const triggerVisible = !open;
+
   return (
     <>
-      {!open && (
+      {triggerVisible && (
         <button
           ref={triggerRef}
           type="button"
           className={styles.trigger}
           aria-haspopup="dialog"
           aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
+          onClick={openPanel}
         >
-          {open ? null : <LayoutGrid size={20} />}
-          <span className={styles.triggerLabel}>
-            {open ? null : t("openLabel")}
-          </span>
+          <LayoutGrid size={20} />
+          {/* <span className={styles.triggerLabel}>{t("openLabel")}</span> */}
         </button>
       )}
 
       {open && (
-        <div className={styles.overlay} onClick={() => setOpen(false)}>
+        <div
+          className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ""
+            }`}
+          onClick={closePanel}
+        >
           <div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-label={t("heading")}
-            className={`${styles.panel} ${panelVariantClass}`}
+            className={`${styles.panel} ${panelVariantClass} ${isClosing ? panelClosingClass : ""
+              }`}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className={styles.panelHeader}>
-              <span className={styles.panelHeading}>{t("heading")}</span>
+            {/* ---------------- Brand ---------------- */}
+            {/* ---------------- Brand ---------------- */}
+            <div className={styles.brand}>
+              <Link
+                href="/"
+                className={styles.brandLink}
+                onClick={closePanel}
+                aria-label="PharmaSpace — home"
+              >
+                <span className={styles.brandLogoWrap}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/logo.png"
+                    alt=""
+                    aria-hidden="true"
+                    className={styles.brandLogo}
+                    draggable={false}
+                  />
+                </span>
+
+                <span className={styles.brandText}>
+                  <span className={styles.brandName}>
+                    Pharma
+                    <span className={styles.brandNameAccent}>Space</span>
+                  </span>
+                  <span className={styles.brandTag}>{t("heading")}</span>
+                </span>
+              </Link>
 
               <button
                 type="button"
                 className={styles.iconButton}
                 aria-label={t("closeLabel")}
-                onClick={() => setOpen(false)}
+                onClick={closePanel}
               >
                 <X size={16} />
               </button>
@@ -259,7 +327,6 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                   },
                 )
               ) : (
-                /* IF AUTHENTICATED */
                 <>
                   {NAV_ITEMS.map(({ key, href, icon: Icon, tone }, index) => {
                     const isActive = pathname === href;
@@ -294,7 +361,7 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                     );
                   })}
 
-                  {currentRole === "admin" && (
+                  {(currentRole === "admin" || currentRole === "owner") && (
                     <Link
                       key="admin"
                       href="/admin"
@@ -322,105 +389,102 @@ export default function QuickNav({ variant = "sidebar" }: QuickNavProps) {
                     </Link>
                   )}
 
-                  {(currentRole === "teacher" || currentRole === "admin") && (
-                    <Link
-                      key="teacher"
-                      href="/teacher"
-                      className={`${styles.item}`}
-                      style={
-                        {
-                          "--tone": "var(--accent)",
-                          "--i": NAV_ITEMS.length,
-                        } as CSSProperties
-                      }
-                      aria-current="page"
-                    >
-                      <span className={styles.itemIcon}>
-                        <LayersArrowDownIcon size={17} />
-                      </span>
+                  {(currentRole === "teacher" ||
+                    currentRole === "admin" ||
+                    currentRole === "owner") && (
+                      <Link
+                        key="teacher"
+                        href="/teacher"
+                        className={`${styles.item}`}
+                        style={
+                          {
+                            "--tone": "var(--accent)",
+                            "--i": NAV_ITEMS.length,
+                          } as CSSProperties
+                        }
+                        aria-current="page"
+                      >
+                        <span className={styles.itemIcon}>
+                          <LayersArrowDownIcon size={17} />
+                        </span>
 
-                      <span className={styles.itemText}>
-                        <span className={styles.itemTitle}>
-                          {tDash(`teacher.title`)}
+                        <span className={styles.itemText}>
+                          <span className={styles.itemTitle}>
+                            {tDash(`teacher.title`)}
+                          </span>
+                          <span className={styles.itemTag}>
+                            {tDash(`teacher.tag`)}
+                          </span>
                         </span>
-                        <span className={styles.itemTag}>
-                          {tDash(`teacher.tag`)}
-                        </span>
-                      </span>
-                    </Link>
-                  )}
+                      </Link>
+                    )}
                 </>
               )}
             </nav>
 
             <div className={styles.bottomActions}>
-              {/* Theme */}
-              <div className={styles.preferenceRow}>
-                <div className={styles.langHeader}>
-                  <Sun size={14} />
-                  <span>
-                    {t("themeLabel", {
-                      fallback: "Theme",
+              {/* Theme + Language on one row */}
+              <div className={styles.preferencesRow}>
+                {/* Theme */}
+                <div className={styles.preferenceRow}>
+                  <div className={styles.langHeader}>
+                    <Sun size={14} />
+                    <span>{t("themeLabel", { fallback: "Theme" })}</span>
+                  </div>
+
+                  <div
+                    className={styles.segmented}
+                    role="radiogroup"
+                    aria-label={t("themeLabel", { fallback: "Theme" })}
+                  >
+                    {THEMES.map(({ key, icon: Icon }) => {
+                      const isActive = theme === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          role="radio"
+                          aria-checked={isActive}
+                          aria-label={t(key, { fallback: key })}
+                          className={`${styles.segment} ${isActive ? styles.segmentActive : ""
+                            }`}
+                          onClick={() => setTheme(key)}
+                        >
+                          <Icon size={15} />
+                        </button>
+                      );
                     })}
-                  </span>
+                  </div>
                 </div>
 
-                <div
-                  className={styles.segmented}
-                  role="radiogroup"
-                  aria-label={t("themeLabel", {
-                    fallback: "Theme",
-                  })}
-                >
-                  {THEMES.map(({ key, icon: Icon }) => {
-                    const isActive = theme === key;
+                {/* Language */}
+                <div className={styles.preferenceRow}>
+                  <div className={styles.langHeader}>
+                    <Globe size={14} />
+                    <span>{t("language", { fallback: "Language" })}</span>
+                  </div>
 
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        role="radio"
-                        aria-checked={isActive}
-                        aria-label={t(key, { fallback: key })}
-                        className={`${styles.segment} ${isActive ? styles.segmentActive : ""
-                          }`}
-                        onClick={() => setTheme(key)}
-                      >
-                        <Icon size={15} />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Language */}
-              <div className={styles.preferenceRow}>
-                <div className={styles.langHeader}>
-                  <Globe size={14} />
-                  <span>{t("language", { fallback: "Language" })}</span>
-                </div>
-
-                <div className={styles.langButtons}>
-                  {LOCALES.map((loc) => {
-                    const isActive = currentLocale === loc.code;
-
-                    return (
-                      <button
-                        key={loc.code}
-                        type="button"
-                        onClick={() => switchLocale(loc.code)}
-                        className={`${styles.langBtn} ${isActive ? styles.langBtnActive : ""
-                          }`}
-                        aria-pressed={isActive}
-                      >
-                        {loc.label}
-                      </button>
-                    );
-                  })}
+                  <div className={styles.langButtons}>
+                    {LOCALES.map((loc) => {
+                      const isActive = currentLocale === loc.code;
+                      return (
+                        <button
+                          key={loc.code}
+                          type="button"
+                          onClick={() => switchLocale(loc.code)}
+                          className={`${styles.langBtn} ${isActive ? styles.langBtnActive : ""
+                            }`}
+                          aria-pressed={isActive}
+                        >
+                          {loc.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              {/* Logout (Only visible if token is present) */}
+              {/* Logout (unchanged) */}
               {token && (
                 <button
                   type="button"

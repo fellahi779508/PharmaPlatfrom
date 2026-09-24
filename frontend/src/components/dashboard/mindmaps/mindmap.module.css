@@ -995,3 +995,328 @@
         animation: none !important;
     }
 }
+
+/* ==================================================================
+   Summary cover image (student view)
+   ================================================================== */
+
+.summaryImageWrap {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.15rem;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--background);
+    box-shadow:
+        0 4px 14px -8px color-mix(in srgb, var(--foreground) 8%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+    line-height: 0;
+}
+
+.summaryImageWrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, white 5%, transparent);
+}
+
+.summaryImage {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 420px;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.summaryImageWrap:hover .summaryImage {
+    transform: scale(1.02);
+}
+
+@media (max-width: 640px) {
+    .summaryImage {
+        max-height: 260px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .summaryImage,
+    .summaryImageWrap {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+/* ==================================================================
+   Mindmap image section (dedicated section below the terms)
+   ================================================================== */
+
+.imageSection {
+    position: relative;
+    padding: 1.5rem 1.6rem 1.6rem;
+    border-radius: 16px;
+    border: 1.5px solid transparent;
+
+    /* Gradient border */
+    background:
+        linear-gradient(color-mix(in srgb, var(--surface) 100%, transparent),
+            color-mix(in srgb, var(--surface) 100%, transparent)) padding-box,
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--accent) 85%, var(--primary)) 0%,
+            var(--primary) 55%,
+            var(--accent) 100%) border-box;
+
+    box-shadow:
+        0 12px 40px -20px color-mix(in srgb, var(--accent) 35%, transparent),
+        0 4px 12px -6px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.imageHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+    flex-wrap: wrap;
+}
+
+.imageHeaderIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--accent) 18%, transparent),
+            color-mix(in srgb, var(--primary) 12%, transparent));
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.imageHeaderText {
+    flex: 1;
+    min-width: 0;
+}
+
+.imageTitle {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--foreground);
+    letter-spacing: -0.005em;
+}
+
+.imageSubtitle {
+    margin: 0.15rem 0 0 0;
+    font-size: 0.76rem;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--muted-foreground);
+}
+
+.imageHintChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* Image button (clickable) */
+
+.imageButton {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: zoom-in;
+    line-height: 0;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow:
+        0 4px 14px -8px color-mix(in srgb, var(--foreground) 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+}
+
+.imageButton:hover {
+    transform: translateY(-2px);
+}
+
+.imageButton:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.imageDisplay {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 520px;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.imageButton:hover .imageDisplay {
+    transform: scale(1.02);
+}
+
+/* Zoom badge — appears on hover */
+
+.imageZoomBadge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--foreground) 65%, transparent);
+    color: #fff;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+}
+
+.imageButton:hover .imageZoomBadge,
+.imageButton:focus-visible .imageZoomBadge {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ==================================================================
+   Lightbox
+   ================================================================== */
+
+.lightboxOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(10px);
+    cursor: zoom-out;
+}
+
+.lightboxImage {
+    max-width: min(92vw, 1400px);
+    max-height: 88vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 14px;
+    box-shadow:
+        0 40px 80px -20px rgba(0, 0, 0, 0.6),
+        0 12px 30px -10px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    -webkit-user-drag: none;
+    cursor: default;
+}
+
+.lightboxClose {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        border-color 0.2s ease;
+    backdrop-filter: blur(6px);
+}
+
+.lightboxClose:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* ==================================================================
+   Responsive
+   ================================================================== */
+
+@media (max-width: 640px) {
+    .imageSection {
+        padding: 1.15rem;
+        border-radius: 14px;
+    }
+
+    .imageHeader {
+        gap: 0.55rem;
+    }
+
+    .imageHintChip {
+        font-size: 0.65rem;
+        padding: 0.22rem 0.5rem;
+    }
+
+    .imageDisplay {
+        max-height: 340px;
+    }
+
+    .lightboxOverlay {
+        padding: 1rem;
+    }
+
+    .lightboxImage {
+        max-width: 96vw;
+        max-height: 82vh;
+        border-radius: 10px;
+    }
+
+    .lightboxClose {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* ==================================================================
+   Reduced motion
+   ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .imageButton,
+    .imageDisplay,
+    .imageZoomBadge,
+    .lightboxImage,
+    .lightboxClose {
+        transition: none !important;
+        transform: none !important;
+        animation: none !important;
+    }
+}

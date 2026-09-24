@@ -6,6 +6,7 @@ import { Summary } from './entities/summary.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Course } from 'src/course/entities/course.entity';
 import { I18nContext, I18nService } from 'nestjs-i18n';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class SummaryService {
@@ -14,6 +15,7 @@ export class SummaryService {
     private summaryRepository: Repository<Summary>,
     private readonly dataSource: DataSource,
     private readonly i18n: I18nService,
+    private readonly cloudinary: CloudinaryService,
   ) { }
 
   private get currentLang(): string {
@@ -111,6 +113,13 @@ export class SummaryService {
       if (summary.mindmap) {
         await manager.getRepository('Mindmap').delete({
           id: (summary.mindmap as any).id,
+        });
+      }
+      // delete image
+      if (summary.image) {
+        await this.cloudinary.destroy(summary.image.publicId);
+        await manager.getRepository('Image').delete({
+          id: (summary.image as any).id,
         });
       }
 

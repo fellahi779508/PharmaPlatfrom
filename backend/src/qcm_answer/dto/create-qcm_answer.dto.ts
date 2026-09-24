@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateQcmAnswerDto {
   @IsString()
@@ -10,4 +10,8 @@ export class CreateQcmAnswerDto {
   @IsString()
   @IsOptional()
   explanation?: string;
+
+  @IsNumber()
+  @IsOptional()
+  qcmId?: number;
 }

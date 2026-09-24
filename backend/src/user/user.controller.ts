@@ -19,6 +19,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { SubscriptionGuard } from 'src/auth/guards/jwt-auth/subscription.guard';
 
 @Controller('user')
 export class UserController {
@@ -30,7 +31,7 @@ export class UserController {
   }
 
   @Post('unsub')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,)
   revokeUser(@Req() req: any, @Body('password') password: string) {
     return this.userService.revokeSubscription(req.user.id, password);
   }
@@ -47,13 +48,23 @@ export class UserController {
     return this.userService.findAll(page, limit, search);
   }
 
+  @Get('email/:email')
+  findByEmail(@Param('email') email: string) {
+    return this.userService.findByEmail(email);
+  }
+
+  @Put('reset-password')
+  resetPassword(@Body() body: any) {
+    return this.userService.resetPasswordByEmail(body.email, body.password);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req) {
     return this.userService.findOne(req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('stats')
   getStats(@Req() req) {
     return this.userService.getAllUserStats(req.user.email);
@@ -70,9 +81,16 @@ export class UserController {
   isVerifed(@Req() req: any) {
     return this.userService.isVerifed(req.user.id);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('leaderboard')
+  getLeaderboard(@Req() req) {
+    return this.userService.getLeaderboardWithUserRank(req.user.id);
+  }
 
   @Roles(Role.ADMIN, Role.OWNER)
   @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
@@ -103,11 +121,16 @@ export class UserController {
     return this.userService.update(req.user.id, updateUserDto);
   }
 
-  //dev only
-  @Delete('delete-all')
-  deleteAll() {
-    return this.userService.deleteAll();
+
+  @Roles(Role.ADMIN, Role.OWNER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Put('update/:id')
+  updateAdmin(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(id, updateUserDto);
   }
+
+
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

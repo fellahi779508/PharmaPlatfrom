@@ -6,10 +6,12 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { SubscriptionGuard } from 'src/auth/guards/jwt-auth/subscription.guard';
 
 @Controller('summaries')
 export class SummaryController {
   constructor(private readonly summaryService: SummaryService) { }
+
   @Roles(Role.ADMIN, Role.OWNER, Role.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -25,13 +27,13 @@ export class SummaryController {
     return this.summaryService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('course/:courseId')
   findOneByCourse(@Param('courseId') courseId: string) {
     return this.summaryService.findOneByCourse(+courseId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.summaryService.findOne(+id);

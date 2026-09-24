@@ -26,9 +26,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* ← new: center children horizontally */
   justify-content: center;
-  /* ← new: center children vertically */
   font-family:
     system-ui,
     -apple-system,
@@ -49,14 +47,13 @@
 
 .contentWrapper {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1700px;
   margin: 0 auto;
   padding: clamp(1.5rem, 3.5vw, 2.75rem) clamp(1rem, 3vw, 2.25rem) 3.5rem;
   display: flex;
   flex-direction: column;
   gap: clamp(1.75rem, 3.5vw, 2.75rem);
   align-self: center;
-  /* ← new: belt-and-suspenders centering */
 }
 
 /* ==================================================================
@@ -82,6 +79,111 @@
   border-radius: 999px;
   opacity: 0.85;
 }
+
+/* ==================================================================
+   Brand — logo + name
+   ================================================================== */
+
+.brand {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+  margin-inline-start: -0.35rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+
+.brandLink:hover {
+  background: var(--surface-hover);
+}
+
+.brandLink:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+.brandLogoWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 2px 6px -2px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
+}
+
+.brandLogoWrap::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 15px;
+  background: radial-gradient(circle at 50% 50%,
+      color-mix(in srgb, var(--primary) 18%, transparent),
+      transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.brandLink:hover .brandLogoWrap {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px -6px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.brandLink:hover .brandLogoWrap::after {
+  opacity: 1;
+}
+
+.brandLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.brandName {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.brandNameAccent {
+  color: var(--primary);
+  margin-inline-start: 0.02em;
+}
+
+/* ==================================================================
+   Badge, title, subtitle
+   ================================================================== */
 
 .badge {
   display: inline-flex;
@@ -150,7 +252,6 @@
   }
 }
 
-/* Base card wrapper — grows to fill leftovers, but caps out */
 .cardWrap {
   min-width: 0;
   perspective: 1200px;
@@ -162,8 +263,6 @@
   animation: cardEnter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
   animation-delay: calc(var(--i, 0) * 50ms);
 }
-
-/* ---------- Size intents ---------- */
 
 .cardWrap[data-size="hero"] {
   flex: 2 1 420px;
@@ -245,7 +344,6 @@
     transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Cursor spotlight */
 .card::before {
   content: "";
   position: absolute;
@@ -259,7 +357,6 @@
   z-index: 1;
 }
 
-/* Top accent line */
 .card::after {
   content: "";
   position: absolute;
@@ -482,7 +579,6 @@
    Size variants — hero / sm tweaks
    ================================================================== */
 
-/* Hero card: bigger everything */
 .cardWrap[data-size="hero"] .card {
   padding: 1.5rem 1.6rem;
   min-height: 220px;
@@ -507,7 +603,6 @@
   gap: 0.6rem;
 }
 
-/* Small card: compact */
 .cardWrap[data-size="sm"] .card {
   padding: 1.1rem 1.15rem;
 }
@@ -603,10 +698,6 @@
   transition:
     opacity 0.4s ease,
     transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  /* Uncomment to strip a solid white/green/black GIF background:
-     mix-blend-mode: multiply;  (removes white)
-     mix-blend-mode: screen;    (removes black) */
 }
 
 .card:hover .cardGif,
@@ -615,7 +706,6 @@
   transform: translate(-6px, -6px) scale(1.05);
 }
 
-/* Hero: larger GIF */
 .cardWrap[data-size="hero"] .cardGif {
   width: 165px;
   height: 165px;
@@ -626,7 +716,6 @@
   opacity: 0.55;
 }
 
-/* Small: tighter GIF */
 .cardWrap[data-size="sm"] .cardGif {
   width: 86px;
   height: 86px;
@@ -730,6 +819,20 @@
 
   .subtitle {
     font-size: 0.95rem;
+  }
+
+  .brandLogoWrap {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brandName {
+    font-size: 1.2rem;
+  }
+
+  .brandLink {
+    padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+    gap: 0.6rem;
   }
 
   .bentoGrid {
@@ -845,7 +948,8 @@
   .cardGif,
   .page::before,
   .header::before,
-  .badge {
+  .badge,
+  .brand {
     display: none;
   }
 
@@ -882,7 +986,10 @@
   .card::after,
   .cardWrap,
   .notificationDot,
-  .cardGif {
+  .cardGif,
+  .brandLink,
+  .brandLogoWrap,
+  .brandLogoWrap::after {
     transition: none !important;
     transform: none !important;
     animation: none !important;
@@ -892,5 +999,9 @@
   .card:focus-visible .cardGif {
     transform: none !important;
     opacity: 0.6 !important;
+  }
+
+  .brandLink:hover .brandLogoWrap {
+    transform: none;
   }
 }

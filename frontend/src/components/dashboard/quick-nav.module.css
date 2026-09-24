@@ -13,7 +13,7 @@
 
 .trigger {
   position: fixed;
-  inset-block-end: 1.5rem;
+  top: 50%;
   inset-inline-end: 1.5rem;
   z-index: 60;
 
@@ -28,7 +28,7 @@
       var(--primary) 100%);
   color: var(--primary-foreground);
   cursor: pointer;
-
+  opacity: 0.5;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.15) inset,
     0 10px 24px -8px color-mix(in srgb, var(--primary) 55%, transparent),
@@ -39,7 +39,8 @@
     box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
     background 0.22s ease,
     color 0.22s ease,
-    border-color 0.22s ease;
+    border-color 0.22s ease,
+    opacity 0.22s;
   z-index: 9999;
 }
 
@@ -49,6 +50,7 @@
     0 1px 0 rgba(255, 255, 255, 0.2) inset,
     0 16px 32px -10px color-mix(in srgb, var(--primary) 65%, transparent),
     0 3px 8px -2px rgba(0, 0, 0, 0.4);
+  opacity: 1;
 }
 
 .trigger:active {
@@ -642,4 +644,304 @@
   .logout:hover .itemIcon {
     box-shadow: none;
   }
+}
+
+/* ============================== Brand ============================== */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* The clickable region — logo + name + tagline in a row.
+   Fills the space next to the close button. */
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.25rem;
+  margin: -0.25rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+
+.brandLink:hover {
+  background: var(--surface-hover);
+}
+
+.brandLink:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+/* Keep the logo and name layout identical to before */
+.brandLink .brandLogoWrap {
+  flex-shrink: 0;
+}
+
+.brandLink .brandText {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Wrapper gives the logo a stable hit area and, on hover,
+   a soft primary halo without changing size. */
+.brandLogoWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 2px 6px -2px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+}
+
+.brandLogoWrap::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 15px;
+  background: radial-gradient(circle at 50% 50%,
+      color-mix(in srgb, var(--primary) 18%, transparent),
+      transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.brand:hover .brandLogoWrap {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px -6px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.brand:hover .brandLogoWrap::after {
+  opacity: 1;
+}
+
+.brandLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 9px;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ---- Name + tagline ---- */
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.brandName {
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia,
+    "Times New Roman", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brandNameAccent {
+  color: var(--primary);
+  /* Slight tightening makes the two halves feel like one word */
+  margin-inline-start: 0.02em;
+}
+
+.brandTag {
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia,
+    "Times New Roman", serif;
+  font-style: italic;
+  font-size: 0.75rem;
+  letter-spacing: 0.005em;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Topbar variant — tighter brand ---- */
+
+.panelTopbar .brand {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+/* ---- Mobile: hide the tagline when space is tight ---- */
+
+@media (max-width: 400px) {
+  .brandTag {
+    display: none;
+  }
+
+  .brandName {
+    font-size: 1.05rem;
+  }
+
+  .brandLogoWrap {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ---- Reduced motion: keep the halo but drop the movement ---- */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .overlay,
+  .panel,
+  .trigger,
+  .item,
+  .itemIcon,
+  .segment,
+  .langBtn,
+  .iconButton,
+  .spin,
+  .panelSidebarClosing,
+  .panelTopbarClosing,
+  .overlayClosing {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============================== Closing animations ============================== */
+
+/* These classes are applied on top of the base variant while the
+   component is transitioning out. The panel stays mounted until the
+   JS timer finishes, then unmounts. */
+
+.panelSidebarClosing {
+  animation: slideOutSide 0.24s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.panelTopbarClosing {
+  animation: slideOutTop 0.24s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.overlayClosing {
+  animation: overlayOut 0.24s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* ---- Optional: stagger the inner items out in reverse ---- */
+
+.panelSidebarClosing .item,
+.panelTopbarClosing .item {
+  animation: itemOut 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 20ms);
+}
+
+/* ============================== Closing keyframes ============================== */
+
+@keyframes slideOutSide {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(var(--qn-offset, 100%));
+    opacity: 0.85;
+  }
+}
+
+@keyframes slideOutTop {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100%);
+    opacity: 0.85;
+  }
+}
+
+@keyframes overlayOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes itemOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* ============================== Preferences row ============================== */
+
+/* Sits between .bottomActions and the two .preferenceRow blocks.
+   Puts theme and language side by side, splits them evenly,
+   and falls back to a stack on very narrow panels. */
+.preferencesRow {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.preferencesRow .preferenceRow {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Panel is a narrow drawer — stack below 280px of panel width */
+@media (max-width: 320px) {
+  .preferencesRow {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+}
+
+/* In the topbar variant the panel is full-width, so keep them inline
+   even on small screens. */
+.panelTopbar .preferencesRow {
+  flex-direction: row;
 }

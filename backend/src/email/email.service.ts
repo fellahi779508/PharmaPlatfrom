@@ -15,7 +15,7 @@ export class EmailService {
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly i18n: I18nService,
-  ) {}
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -84,4 +84,36 @@ export class EmailService {
 
     return { message: 'Email verified successfully.' };
   }
+
+  async verifyOtpPassword(dto: VerifyOtpDto) {
+    const user = await this.userService.findByEmail(dto.email);
+
+
+    if (!user.otpCode || user.otpCode !== dto.otp) {
+      throw new BadRequestException({
+        message: this.i18n.translate('errors.email.invalid_otp', {
+          lang: this.currentLang,
+        }),
+      });
+    }
+
+    if (user.otpExpiresAt && new Date() > user.otpExpiresAt) {
+      throw new BadRequestException({
+        message: this.i18n.translate('errors.email.otp_expired', {
+          lang: this.currentLang,
+        }),
+      });
+    }
+
+    if (user.otpCode != dto.otp) {
+      throw new BadRequestException({
+        message: this.i18n.translate('errors.email.invalid_otp', {
+          lang: this.currentLang,
+        }),
+      });
+    }
+
+    return { message: 'success' };
+  }
+
 }

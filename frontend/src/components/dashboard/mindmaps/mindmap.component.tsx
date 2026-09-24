@@ -9,23 +9,24 @@ import {
     FileText,
     GraduationCap,
     Home,
+    Image as ImageIcon,
     Languages,
-    Layers,
     Loader2,
+    Maximize2,
     Network,
     RefreshCw,
     Search,
     Sparkles,
+    X,
     XCircle,
 } from "lucide-react";
 
-import {
-    getSubjectsByStudent,
-} from "@/utils/server/subject-api";
+import { getSubjectsByStudent } from "@/utils/server/subject-api";
 import { getCoursesBySubject } from "@/utils/server/course-api";
 import {
     getMindMapByCourseId,
     getSummaryByCourse,
+    getSummaryImage,
 } from "@/utils/server/summary-api";
 
 import styles from "./mindmap.module.css";
@@ -38,6 +39,23 @@ import { Mindmap } from "@/utils/types/mindmap.types";
 /* ------------------------------------------------------------------ */
 
 type View = "subjects" | "courses" | "detail";
+
+type SummaryImage = {
+    id: number;
+    url: string;
+    publicId?: string;
+    format?: string | null;
+    width?: number;
+    height?: number;
+    bytes?: number;
+};
+
+type MindMapTerm = {
+    _key: string;
+    french: string;
+    english: string;
+    definition: string;
+};
 
 /* ------------------------------------------------------------------ */
 /* Response normalizers                                                */
@@ -77,13 +95,6 @@ const unwrapEntity = <T,>(v: any): T | null => {
 /* ------------------------------------------------------------------ */
 /* Mindmap term reader                                                 */
 /* ------------------------------------------------------------------ */
-
-type MindMapTerm = {
-    _key: string;
-    french: string;
-    english: string;
-    definition: string;
-};
 
 function readTermsFromMindmap(mindmap: Mindmap | null): MindMapTerm[] {
     if (!mindmap) return [];
@@ -136,8 +147,9 @@ export default function MindmapComponent() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [courseSummary, setCourseSummary] = useState<Summary | null>(null);
     const [courseMindmap, setCourseMindmap] = useState<Mindmap | null>(null);
+    const [courseImage, setCourseImage] = useState<SummaryImage | null>(null);
 
-    /* ---------- Loading states ---------- */
+    /* ---------- Loading ---------- */
     const [loadingSubjects, setLoadingSubjects] = useState(true);
     const [loadingCourses, setLoadingCourses] = useState(false);
     const [loadingDetail, setLoadingDetail] = useState(false);
@@ -146,6 +158,7 @@ export default function MindmapComponent() {
     /* ---------- UI ---------- */
     const [search, setSearch] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
 
     /* ================================================================== */
     /* Data fetchers                                                       */
@@ -200,6 +213,7 @@ export default function MindmapComponent() {
             setError(null);
             setCourseSummary(null);
             setCourseMindmap(null);
+            setCourseImage(null);
 
             try {
                 const [summaryRes, mindmapRes] = await Promise.all([
@@ -207,19 +221,20 @@ export default function MindmapComponent() {
                     getMindMapByCourseId(course.id),
                 ]);
 
-                // ---- Summary ----
+                /* ---- Summary ---- */
+                let loadedSummary: Summary | null = null;
                 if (summaryRes.status) {
                     const raw: any = summaryRes.response;
-                    const s =
+                    loadedSummary =
                         unwrapEntity<Summary>(raw) ??
                         unwrapEntity<Summary>(raw?.summary) ??
                         unwrapEntity<Summary>(raw?.data?.summary) ??
                         unwrapEntity<Summary>(raw?.data) ??
                         null;
-                    setCourseSummary(s);
+                    setCourseSummary(loadedSummary);
                 }
 
-                // ---- Mindmap ----
+                /* ---- Mindmap ---- */
                 let mm: Mindmap | null = null;
                 if (mindmapRes.status) {
                     const raw: any = mindmapRes.response;
@@ -231,14 +246,25 @@ export default function MindmapComponent() {
                         null;
                 }
 
-                // Fallback: mindmap embedded inside summary
-                if (!mm && summaryRes.status) {
-                    const raw: any = summaryRes.response;
-                    const s = unwrapEntity<Summary>(raw);
-                    if (s) mm = (s as any).mindmap ?? null;
+                /* Fallback: mindmap embedded inside summary */
+                if (!mm && loadedSummary) {
+                    const s: any = loadedSummary;
+                    mm = s.mindmap ?? s.mindMap ?? s.Mindmap ?? null;
                 }
-
                 setCourseMindmap(mm);
+
+                /* ---- Image (only if a summary exists) ---- */
+                if (loadedSummary?.id) {
+                    try {
+                        const imgRes = await getSummaryImage(loadedSummary.id);
+                        if (imgRes.status) {
+                            const img = unwrapEntity<SummaryImage>(imgRes.response);
+                            setCourseImage(img ?? null);
+                        }
+                    } catch {
+                        setCourseImage(null);
+                    }
+                }
             } catch (e: any) {
                 setError(e?.message ?? t("errors.generic"));
             } finally {
@@ -259,6 +285,7 @@ export default function MindmapComponent() {
             setCourses([]);
             setCourseSummary(null);
             setCourseMindmap(null);
+            setCourseImage(null);
             setSearch("");
             await loadCourses(subject);
         },
@@ -279,6 +306,7 @@ export default function MindmapComponent() {
         setCourses([]);
         setCourseSummary(null);
         setCourseMindmap(null);
+        setCourseImage(null);
         setSearch("");
     };
 
@@ -286,6 +314,7 @@ export default function MindmapComponent() {
         setSelectedCourse(null);
         setCourseSummary(null);
         setCourseMindmap(null);
+        setCourseImage(null);
     };
 
     const refresh = async () => {
@@ -302,6 +331,20 @@ export default function MindmapComponent() {
             setRefreshing(false);
         }
     };
+
+    /* ================================================================== */
+    /* Escape key — close lightbox                                         */
+    /* ================================================================== */
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && lightboxOpen) {
+                setLightboxOpen(false);
+            }
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [lightboxOpen]);
 
     /* ================================================================== */
     /* Derived                                                             */
@@ -606,7 +649,7 @@ export default function MindmapComponent() {
                                     <Loader2 className={styles.spinning} size={32} />
                                     <span>{t("loading.detail")}</span>
                                 </div>
-                            ) : !courseSummary && !courseMindmap ? (
+                            ) : !courseSummary && !courseMindmap && !courseImage ? (
                                 <div className={styles.emptyState}>
                                     <div className={styles.emptyIcon}>
                                         <FileText size={44} />
@@ -616,7 +659,7 @@ export default function MindmapComponent() {
                                 </div>
                             ) : (
                                 <div className={styles.detailWrap}>
-                                    {/* ---- Summary card ---- */}
+                                    {/* ---- Summary card (no image) ---- */}
                                     {courseSummary && (
                                         <motion.div
                                             className={styles.summaryCard}
@@ -637,13 +680,14 @@ export default function MindmapComponent() {
                                                     </p>
                                                 </div>
                                             </div>
+
                                             <p className={styles.summaryText}>
                                                 {courseSummary.text}
                                             </p>
                                         </motion.div>
                                     )}
 
-                                    {/* ---- Mindmap card ---- */}
+                                    {/* ---- Mindmap terms card ---- */}
                                     {terms.length > 0 ? (
                                         <motion.div
                                             className={styles.mindmapCard}
@@ -700,7 +744,8 @@ export default function MindmapComponent() {
                                             </ul>
                                         </motion.div>
                                     ) : (
-                                        courseSummary && (
+                                        courseSummary &&
+                                        !courseImage && (
                                             <motion.div
                                                 className={styles.emptyMindmapNotice}
                                                 initial={{ opacity: 0 }}
@@ -711,12 +756,113 @@ export default function MindmapComponent() {
                                             </motion.div>
                                         )
                                     )}
+
+                                    {/* ---- Mindmap image section (click to enlarge) ---- */}
+                                    {courseImage?.url && (
+                                        <motion.div
+                                            className={styles.imageSection}
+                                            initial={{ opacity: 0, y: 12 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.35, delay: 0.15 }}
+                                        >
+                                            <div className={styles.imageHeader}>
+                                                <div className={styles.imageHeaderIcon}>
+                                                    <ImageIcon size={16} />
+                                                </div>
+                                                <div className={styles.imageHeaderText}>
+                                                    <h2 className={styles.imageTitle}>
+                                                        {t.has("image.title")
+                                                            ? t("image.title")
+                                                            : "Mindmap"}
+                                                    </h2>
+                                                    <p className={styles.imageSubtitle}>
+                                                        {t.has("image.subtitle")
+                                                            ? t("image.subtitle")
+                                                            : "visual overview of this course"}
+                                                    </p>
+                                                </div>
+                                                <span className={styles.imageHintChip}>
+                                                    <Maximize2 size={12} />
+                                                    {t.has("image.clickToZoom")
+                                                        ? t("image.clickToZoom")
+                                                        : "Click to enlarge"}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className={styles.imageButton}
+                                                onClick={() => setLightboxOpen(true)}
+                                                aria-label={
+                                                    t.has("image.clickToZoom")
+                                                        ? t("image.clickToZoom")
+                                                        : "Click to enlarge"
+                                                }
+                                            >
+                                                <img
+                                                    src={courseImage.url}
+                                                    alt={
+                                                        courseSummary?.text?.slice(0, 60) ??
+                                                            t.has("image.title")
+                                                            ? t("image.title")
+                                                            : "Mindmap"
+                                                    }
+                                                    className={styles.imageDisplay}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                />
+                                                <span className={styles.imageZoomBadge} aria-hidden>
+                                                    <Maximize2 size={14} />
+                                                </span>
+                                            </button>
+                                        </motion.div>
+                                    )}
                                 </div>
                             )}
                         </motion.section>
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* ==================== Lightbox ==================== */}
+            <AnimatePresence>
+                {lightboxOpen && courseImage?.url && (
+                    <motion.div
+                        className={styles.lightboxOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setLightboxOpen(false)}
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <button
+                            type="button"
+                            className={styles.lightboxClose}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxOpen(false);
+                            }}
+                            aria-label="Close"
+                            title="Close"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <motion.img
+                            src={courseImage.url}
+                            alt=""
+                            className={styles.lightboxImage}
+                            initial={{ scale: 0.92, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.92, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+                            onClick={(e) => e.stopPropagation()}
+                            draggable={false}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

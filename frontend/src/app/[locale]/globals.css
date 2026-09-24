@@ -4,48 +4,63 @@
   color-scheme: light;
 
   /* Base backgrounds & foregrounds */
-  --background: #f8fafc; /* soft slate-50 */
-  --foreground: #0f172a; /* dark slate-900 */
+  --background: #f7faf9;
+  /* ← teal-tinted slate-50 */
+  --foreground: #0f172a;
+  /* dark slate-900 */
 
   /* Surfaces & borders */
-  --surface: #ffffff; /* white cards, panels */
-  --surface-hover: #f1f5f9; /* subtle hover state */
-  --border: #e2e8f0; /* slate-200 */
+  --surface: #ffffff;
+  --surface-hover: #f0f7f5;
+  /* ← teal-tinted hover */
+  --border: #dbe5e2;
+  /* ← slate-teal border */
 
-  /* Primary brand – medical teal */
-  --primary: #0d9488; /* teal-600 */
-  --primary-foreground: #ffffff; /* white text on primary */
+  /* Primary brand – medical teal (matches logo) */
+  --primary: #0d9488;
+  --primary-hover: #0f766e;
+  /* NEW — deeper teal for hover/active */
+  --primary-subtle: #ccfbf1;
+  /* NEW — soft teal wash */
+  --primary-foreground: #ffffff;
+
+  /* Brand leaf — extracted from logo's leaf */
+  --brand-leaf: #4a9d7f;
+  /* NEW */
+  --brand-leaf-foreground: #ffffff;
 
   /* Secondary – muted slate */
-  --secondary: #64748b; /* slate-500 */
+  --secondary: #64748b;
   --secondary-foreground: #ffffff;
 
-  /* Muted – for less important text/backgrounds */
-  --muted: #f1f5f9; /* slate-100 */
-  --muted-foreground: #64748b; /* slate-500 */
+  /* Muted */
+  --muted: #f0f7f5;
+  --muted-foreground: #5f6e78;
 
-  /* Accent – warm amber for highlights & focus */
-  --accent: #f59e0b; /* amber-500 */
+  /* Accent – warm amber */
+  --accent: #f59e0b;
+  --accent-hover: #d97706;
+  /* NEW */
   --accent-foreground: #ffffff;
 
-  /* Semantic – success (correct answers) */
-  --success: #16a34a; /* green-600 */
+  /* Semantic – success */
+  --success: #16a34a;
   --success-foreground: #ffffff;
 
   /* Semantic – warning */
-  --warning: #d97706; /* amber-600 */
+  --warning: #d97706;
   --warning-foreground: #ffffff;
 
-  /* Semantic – error (incorrect answers) */
-  --error: #dc2626; /* red-600 */
+  /* Semantic – error */
+  --error: #dc2626;
   --error-foreground: #ffffff;
 
-  /* Semantic – info */
-  --info: #2563eb; /* blue-600 */
+  /* Semantic – info (cyan-shifted to sit in the logo family) */
+  --info: #0891b2;
   --info-foreground: #ffffff;
 
   /* Exam-specific tokens */
-  --highlight: #fef08a; /* light yellow for selected options */
+  --highlight: #fef08a;
   --highlight-foreground: #0f172a;
   --correct: var(--success);
   --correct-foreground: var(--success-foreground);
@@ -53,86 +68,135 @@
   --incorrect-foreground: var(--error-foreground);
 
   /* Disabled states */
-  --disabled: #e2e8f0; /* slate-200 */
-  --disabled-foreground: #94a3b8; /* slate-400 */
+  --disabled: #dbe5e2;
+  --disabled-foreground: #94a3b8;
 }
 
-/* Dark mode overrides — driven by the data-theme attribute that
-   useTheme() / ThemeScript() write onto <html>. */
+/* Dark mode overrides — driven by data-theme="dark" on <html> */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --background: #0f172a; /* dark slate-900 */
-  --foreground: #f1f5f9; /* slate-100 */
+  /* Base — deep teal-slate rather than pure slate */
+  --background: #0b1620;
+  /* ← was #0f172a — slight teal-ink */
+  --foreground: #e6f0ed;
+  /* ← was #f1f5f9 — faint teal cast */
 
-  --surface: #1e293b; /* slate-800 */
-  --surface-hover: #334155; /* slate-700 */
-  --border: #334155; /* slate-700 */
+  /* Surfaces & borders */
+  --surface: #15232d;
+  /* ← was #1e293b — teal-tinted panel */
+  --surface-hover: #1d2f3a;
+  /* ← was #334155 */
+  --border: #24363f;
+  /* ← was #334155 — teal-slate border */
 
-  --primary: #14b8a6; /* teal-500 (lighter for contrast) */
-  --primary-foreground: #0f172a; /* dark text on primary */
+  /* Primary brand — lighter for contrast on dark */
+  --primary: #14b8a6;
+  /* teal-500 */
+  --primary-hover: #0d9488;
+  /* deeper on hover */
+  --primary-subtle: #134e4a;
+  /* dark teal wash for chips */
+  --primary-foreground: #06110f;
+  /* near-black with faint teal */
 
-  --secondary: #94a3b8; /* slate-400 */
-  --secondary-foreground: #0f172a;
+  /* Brand leaf — brightened for dark mode */
+  --brand-leaf: #6fc0a0;
+  --brand-leaf-foreground: #06110f;
 
-  --muted: #1e293b; /* slate-800 */
-  --muted-foreground: #94a3b8; /* slate-400 */
+  /* Secondary */
+  --secondary: #94a3b8;
+  --secondary-foreground: #0b1620;
 
-  --accent: #fbbf24; /* amber-400 */
-  --accent-foreground: #0f172a;
+  /* Muted */
+  --muted: #15232d;
+  --muted-foreground: #90a3ac;
+  /* ← warmer slate that matches new bg */
 
-  --success: #22c55e; /* green-500 */
-  --success-foreground: #0f172a;
+  /* Accent */
+  --accent: #fbbf24;
+  /* amber-400 */
+  --accent-hover: #f59e0b;
+  --accent-foreground: #0b1620;
 
-  --warning: #f59e0b; /* amber-500 */
-  --warning-foreground: #0f172a;
+  /* Semantic – success */
+  --success: #22c55e;
+  --success-foreground: #06110f;
 
-  --error: #ef4444; /* red-500 */
+  /* Semantic – warning */
+  --warning: #f59e0b;
+  --warning-foreground: #06110f;
+
+  /* Semantic – error */
+  --error: #ef4444;
   --error-foreground: #ffffff;
 
-  --info: #3b82f6; /* blue-500 */
-  --info-foreground: #ffffff;
+  /* Semantic – info (cyan-shifted to match) */
+  --info: #22d3ee;
+  /* ← was #3b82f6 — cyan-400 reads better on dark */
+  --info-foreground: #06110f;
 
-  --highlight: #fde047; /* yellow-300 for dark mode */
-  --highlight-foreground: #0f172a;
+  /* Exam-specific */
+  --highlight: #fde047;
+  --highlight-foreground: #0b1620;
 
-  --disabled: #334155; /* slate-700 */
-  --disabled-foreground: #64748b; /* slate-500 */
+  /* Disabled */
+  --disabled: #24363f;
+  --disabled-foreground: #64748b;
 }
 
 /* Tailwind v4 theme mapping – exposes these as utilities (e.g., bg-primary) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
   --color-border: var(--border);
+
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-subtle: var(--primary-subtle);
   --color-primary-foreground: var(--primary-foreground);
+
+  --color-brand-leaf: var(--brand-leaf);
+  --color-brand-leaf-foreground: var(--brand-leaf-foreground);
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: var(--accent-foreground);
+
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
+
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
+
   --color-correct: var(--correct);
   --color-correct-foreground: var(--correct-foreground);
+
   --color-incorrect: var(--incorrect);
   --color-incorrect-foreground: var(--incorrect-foreground);
+
   --color-disabled: var(--disabled);
   --color-disabled-foreground: var(--disabled-foreground);
 
-  /* Preserve existing font mappings */
+  /* Font mappings */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -141,5 +205,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }

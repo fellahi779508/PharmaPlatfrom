@@ -80,6 +80,8 @@
     "subtitle": "Structurez le cursus de pharmacie : années, semestres, matières, cours, TD, TP, QCM et réponses.",
     "loading": "Chargement…",
     "refresh": "Actualiser",
+    "imageLabel": "Image de couverture",
+    "imageHint": "Cliquez pour importer une image (JPG, PNG, WebP, GIF — max 5 Mo)",
     "summary": {
       "title": "Summary & Mind Map",
       "subtitleExisting": "Edit the summary and its mind map",
@@ -215,6 +217,16 @@
     "title": "Tableau de bord",
     "subtitle": "Tout ce qu'il vous faut aujourd'hui, à portée de clic.",
     "navigate": "Ouvrir",
+    "leaderboard": {
+      "tag": "Classement",
+      "title": "Classement",
+      "description": "Consultez le classement des meilleurs utilisateurs de la plateforme."
+    },
+    "Up to Date": {
+      "tag": "À jour",
+      "title": "À jour",
+      "description": "Consultez et gérez vos cours mis à jour."
+    },
     "utility": {
       "brand": "Console de l'espace de travail",
       "searchPlaceholder": "Rechercher ou accéder à...",
@@ -586,6 +598,18 @@
       "loading": "Chargement de l'examen…",
       "question": "Question",
       "of": "sur",
+      "points": "pt",
+      "grading": {
+        "all-or-nothing": "Tout ou rien",
+        "negative-partial": "Pénalité",
+        "partial": "Points partiels",
+        "comparison": "Même examen, trois barèmes",
+        "hint": {
+          "all-or-nothing": "Une question ne compte que si toutes les bonnes réponses sont cochées et aucune mauvaise.",
+          "negative-partial": "Chaque bonne réponse vaut 1 point ; chaque mauvaise retire 0.5. Jamais en dessous de zéro.",
+          "partial": "Chaque bonne réponse compte proportionnellement. Les mauvaises ne pénalisent pas."
+        }
+      },
       "navigator": "Questions",
       "previous": "Précédent",
       "next": "Suivant",
@@ -710,6 +734,11 @@
     "title": "Cartes mentales",
     "subtitle": "Choisissez une matière, puis un cours, pour lire son résumé et sa carte mentale bilingue.",
     "refresh": "Actualiser",
+    "image": {
+      "title": "Carte mentale",
+      "subtitle": "aperçu visuel de ce cours",
+      "clickToZoom": "Cliquer pour agrandir"
+    },
     "breadcrumb": {
       "home": "Matières"
     },
@@ -752,6 +781,275 @@
       "generic": "Une erreur est survenue. Veuillez réessayer.",
       "loadSubjects": "Impossible de charger vos matières.",
       "loadCourses": "Impossible de charger les cours de cette matière."
+    }
+  },
+  "Landing": {
+    "nav": {
+      "study": "Révision",
+      "exams": "Examens",
+      "mindmaps": "Cartes mentales",
+      "pricing": "Tarifs"
+    },
+    "sections": {
+      "hero": {
+        "eyebrow": "Conçu pour les étudiants en pharmacie",
+        "title": "Maîtrisez la pharmacie,",
+        "titleAccent": "un concept à la fois.",
+        "subtitle": "PharmaSpace réunit vos Cours, Examens et TDs et TPs et Cartes mentales dans un espace clair et concentré — vous cherchez moins, vous apprenez plus.",
+        "cta": "Commencer",
+        "ctaSecondary": "Voir comment ça marche",
+        "meta1": "Adoré par les étudiants",
+        "meta2": "Pensé pour la pharmacie",
+        "meta3": "Rapide et hors ligne"
+      },
+      "study": {
+        "eyebrow": "Révision",
+        "title": "Une révision structurée, sans encombrement.",
+        "subtitle": "Tout ce qu'il faut pour un chapitre, organisé comme la pharmacie s'enseigne réellement — sans bruit, sans distraction.",
+        "feature1": "Des fiches soignées alignées sur votre programme",
+        "feature2": "Des flashcards avec répétition espacée intégrée",
+        "feature3": "Recherchez dans toutes les matières en quelques secondes",
+        "cta": "Commencer à réviser"
+      },
+      "exams": {
+        "eyebrow": "Examens",
+        "title": "Entraînez-vous comme vous serez évalué.",
+        "subtitle": "Des sessions d'examen réalistes avec correction instantanée, pour savoir exactement où vous en êtes avant le jour J.",
+        "feature1": "Des examens blancs chronométrés au format de votre faculté",
+        "feature2": "Corrections instantanées avec explications claires",
+        "feature3": "Suivi de la précision par matière et par thème",
+        "cta": "Essayer un examen"
+      },
+      "mindmaps": {
+        "eyebrow": "Cartes mentales",
+        "title": "Voyez comment tout se connecte.",
+        "subtitle": "Transformez des chapitres denses en cartes visuelles claires, réellement mémorables — des mécanismes aux interactions.",
+        "feature1": "Cartes interactives pour chaque grand chapitre",
+        "feature2": "Reliez visuellement médicaments, classes et mécanismes",
+        "feature3": "Zoomez, repliez et révisez à votre rythme",
+        "cta": "Explorer les cartes"
+      },
+      "progress": {
+        "eyebrow": "Progression",
+        "title": "Sachez exactement où vous progressez.",
+        "subtitle": "Des analyses simples et honnêtes qui montrent vos forces, vos points faibles et quoi travailler ensuite.",
+        "feature1": "Suivi hebdomadaire de la progression et de la régularité",
+        "feature2": "Détection des points faibles par matière",
+        "feature3": "Suggestions de révision personnalisées",
+        "cta": "Voir votre progression"
+      },
+      "pricing": {
+        "eyebrow": "Tarifs",
+        "title": "Une seule offre. Tout est débloqué.",
+        "subtitle": "Tarification annuelle simple. Sans frais cachés.",
+        "badge": "Accès complet",
+        "planName": "PharmaSpace Premium",
+        "priceAmount": "2000",
+        "priceCurrency": "DA",
+        "pricePeriod": "/ an",
+        "feature1": "Sessions d'étude et flashcards illimitées",
+        "feature2": "Banque d'examens complète avec correction instantanée",
+        "feature3": "Cartes mentales interactives pour chaque chapitre",
+        "feature4": "Analyses de progression et suivi des points faibles",
+        "feature5": "Support prioritaire de l'équipe PharmaSpace",
+        "cta": "Commencer",
+        "note": "2000 DA facturés une fois par an"
+      },
+      "cta": {
+        "title": "Prêt à réviser plus intelligemment ?",
+        "subtitle": "Rejoignez les étudiants en pharmacie qui utilisent déjà PharmaSpace pour rentabiliser chaque session.",
+        "cta": "Créer un compte",
+        "ctaSecondary": "Se connecter",
+        "footnote": "Essai gratuit · Sans carte bancaire"
+      }
+    }
+  },
+  "Leaderboard": {
+    "badge": "meilleurs scores",
+    "title": "Classement",
+    "subtitle": "Les étudiants ayant le plus de bonnes réponses aux QCM sur l'ensemble de leurs sessions terminées.",
+    "refresh": "Actualiser le classement",
+    "retry": "Réessayer",
+    "loading": "Chargement du classement…",
+    "points": "pts",
+    "rank": "rang",
+    "rankShort": "#{rank}",
+    "you": "Vous",
+    "yourRank": "Votre position",
+    "toFirst": "{count, plural, =0 {Vous êtes en tête !} one {1 point derrière le leader} other {# points derrière le leader}}",
+    "columns": {
+      "rank": "Rang",
+      "player": "Joueur",
+      "score": "Score"
+    },
+    "empty": {
+      "title": "Aucun classement pour le moment",
+      "subtitle": "Dès que les étudiants commenceront à terminer leurs sessions, les meilleurs apparaîtront ici."
+    },
+    "errors": {
+      "load": "Impossible de charger le classement.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "admin": {
+    "title": "Panneau d'administration",
+    "subtitle": "Gérez les utilisateurs et les codes d'activation de la plateforme.",
+    "refresh": "Actualiser les données",
+    "loading": "Chargement…",
+    "searchPlaceholder": "Rechercher par nom, email ou pseudo…",
+    "tabs": {
+      "users": "Utilisateurs",
+      "redeemCodes": "Codes d'activation"
+    },
+    "roles": {
+      "admin": "Administrateur",
+      "teacher": "Enseignant",
+      "user": "Étudiant",
+      "owner": "Propriétaire"
+    },
+    "filters": {
+      "allRoles": "Tous les rôles",
+      "allStatus": "Tous les statuts",
+      "active": "Actifs",
+      "inactive": "Inactifs"
+    },
+    "actions": {
+      "createUser": "Nouvel utilisateur",
+      "editUser": "Modifier l'utilisateur",
+      "createRedeemCode": "Nouveau code",
+      "editRedeemCode": "Modifier le code",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "create": "Créer"
+    },
+    "table": {
+      "username": "Pseudo",
+      "email": "Email",
+      "role": "Rôle",
+      "status": "Statut",
+      "createdAt": "Créé le",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "used": "Utilisé",
+      "available": "Disponible"
+    },
+    "form": {
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "username": "Pseudo",
+      "email": "Email",
+      "phone": "Téléphone",
+      "password": "Mot de passe",
+      "role": "Rôle",
+      "roleHint": "Les enseignants peuvent gérer les cours, QCM, résumés et cartes mentales. Les administrateurs ont un accès complet.",
+      "isActive": "Compte actif",
+      "isVerified": "Vérifié",
+      "year": "Année",
+      "selectYear": "Choisir une année…",
+      "yearRequired": "Veuillez sélectionner une année",
+      "redeemCodeHint": "Un code unique et une date d'expiration seront générés automatiquement."
+    },
+    "redeemCodes": {
+      "title": "Codes d'activation",
+      "allYears": "Toutes les années",
+      "noYear": "Sans année assignée"
+    },
+    "empty": {
+      "users": "Aucun utilisateur ne correspond à vos filtres.",
+      "usersNoData": "Aucun utilisateur trouvé sur le serveur.",
+      "redeemCodes": "Aucun code pour le moment. Cliquez sur « Nouveau code » pour en créer un."
+    },
+    "confirm": {
+      "deleteUser": "Supprimer cet utilisateur ?",
+      "deleteUserMessage": "« {username} » sera définitivement supprimé avec toutes ses données. Cette action est irréversible.",
+      "deleteRedeemCode": "Supprimer ce code d'activation ?",
+      "deleteRedeemCodeMessage": "Le code « {code} » sera définitivement supprimé. Cette action est irréversible."
+    },
+    "teacher": {
+      "goToTeacher": "Ouvrir les outils enseignant"
+    }
+  },
+  "Flashcard": {
+    "ariaLabel": "Carte du jour",
+    "badge": "Carte du jour",
+    "badgeQcm": "Carte du jour",
+    "enlargePhoto": "Enlarge photo",
+    "closeLightbox": "Close image",
+    "badgeMedicament": "Carte du jour",
+    "openAriaLabel": "Ouvrir la carte du jour",
+    "pillHintBoth": "qcm + médicament · cliquer pour ouvrir",
+    "pillHintQcm": "qcm · cliquer pour ouvrir",
+    "pillHintMedicament": "médicament · cliquer pour ouvrir",
+    "pillHint": "cliquer pour ouvrir",
+    "collapse": "Réduire",
+    "hide": "Masquer pour aujourd'hui",
+    "revealAnswer": "Révéler la réponse",
+    "correctAnswer": "Bonne réponse",
+    "semester": "Semestre",
+    "revealMedicament": "Afficher les détails",
+    "fields": {
+      "indication": "Indication",
+      "posology": "Posologie",
+      "contraindications": "Contre-indications",
+      "sideEffects": "Effets secondaires",
+      "notes": "Notes"
+    }
+  },
+  "ComingSoon": {
+    "badge": "Bientôt disponible",
+    "title": "Quelque chose de bien arrive.",
+    "subtitle": "PharmaPlus va subir une mise à jour majeure. Laissez votre email et nous vous informerons dès son lancement.",
+    "emailPlaceholder": "[EMAIL_ADDRESS]",
+    "notify": "M'avertir",
+    "footnote": "Pas de spam — juste un email à notre lancement."
+  },
+  "forgotPassword": {
+    "stepperLabel": "Progression de la réinitialisation",
+    "back": "Retour",
+    "rememberPassword": "Vous vous souvenez de votre mot de passe ?",
+    "signIn": "Se connecter",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "email": {
+      "title": "Réinitialisez votre mot de passe",
+      "subtitle": "Entrez l'email associé à votre compte, nous vous enverrons un code de vérification.",
+      "label": "Adresse email",
+      "placeholder": "vous@exemple.com",
+      "submit": "Envoyer le code"
+    },
+    "otp": {
+      "title": "Entrez le code de vérification",
+      "subtitle": "Nous avons envoyé un code à 6 chiffres à {email}.",
+      "label": "Code de vérification",
+      "placeholder": "000000",
+      "submit": "Vérifier le code"
+    },
+    "password": {
+      "title": "Définir un nouveau mot de passe",
+      "subtitle": "Choisissez un mot de passe fort que vous n'avez jamais utilisé.",
+      "newLabel": "Nouveau mot de passe",
+      "newPlaceholder": "Au moins 8 caractères",
+      "confirmLabel": "Confirmer le mot de passe",
+      "confirmPlaceholder": "Répétez votre mot de passe",
+      "hint": "Utilisez au moins 8 caractères avec un mélange de lettres et de chiffres.",
+      "submit": "Réinitialiser le mot de passe"
+    },
+    "success": {
+      "passwordReset": "Mot de passe mis à jour. Redirection vers la connexion…"
+    },
+    "error": {
+      "emailNotFound": "Aucun compte trouvé avec cet email.",
+      "otpSendFailed": "Impossible d'envoyer le code. Veuillez réessayer.",
+      "invalidOtp": "Ce code est incorrect ou expiré.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "passwordTooShort": "Le mot de passe doit comporter au moins 8 caractères.",
+      "resetFailed": "Impossible de réinitialiser votre mot de passe. Veuillez réessayer.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   }
 }

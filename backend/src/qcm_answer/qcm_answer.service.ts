@@ -3,7 +3,7 @@ import { CreateQcmAnswerDto } from './dto/create-qcm_answer.dto';
 import { UpdateQcmAnswerDto } from './dto/update-qcm_answer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QcmAnswer } from './entities/qcm_answer.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { Qcm } from 'src/qcm/entities/qcm.entity';
 
@@ -13,14 +13,25 @@ export class QcmAnswerService {
     @InjectRepository(QcmAnswer)
     private readonly qcmAnswerRepository: Repository<QcmAnswer>,
     private readonly i18n: I18nService,
-  ) {}
+    private readonly dataSource: DataSource
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
   }
 
   async create(createQcmAnswerDto: CreateQcmAnswerDto) {
-    const qcmAnswer = this.qcmAnswerRepository.create(createQcmAnswerDto);
+    const qcm = await this.dataSource.getRepository(Qcm).findOne({ where: { id: createQcmAnswerDto.qcmId } });
+    if (!qcm) {
+      throw new NotFoundException(
+        this.i18n.t('errors.qcm.not_found', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    const qcmAnswer = this.qcmAnswerRepository.create({ ...createQcmAnswerDto, qcm });
+    console.log(qcmAnswer);
+
     return await this.qcmAnswerRepository.save(qcmAnswer);
   }
 

@@ -12,6 +12,7 @@ import * as crypto from 'crypto';
 import { User } from 'src/user/entities/user.entity';
 import { Year } from 'src/year/entities/year.entity';
 import * as bcrypt from 'bcrypt';
+import { UpdateRedeemCodeDto } from './dto/update-redeem_code.dto';
 
 @Injectable()
 export class RedeemCodeService {
@@ -77,8 +78,8 @@ export class RedeemCodeService {
       });
 
       const savedCode = await this.redeemCodeRepository.save(redeemCode);
-      year.redeemCodes = [...(year.redeemCodes || []), savedCode];
-      await this.dataSource.getRepository(Year).save(year);
+
+
 
       return {
         message: this.i18n.translate('success.redeem.codeCreated', {
@@ -231,7 +232,7 @@ export class RedeemCodeService {
     });
   }
   async revokeSubscription(userId: string, password: string) {
-    console.log("here");
+    console.log('here');
 
     return this.dataSource.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
@@ -288,7 +289,6 @@ export class RedeemCodeService {
       // Optional: reset activation so the code becomes reusable.
       // Remove these 3 lines if you want the code to stay burned after use.
 
-
       await redeemRepo.save(redeemCode);
 
       // ---- clear the user side ----
@@ -337,6 +337,39 @@ export class RedeemCodeService {
     await this.dataSource.getRepository(User).save(user);
     return {
       message: this.i18n.translate('success.redeem.revoked', {
+        lang: this.currentLang,
+      }),
+    };
+  }
+  async getRedeemCDByYear(yearId: number) {
+    const codes = await this.redeemCodeRepository.find({
+      where: { year: { id: yearId } },
+    });
+    return codes;
+  }
+  async updateCode(id: number, updateRedeemCodeDto: UpdateRedeemCodeDto) {
+    const code = await this.redeemCodeRepository.findOne({ where: { id } });
+    if (!code) {
+      throw new NotFoundException(
+        this.i18n.translate('errors.redeem.notFound', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    const year = await this.dataSource.getRepository(Year).findOne({
+      where: { id: updateRedeemCodeDto.yearId },
+    });
+    if (!year) {
+      throw new NotFoundException(
+        this.i18n.translate('errors.year.notFound', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    code.year = year;
+    await this.redeemCodeRepository.save(code);
+    return {
+      message: this.i18n.translate('success.redeem.updated', {
         lang: this.currentLang,
       }),
     };

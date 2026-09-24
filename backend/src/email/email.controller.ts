@@ -19,7 +19,7 @@ export class EmailController {
   constructor(
     private readonly emailService: EmailService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   @Post('verify-otp')
   @UseGuards(JwtAuthGuard)
@@ -60,5 +60,18 @@ export class EmailController {
       otpCode,
       accountVerificationTemplate(otpCode),
     );
+  }
+  @Post('otpCode/password')
+  async getOtpCodePassword(@Body('email') email: string) {
+    const otpCode = this.generate6DigitOtp();
+    return await this.emailService.sendVerificationOtp(
+      email,
+      otpCode,
+      accountVerificationTemplate(otpCode),
+    );
+  }
+  @Post('verify-otp/password')
+  async verifyOtpPassword(@Body() dto: VerifyOtpDto) {
+    return await this.emailService.verifyOtpPassword(dto);
   }
 }

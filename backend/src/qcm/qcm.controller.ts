@@ -21,6 +21,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { SubscriptionGuard } from 'src/auth/guards/jwt-auth/subscription.guard';
 
 interface File {
   fieldname: string;
@@ -126,22 +127,28 @@ export class QcmController {
   }
 
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get(':id/generate-explanation')
   generateExplanation(@Param('id') id: string, @Req() req) {
     return this.qcmService.generateAiExplanation(+id, req.user.id);
   }
 
+
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('course/:courseId')
   findByCourse(@Param('courseId') courseId: number) {
     return this.qcmService.findByCourse(courseId);
   }
 
+  @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.qcmService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.qcmService.findOne(+id);

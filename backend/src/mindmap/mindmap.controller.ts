@@ -6,6 +6,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { SubscriptionGuard } from 'src/auth/guards/jwt-auth/subscription.guard';
 
 @Controller('mindmaps')
 export class MindmapController {
@@ -26,13 +27,13 @@ export class MindmapController {
     return this.mindmapService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('/course/:courseId')
   findByCourseId(@Param('courseId') courseId: number) {
     return this.mindmapService.findByCourseId(+courseId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.mindmapService.findOne(+id);

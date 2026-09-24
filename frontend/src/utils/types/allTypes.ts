@@ -94,12 +94,21 @@ export type Exam = {
 };
 
 export type RedeemCode = {
-  id: string;
+  id: number;
+  code: string;
+  isActivated: boolean;
+  activationDate?: string;
+  expiryDate?: string;
+  year?: Year;
+  user?: User | null;
 };
 
 export type User = {
   id: string;
+  firstName: string;
+  lastName: string;
   username: string;
+  phone: string;
   email: string;
   password?: string;
   createdAt: string;
@@ -111,6 +120,7 @@ export type User = {
   isVerified: boolean;
   otpCode?: string | null;
   otpExpiresAt?: string | null;
+  aiGenerationCount?: number;
 };
 
 /* ------------------------------------------------------------------ */
@@ -165,7 +175,9 @@ export type CreateExam = {
   duration: number;
 };
 
-export type CreateRedeemCode = Record<string, never>;
+export type CreateRedeemCode = {
+  yearId?: number;
+};
 
 export type CreateUser = {
   firstName: string;
@@ -175,7 +187,51 @@ export type CreateUser = {
   email: string;
   password: string;
   role: string;
+
 };
+
+type FlashcardKind = 'qcm' | 'medicament';
+
+interface FlashcardAnswer {
+  id: number;
+  answer: string;
+  isCorrect: boolean;
+  explanation: string | null;
+}
+
+interface QcmData {
+  id: number;
+  question: string;
+  answers: FlashcardAnswer[];
+  course: { id: number; name: string } | null;
+  td: { id: number; name: string } | null;
+  tp: { id: number; name: string } | null;
+}
+
+interface MedicamentData {
+  id: number;
+  name: string;
+  dci: string | null;
+  therapeuticClass: string | null;
+  form: string | null;
+  dosage: string | null;
+  indication: string | null;
+  contraindications: string | null;
+  sideEffects: string | null;
+  posology: string | null;
+  notes: string | null;
+  image: { id: number; url: string; width: number; height: number } | null;
+}
+
+interface FlashcardData {
+  id: number;
+  date: string;
+  kind: FlashcardKind;
+  semesterNumber: number | null;
+  year: { id: number; name: string } | null;
+  qcm?: QcmData;
+  medicament?: MedicamentData;
+}
 
 export type CreateTodo = {
   title: string;
@@ -234,7 +290,7 @@ export type UpdateTp = Partial<CreateTp>;
 
 export type UpdateExam = Partial<CreateExam>;
 
-export type UpdateRedeemCode = Record<string, never>;
+export type UpdateRedeemCode = Partial<CreateRedeemCode>;
 
 export type UpdateUser = Partial<CreateUser>;
 
@@ -317,4 +373,13 @@ export type UserStats = {
   correctAnswers: number;
   wrongAnswers: number;
   allQuestions: number;
-}
+};
+
+export type AdminUserStats = {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  totalRedeemCodes: number;
+  activeRedeemCodes: number;
+  usedRedeemCodes: number;
+};

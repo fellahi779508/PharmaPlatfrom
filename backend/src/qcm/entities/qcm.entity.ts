@@ -32,4 +32,6 @@ export class Qcm {
 
   @OneToMany(() => SessionQuestion, (sq) => sq.qcm)
   sessionQuestions: SessionQuestion[];
+
+
 }

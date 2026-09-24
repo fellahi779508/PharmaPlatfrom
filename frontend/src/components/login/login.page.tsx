@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import styles from "./login.module.css";
@@ -16,7 +17,6 @@ export default function LoginPageComponent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,54 +40,75 @@ export default function LoginPageComponent() {
 
   return (
     <div className={styles.container}>
-      {/* Decorative background */}
-      <div className={styles.backgroundDecoration} aria-hidden="true"></div>
+      {/* Dot grid background */}
+      <div className={styles.gridBg} aria-hidden="true" />
+      <div className={styles.glow} aria-hidden="true" />
 
       <motion.div
         className={styles.card}
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
         {/* Illustration side */}
-        <div className={styles.illustrationSide}>
-          <motion.div
-            className={styles.illustrationWrapper}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <Image
-              src="/lottieFiles/Login.svg"
-              alt="Pharmacy and medical illustration"
-              width={500}
-              height={500}
-              priority
-              unoptimized // SVG animations work best without Next.js optimization
-              className={styles.illustration}
-            />
-          </motion.div>
-        </div>
+        <aside className={styles.illustrationSide}>
+          <div className={styles.illustrationInner}>
+            <motion.div
+              className={styles.illustrationWrapper}
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.55, ease: "easeOut" }}
+            >
+              <Image
+                src="/gifs/login.gif"
+                alt=""
+                width={500}
+                height={500}
+                priority
+                className={styles.illustration}
+              />
+            </motion.div>
+
+            <div className={styles.illustrationCaption}>
+              <p className={styles.illustrationQuote}>
+                “Study smarter, not harder.”
+              </p>
+              <span className={styles.illustrationTag}>
+                Built for pharmacy students
+              </span>
+            </div>
+          </div>
+        </aside>
 
         {/* Form side */}
-        <div className={styles.formSide}>
+        <section className={styles.formSide}>
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            className={styles.formInner}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
           >
-            <div className={styles.header}>
+            {/* Brand */}
+            <Link href="/" className={styles.brand}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="PharmaSpace" className={styles.brandLogo} />
+              <span className={styles.brandName}>
+                Pharma<span className={styles.brandNameAccent}>Space</span>
+              </span>
+            </Link>
+
+            <header className={styles.header}>
               <h1 className={styles.title}>{t("title")}</h1>
               <p className={styles.subtitle}>{t("subtitle")}</p>
-            </div>
+            </header>
 
-            <form onSubmit={handleSubmit} className={styles.form}>
+            <form onSubmit={handleSubmit} className={styles.form} noValidate>
               <div className={styles.inputGroup}>
                 <label htmlFor="email" className={styles.label}>
                   {t("emailLabel")}
                 </label>
                 <div className={styles.inputWrapper}>
-                  <Mail className={styles.inputIcon} size={20} />
+                  <Mail className={styles.inputIcon} size={18} />
                   <input
                     id="email"
                     type="email"
@@ -102,11 +123,16 @@ export default function LoginPageComponent() {
               </div>
 
               <div className={styles.inputGroup}>
-                <label htmlFor="password" className={styles.label}>
-                  {t("passwordLabel")}
-                </label>
+                <div className={styles.labelRow}>
+                  <label htmlFor="password" className={styles.label}>
+                    {t("passwordLabel")}
+                  </label>
+                  <Link href="/forgot-password" className={styles.forgotLink}>
+                    {t("forgotPassword")}
+                  </Link>
+                </div>
                 <div className={styles.inputWrapper}>
-                  <Lock className={styles.inputIcon} size={20} />
+                  <Lock className={styles.inputIcon} size={18} />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -121,59 +147,49 @@ export default function LoginPageComponent() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className={styles.passwordToggle}
-                    aria-label={
-                      showPassword ? t("hidePassword") : t("showPassword")
-                    }
+                    aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              <div className={styles.optionsRow}>
-                <a href="/forgot-password" className={styles.forgotLink}>
-                  {t("forgotPassword")}
-                </a>
-              </div>
-
               {error && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
                   className={styles.errorMessage}
                   role="alert"
                 >
-                  <AlertCircle size={18} />
+                  <AlertCircle size={16} />
                   <span>{error}</span>
                 </motion.div>
               )}
 
-              <motion.button
+              <button
                 type="submit"
                 className={styles.submitButton}
                 disabled={isLoading}
-                whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                whileTap={{ scale: isLoading ? 1 : 0.98 }}
               >
                 {isLoading ? (
-                  <span className={styles.loadingSpinner}></span>
+                  <span className={styles.loadingSpinner} />
                 ) : (
                   <>
                     {t("loginButton")}
-                    <ArrowRight size={18} />
+                    <ArrowRight size={17} />
                   </>
                 )}
-              </motion.button>
+              </button>
             </form>
 
             <p className={styles.signupPrompt}>
               {t("noAccount")}{" "}
-              <a href="/register" className={styles.signupLink}>
+              <Link href="/register" className={styles.signupLink}>
                 {t("signup")}
-              </a>
+              </Link>
             </p>
           </motion.div>
-        </div>
+        </section>
       </motion.div>
     </div>
   );

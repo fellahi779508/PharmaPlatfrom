@@ -29,6 +29,10 @@ import { SessionQuestionModule } from './session-question/session-question.modul
 import { SessionQuestionAnswerModule } from './session-question-answer/session-question-answer.module';
 import { SummaryModule } from './summary/summary.module';
 import { MindmapModule } from './mindmap/mindmap.module';
+import { ImageModule } from './image/image.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { FlashcardModule } from './flash-card/flash-card.module';
+import { MedicamentModule } from './medicament/medicament.module';
 
 @Module({
   imports: [
@@ -88,8 +92,12 @@ import { MindmapModule } from './mindmap/mindmap.module';
     SessionQuestionAnswerModule,
     SummaryModule,
     MindmapModule,
+    ImageModule,
+    CloudinaryModule,
+    FlashcardModule,
+    MedicamentModule
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

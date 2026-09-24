@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Injectable()
 export class SubscriptionGuard implements CanActivate {
@@ -22,6 +23,9 @@ export class SubscriptionGuard implements CanActivate {
             where: { id: userId },
             relations: { redeemCode: true },
         });
+        if (user?.role == Role.OWNER || user?.role == Role.ADMIN || user?.role == Role.TEACHER) {
+            return true;
+        }
 
         const code = user?.redeemCode;
         const active =

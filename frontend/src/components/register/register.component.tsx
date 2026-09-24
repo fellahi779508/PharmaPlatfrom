@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -37,7 +38,6 @@ export default function RegisterComponent() {
   const router = useRouter();
   const [step, setStep] = useState<"form" | "otp">("form");
 
-  // State updated: role is now hardcoded to "USER"
   const [formData, setFormData] = useState<CreateUser>({
     firstName: "",
     lastName: "",
@@ -131,40 +131,82 @@ export default function RegisterComponent() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.backgroundDecoration} aria-hidden="true"></div>
+      {/* Dot grid background */}
+      <div className={styles.gridBg} aria-hidden="true" />
+      <div className={styles.glow} aria-hidden="true" />
 
       <motion.div
         className={styles.card}
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        {/* Form side (LEFT) */}
-        <div className={styles.formSide}>
+        {/* Illustration side */}
+        <aside className={styles.illustrationSide}>
+          <div className={styles.illustrationInner}>
+            <motion.div
+              className={styles.illustrationWrapper}
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.55, ease: "easeOut" }}
+            >
+              <Image
+                src="/gifs/register.png"
+                alt=""
+                width={500}
+                height={500}
+                priority
+                unoptimized
+                className={styles.illustration}
+              />
+            </motion.div>
+
+            <div className={styles.illustrationCaption}>
+              <p className={styles.illustrationQuote}>
+                “Your pharmacy journey starts here.”
+              </p>
+              <span className={styles.illustrationTag}>
+                Free to join · No card required
+              </span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Form side */}
+        <section className={styles.formSide}>
+          {/* Brand */}
+          <Link href="/" className={styles.brand}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="PharmaSpace" className={styles.brandLogo} />
+            <span className={styles.brandName}>
+              Pharma<span className={styles.brandNameAccent}>Space</span>
+            </span>
+          </Link>
+
           <AnimatePresence mode="wait">
             {step === "form" ? (
               <motion.div
                 key="form"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.4 }}
-                className={styles.formWrapper}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className={styles.formInner}
               >
-                <div className={styles.header}>
+                <header className={styles.header}>
                   <h1 className={styles.title}>{t("title")}</h1>
                   <p className={styles.subtitle}>{t("subtitle")}</p>
-                </div>
+                </header>
 
-                <form onSubmit={handleRegister} className={styles.form}>
-                  {/* Name Row: First & Last Name side-by-side */}
+                <form onSubmit={handleRegister} className={styles.form} noValidate>
+                  {/* Name row */}
                   <div className={styles.nameRow}>
                     <div className={styles.inputGroup}>
                       <label htmlFor="firstName" className={styles.label}>
                         {t("firstNameLabel")}
                       </label>
                       <div className={styles.inputWrapper}>
-                        <User className={styles.inputIcon} size={20} />
+                        <User className={styles.inputIcon} size={18} />
                         <input
                           id="firstName"
                           type="text"
@@ -182,7 +224,7 @@ export default function RegisterComponent() {
                         {t("lastNameLabel")}
                       </label>
                       <div className={styles.inputWrapper}>
-                        <User className={styles.inputIcon} size={20} />
+                        <User className={styles.inputIcon} size={18} />
                         <input
                           id="lastName"
                           type="text"
@@ -202,7 +244,7 @@ export default function RegisterComponent() {
                       {t("usernameLabel")}
                     </label>
                     <div className={styles.inputWrapper}>
-                      <User className={styles.inputIcon} size={20} />
+                      <User className={styles.inputIcon} size={18} />
                       <input
                         id="username"
                         type="text"
@@ -222,11 +264,12 @@ export default function RegisterComponent() {
                       {t("phoneLabel")}
                     </label>
                     <div className={styles.inputWrapper}>
-                      <Phone className={styles.inputIcon} size={20} />
+                      <Phone className={styles.inputIcon} size={18} />
                       <input
                         id="phone"
                         type="tel"
                         required
+                        autoComplete="tel"
                         value={formData.phone}
                         onChange={handleChange("phone")}
                         placeholder={t("phonePlaceholder")}
@@ -241,7 +284,7 @@ export default function RegisterComponent() {
                       {t("emailLabel")}
                     </label>
                     <div className={styles.inputWrapper}>
-                      <Mail className={styles.inputIcon} size={20} />
+                      <Mail className={styles.inputIcon} size={18} />
                       <input
                         id="email"
                         type="email"
@@ -261,7 +304,7 @@ export default function RegisterComponent() {
                       {t("passwordLabel")}
                     </label>
                     <div className={styles.inputWrapper}>
-                      <Lock className={styles.inputIcon} size={20} />
+                      <Lock className={styles.inputIcon} size={18} />
                       <input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -281,85 +324,77 @@ export default function RegisterComponent() {
                           showPassword ? t("hidePassword") : t("showPassword")
                         }
                       >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                     <p className={styles.hint}>{t("passwordHint")}</p>
                   </div>
 
-                  {/* Error Message */}
                   {error && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={styles.errorMessage}
                       role="alert"
                     >
-                      <AlertCircle size={18} />
+                      <AlertCircle size={16} />
                       <span>{error}</span>
                     </motion.div>
                   )}
 
-                  {/* Success Message */}
                   {success && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={styles.successMessage}
                       role="status"
                     >
-                      <CheckCircle2 size={18} />
+                      <CheckCircle2 size={16} />
                       <span>{success}</span>
                     </motion.div>
                   )}
 
-                  <motion.button
+                  <button
                     type="submit"
                     className={styles.submitButton}
                     disabled={isLoading}
-                    whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
                   >
                     {isLoading ? (
-                      <span className={styles.loadingSpinner}></span>
+                      <span className={styles.loadingSpinner} />
                     ) : (
                       <>
                         {t("registerButton")}
-                        <ArrowRight size={18} />
+                        <ArrowRight size={17} />
                       </>
                     )}
-                  </motion.button>
+                  </button>
                 </form>
 
                 <p className={styles.signupPrompt}>
                   {t("haveAccount")}{" "}
-                  <a href="/login" className={styles.signupLink}>
+                  <Link href="/login" className={styles.signupLink}>
                     {t("login")}
-                  </a>
+                  </Link>
                 </p>
               </motion.div>
             ) : (
               <motion.div
                 key="otp"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.4 }}
-                className={styles.formWrapper}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className={styles.formInner}
               >
-                <div className={styles.header}>
+                <header className={styles.header}>
                   <div className={styles.otpIconBadge}>
-                    <KeyRound size={28} />
+                    <KeyRound size={24} />
                   </div>
                   <h1 className={styles.title}>{t("otp.title")}</h1>
                   <p className={styles.subtitle}>
                     {t("otp.subtitle", { email: formData.email })}
                   </p>
-                </div>
+                </header>
 
                 <form onSubmit={handleVerifyOTP} className={styles.form}>
                   <div className={styles.inputGroup}>
@@ -367,7 +402,7 @@ export default function RegisterComponent() {
                       {t("otp.label")}
                     </label>
                     <div className={styles.inputWrapper}>
-                      <KeyRound className={styles.inputIcon} size={20} />
+                      <KeyRound className={styles.inputIcon} size={18} />
                       <input
                         id="otp"
                         type="text"
@@ -385,44 +420,42 @@ export default function RegisterComponent() {
 
                   {error && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={styles.errorMessage}
                       role="alert"
                     >
-                      <AlertCircle size={18} />
+                      <AlertCircle size={16} />
                       <span>{error}</span>
                     </motion.div>
                   )}
 
                   {success && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={styles.successMessage}
                       role="status"
                     >
-                      <CheckCircle2 size={18} />
+                      <CheckCircle2 size={16} />
                       <span>{success}</span>
                     </motion.div>
                   )}
 
-                  <motion.button
+                  <button
                     type="submit"
                     className={styles.submitButton}
                     disabled={isLoading || otp.length !== 6}
-                    whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
                   >
                     {isLoading ? (
-                      <span className={styles.loadingSpinner}></span>
+                      <span className={styles.loadingSpinner} />
                     ) : (
                       <>
                         {t("otp.verifyButton")}
-                        <ArrowRight size={18} />
+                        <ArrowRight size={17} />
                       </>
                     )}
-                  </motion.button>
+                  </button>
 
                   <div className={styles.otpActions}>
                     <button
@@ -435,48 +468,16 @@ export default function RegisterComponent() {
                       }}
                       className={styles.backButton}
                     >
-                      <ArrowLeft size={16} />
+                      <ArrowLeft size={15} />
                       {t("otp.backButton")}
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={handleResendOTP}
-                      disabled={isResending}
-                      className={styles.resendButton}
-                    >
-                      <RefreshCw
-                        size={16}
-                        className={isResending ? styles.spinning : ""}
-                      />
-                      {t("otp.resendButton")}
-                    </button>
                   </div>
                 </form>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Illustration side (RIGHT — mirrored from login) */}
-        <div className={styles.illustrationSide}>
-          <motion.div
-            className={styles.illustrationWrapper}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <Image
-              src="/lottieFiles/Login.svg"
-              alt="Pharmacy and medical illustration"
-              width={500}
-              height={500}
-              priority
-              unoptimized
-              className={styles.illustration}
-            />
-          </motion.div>
-        </div>
+        </section>
       </motion.div>
     </div>
   );

@@ -232,3 +232,51 @@ export async function deleteMindMap(id: number) {
         };
     }
 }
+export async function uploadSummaryImage(summaryId: number, file: File) {
+    try {
+        const form = new FormData();
+        form.append("file", file);
+
+        const response = await api.post(`/images/summary/${summaryId}`, form, {
+            headers: {
+                "Accept-Language": await getLanguage(),
+                Authorization: `Bearer ${await GetToken()}`,
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return { status: true, response: response.data };
+    } catch (error: any) {
+        return {
+            status: false,
+            message: error.response?.data?.message,
+        };
+    }
+}
+
+export async function getSummaryImage(summaryId: number) {
+    try {
+        const response = await api.get(`/images/summary/${summaryId}`, {
+            headers: {
+                "Accept-Language": await getLanguage(),
+                Authorization: `Bearer ${await GetToken()}`,
+            },
+        });
+        return { status: true, response: response.data };
+    } catch (error: any) {
+        return { status: false, message: error.response?.data?.message };
+    }
+}
+
+export async function deleteSummaryImage(summaryId: number) {
+    try {
+        const response = await api.delete(`/images/summary/${summaryId}`, {
+            headers: {
+                "Accept-Language": await getLanguage(),
+                Authorization: `Bearer ${await GetToken()}`,
+            },
+        });
+        return { status: true, response: response.data };
+    } catch (error: any) {
+        return { status: false, message: error.response?.data?.message };
+    }
+}

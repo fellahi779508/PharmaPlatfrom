@@ -23,6 +23,7 @@ import styles from "./dashboard.module.css";
 import { NAV_ITEMS } from "./nav-items";
 import { useLogout } from "./use-logout";
 import { getRole } from "@/utils/server/auth-api";
+import FlashcardComponent from "../flashcard.component";
 
 /* ------------------------------------------------------------------ */
 /*  Lazy-loaded, layout-stable GIF                                    */
@@ -196,8 +197,8 @@ export default function DashboardPage() {
   }, []);
 
   /* ---------------- Role helpers ---------------- */
-  const isTeacher = currentRole === "teacher" || currentRole === "admin";
-  const isAdmin = currentRole === "admin";
+  const isTeacher = currentRole === "teacher" || currentRole === "admin" || currentRole === "owner";
+  const isAdmin = currentRole === "admin" || currentRole === "owner";
 
   /* ---------------- Build list ---------------- */
   const navCards = NAV_ITEMS.filter((item) => item.key !== "dashboard");
@@ -300,6 +301,7 @@ export default function DashboardPage() {
           />
         </motion.nav>
       </div>
+      <FlashcardComponent />
     </main>
   );
 }

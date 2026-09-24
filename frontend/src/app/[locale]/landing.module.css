@@ -1,0 +1,755 @@
+/* ==================================================================
+   PharmaSpace — Landing
+   Classic × Modern
+   ================================================================== */
+
+.root {
+    --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    isolation: isolate;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* --- Subtle dot grid --- */
+.root::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: radial-gradient(color-mix(in srgb, var(--foreground) 12%, transparent) 1px,
+            transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.35;
+    mask-image: linear-gradient(to bottom, black 30%, transparent 92%);
+    -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 92%);
+}
+
+/* ==================================================================
+   Header
+   ================================================================== */
+
+.header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.9rem clamp(1.25rem, 4vw, 3rem);
+    background: color-mix(in srgb, var(--background) 72%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.headerScrolled {
+    border-bottom-color: var(--border);
+    background: color-mix(in srgb, var(--background) 90%, transparent);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--foreground);
+    flex-shrink: 0;
+}
+
+.brandLogo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.brandName {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+}
+
+.brandNameAccent {
+    color: var(--primary);
+    font-style: italic;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.navLink {
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted-foreground);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.navLink:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.signInLink {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--foreground);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.signInLink:hover {
+    background: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.primaryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.05rem;
+    border-radius: 10px;
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--primary) 55%, transparent);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primaryBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -10px color-mix(in srgb, var(--primary) 65%, transparent);
+}
+
+/* ==================================================================
+   Side dot nav
+   ================================================================== */
+
+.dots {
+    position: fixed;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--background) 80%, transparent);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.dot {
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dotInner {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0.3;
+    transition: all 0.25s ease;
+}
+
+.dot:hover .dotInner {
+    opacity: 0.7;
+    transform: scale(1.2);
+}
+
+.dotActive .dotInner {
+    opacity: 1;
+    transform: scale(1.5);
+}
+
+/* ==================================================================
+   Scroller
+   ================================================================== */
+
+.scroller {
+    position: relative;
+    z-index: 1;
+    height: 100vh;
+    width: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==================================================================
+   Sections & Layouts
+   ================================================================== */
+
+.section {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(4rem, 10vh, 7rem) clamp(1.25rem, 4vw, 3rem);
+}
+
+.sectionHero {
+    padding-top: 6.5rem;
+}
+
+.sectionSplit {
+    padding-top: clamp(5rem, 11vh, 7.5rem);
+}
+
+.heroGrid,
+.splitGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(3rem, 5vw, 5rem);
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.splitReverse .splitText {
+    order: 1;
+}
+
+.heroText,
+.splitText {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 540px;
+}
+
+/* ==================================================================
+   Typography
+   ================================================================== */
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem 0.4rem 0.7rem;
+    width: max-content;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--section-accent, var(--primary)) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--primary)) 20%, transparent);
+    color: var(--section-accent, var(--primary));
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.heroTitle,
+.splitTitle {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    color: var(--foreground);
+    text-wrap: balance;
+}
+
+.heroTitle {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+}
+
+.splitTitle {
+    font-size: clamp(1.9rem, 3.6vw, 2.75rem);
+}
+
+.heroTitleAccent {
+    color: var(--primary);
+    font-style: italic;
+    font-weight: 600;
+}
+
+.heroSubtitle,
+.splitSubtitle {
+    margin: 0;
+    font-size: 1.075rem;
+    line-height: 1.65;
+    color: var(--muted-foreground);
+    max-width: 48ch;
+}
+
+/* ==================================================================
+   Buttons & Links
+   ================================================================== */
+
+.heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.primaryBtnLarge,
+.ghostBtnLarge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.98rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.primaryBtnLarge {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary);
+    box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+
+.primaryBtnLarge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+.ghostBtnLarge {
+    background: transparent;
+    color: var(--foreground);
+    border: 1px solid var(--border);
+}
+
+.ghostBtnLarge:hover {
+    background: color-mix(in srgb, var(--foreground) 5%, transparent);
+    border-color: color-mix(in srgb, var(--foreground) 20%, transparent);
+}
+
+.inlineCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--section-accent);
+    text-decoration: none;
+    transition: gap 0.2s ease;
+    width: max-content;
+}
+
+.inlineCta:hover {
+    gap: 0.75rem;
+}
+
+/* ==================================================================
+   Meta & Features Lists
+   ================================================================== */
+
+.heroMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.heroMetaItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--muted-foreground);
+}
+
+.heroMetaItem svg {
+    color: var(--primary);
+}
+
+.featureList {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.featureItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.98rem;
+    color: var(--foreground);
+    line-height: 1.5;
+}
+
+.featureIcon {
+    flex-shrink: 0;
+    color: var(--section-accent);
+    margin-top: 2px;
+}
+
+/* ==================================================================
+   Visuals & Images
+   ================================================================== */
+
+.heroVisual,
+.splitVisual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.heroGif,
+.splitGif {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 24px 48px color-mix(in srgb, var(--foreground) 10%, transparent));
+}
+
+/* ==================================================================
+   Pricing
+   ================================================================== */
+
+.pricingWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.75rem;
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.pricingHead {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 600px;
+    text-align: center;
+}
+
+.priceCard {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    padding: 2.75rem 2.25rem 2.25rem;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 60px -40px color-mix(in srgb, var(--foreground) 35%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: left;
+}
+
+.priceCard::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 2.5rem;
+    right: 2.5rem;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    border-radius: 2px;
+    opacity: 0.7;
+}
+
+.priceBadge {
+    position: absolute;
+    top: -0.75rem;
+    right: 1.75rem;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+.pricePlanName {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+}
+
+.priceRow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.priceAmount {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--foreground);
+}
+
+.priceCurrency {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+}
+
+.pricePeriod {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+}
+
+.priceDivider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
+}
+
+.priceFeatures {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.priceFeature {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.94rem;
+    line-height: 1.45;
+    color: var(--foreground);
+}
+
+.priceFeature svg {
+    color: var(--primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.priceBtn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+.priceNote {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+    text-align: center;
+}
+
+/* ==================================================================
+   Final CTA
+   ================================================================== */
+
+.sectionCentered {
+    padding-top: 5rem;
+}
+
+.ctaBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    max-width: 620px;
+    padding: 4rem 2rem;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--foreground) 2%, transparent);
+    border: 1px solid var(--border);
+}
+
+.ctaIconWrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.ctaTitle {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+}
+
+.ctaSubtitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--muted-foreground);
+    max-width: 44ch;
+}
+
+.ctaFootnote {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+}
+
+/* ==================================================================
+   Responsive Setup
+   ================================================================== */
+
+@media (max-width: 992px) {
+
+    .heroGrid,
+    .splitGrid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+        text-align: center;
+    }
+
+    .heroText,
+    .splitText {
+        margin: 0 auto;
+        align-items: center;
+    }
+
+    .splitReverse .splitText {
+        order: 0;
+    }
+
+    .heroActions {
+        justify-content: center;
+    }
+
+    .inlineCta {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .featureItem {
+        text-align: left;
+    }
+
+    .heroVisual,
+    .splitVisual {
+        max-width: 400px;
+    }
+
+    .priceCard {
+        text-align: left;
+    }
+}
+
+@media (max-width: 860px) {
+    .nav {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .dots {
+        display: none;
+    }
+
+    .header {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .signInLink {
+        display: none;
+    }
+
+    .brandName {
+        font-size: 1.05rem;
+    }
+
+    .section {
+        padding: 4.5rem 1.5rem;
+    }
+
+    .sectionHero {
+        padding-top: 6rem;
+    }
+
+    .priceCard {
+        padding: 2.25rem 1.5rem 1.75rem;
+    }
+
+    .priceAmount {
+        font-size: 3rem;
+    }
+
+    .ctaBox {
+        padding: 3rem 1.5rem;
+    }
+}

@@ -37,7 +37,7 @@ export class Exam {
   @OneToMany(() => ExamQcm, (eq) => eq.exam, { cascade: true })
   examQcms: ExamQcm[];
 
-  @OneToMany(() => ExamSession, (s) => s.exam)
+  @OneToMany(() => ExamSession, (s) => s.exam, { onDelete: 'CASCADE' })
   sessions: ExamSession[];
 
   @CreateDateColumn()
