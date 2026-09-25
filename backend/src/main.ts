@@ -38,16 +38,26 @@ if (!process.env.VERCEL) {
 }
 
 // 2. VERCEL SERVERLESS: Export a cached server handler
+// 2. VERCEL SERVERLESS: Export a cached server handler
 let cachedServer: any;
 
 export default async function (req: any, res: any) {
-  // Only initialize the Nest app once per serverless function instance
-  if (!cachedServer) {
-    const app = await bootstrap();
-    await app.init(); // Initialize without listening to a port
-    cachedServer = app.getHttpAdapter().getInstance(); // Get the raw Express instance
-  }
+  try {
+    if (!cachedServer) {
+      const app = await bootstrap();
+      await app.init();
+      cachedServer = app.getHttpAdapter().getInstance();
+    }
 
-  // Pass the incoming Vercel request to the NestJS Express handler
-  return cachedServer(req, res);
+    return cachedServer(req, res);
+  } catch (error) {
+    // THIS WILL REVEAL THE SILENT CRASH
+    console.error('🔥 FATAL ERROR DURING APP INITIALIZATION:', error);
+
+    // Return a 500 status so the browser shows the error instead of timing out
+    res.status(500).send({
+      message: 'Server failed to start',
+      error: error?.message || String(error)
+    });
+  }
 }
