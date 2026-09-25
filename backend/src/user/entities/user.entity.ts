@@ -64,6 +64,7 @@ export class User {
   })
   todos: Todo[] | null;
 
+
   @OneToOne(() => RedeemCode, (redeemCode) => redeemCode.user, {
     onDelete: 'SET NULL',
     nullable: true,
