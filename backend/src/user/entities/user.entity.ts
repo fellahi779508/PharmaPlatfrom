@@ -55,6 +55,7 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   otpExpiresAt: Date | null;
 
+  @Column({ nullable: true })
   currentJti: string;
 
   @OneToMany(() => Todo, (todo) => todo.user, {

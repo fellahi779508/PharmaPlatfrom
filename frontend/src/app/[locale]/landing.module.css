@@ -717,6 +717,18 @@
 }
 
 @media (max-width: 640px) {
+
+    /* --- Disable mandatory snap on mobile: free, natural scrolling --- */
+    .scroller {
+        scroll-snap-type: none;
+        scroll-behavior: auto;
+    }
+
+    .section {
+        scroll-snap-align: none;
+        scroll-snap-stop: normal;
+    }
+
     .dots {
         display: none;
     }
