@@ -20,42 +20,41 @@ import { Exam } from 'src/exam/entities/exam.entity';
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column({ default: '' })
+  @Column({ default: '', type: 'varchar' })
   firstName: string;
-  @Column({ default: '' })
+  @Column({ default: '', type: 'varchar' })
   lastName: string;
-  @Column()
+  @Column({ type: 'varchar' })
   username: string;
-  @Column({ default: '' })
+  @Column({ default: '', type: 'varchar' })
   phone: string;
-  @Column()
+  @Column({ type: 'varchar' })
   email: string;
-  @Column()
+  @Column({ type: 'varchar' })
   password: string;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()
   updatedAt: Date;
-  @Column({ default: false })
+  @Column({ default: false, type: 'boolean' })
   isActive: boolean;
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'date' })
   activationDate?: Date;
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'date' })
   endDate?: Date;
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: string;
-  @Column({ default: false })
+  @Column({ default: false, type: 'boolean' })
   isVerified: boolean;
   @Column({ type: 'varchar', length: 6, nullable: true })
   otpCode: string | null;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, type: 'integer' })
   aiGenerationCount: number;
 
   @Column({ type: 'timestamp', nullable: true })
   otpExpiresAt: Date | null;
 
-  @Column({ nullable: true })
   currentJti: string;
 
   @OneToMany(() => Todo, (todo) => todo.user, {
