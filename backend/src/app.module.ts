@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as path from 'path';
 import {
   I18nModule,
   HeaderResolver,
@@ -31,6 +30,7 @@ import { TodoModule } from './todo/todo.module';
 import { TpModule } from './tp/tp.module';
 import { UserModule } from './user/user.module';
 import { YearModule } from './year/year.module';
+import { join } from 'path';
 
 
 // Feature Modules
@@ -64,7 +64,7 @@ import { YearModule } from './year/year.module';
     I18nModule.forRoot({
       fallbackLanguage: 'fr',
       loaderOptions: {
-        path: path.join(process.cwd(), 'src/i18n/'),
+        path: join(__dirname, 'i18n'),
         watch: true,
       },
       resolvers: [

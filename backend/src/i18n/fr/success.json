@@ -1,7 +1,22 @@
 {
   "user": {
-    "created": "Utilisateur créé avec succès",
+    "created": "Utilisateur créé avec succès, veuillez vérifier votre e-mail pour la vérification !",
     "updated": "Utilisateur mis à jour avec succès",
-    "deleted": "Utilisateur supprimé avec succès"
+    "deleted": "Utilisateur supprimé avec succès",
+    "activated": "Utilisateur activé avec succès",
+    "password_changed": "Mot de passe modifié avec succès",
+    "profile_updated": "Profil mis à jour avec succès"
+  },
+  "email": {
+    "otp_sent": "OTP envoyé avec succès"
+  },
+  "redeem": {
+    "codeCreated": "Code d'échange créé avec succès",
+    "deleted": "Code d'échange supprimé avec succès",
+    "assigned": "Compte activé avec succès",
+    "revoked": "Compte désactivé avec succès"
+  },
+  "session": {
+    "created": "Session créée avec succès"
   }
 }

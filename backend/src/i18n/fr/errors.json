@@ -4,14 +4,18 @@
     "not_deleted": "Échec de la suppression de l'utilisateur",
     "invalid_password": "Mot de passe invalide",
     "invalid_username": "Nom d'utilisateur invalide",
+    "invalid_phone": "Numéro de téléphone invalide",
     "required_username": "Le nom d'utilisateur est requis",
-    "invalid_email": "Adresse email invalide",
+    "required_firstName": "Le prénom est requis",
+    "required_lastName": "Le nom de famille est requis",
+    "required_phone": "Le numéro de téléphone est requis",
+    "invalid_email": "Adresse e-mail invalide",
     "password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
     "required_password": "Le mot de passe est requis",
-    "required_email": "L'email est requis",
-    "email_exists": "Un utilisateur avec cet email existe déjà",
-    "email_already_verified": "L'email est déjà vérifié",
-    "ai_generation_limit": "Vous avez atteint la limite de génération quotidienne de l'IA."
+    "required_email": "L'adresse e-mail est requise",
+    "email_exists": "Un utilisateur avec cet e-mail existe déjà",
+    "email_already_verified": "L'adresse e-mail est déjà vérifiée",
+    "ai_generation_limit": "Vous avez atteint la limite quotidienne de génération par IA."
   },
   "email": {
     "otp_sent": "Échec de l'envoi du code de vérification",
@@ -29,5 +33,26 @@
   },
   "subject": {
     "not_found": "Matière introuvable"
+  },
+  "todo": {
+    "not_found": "Tâche à faire introuvable"
+  },
+  "task": {
+    "not_found": "Tâche introuvable"
+  },
+  "redeem": {
+    "createFailed": "Échec de la création du code d'échange",
+    "notFound": "Code d'échange invalide",
+    "alreadyAssigned": "Ce code est déjà utilisé",
+    "notAssigned": "Ce compte n'est pas activé"
+  },
+  "qcm": {
+    "not_found": "QCM introuvable"
+  },
+  "mindmap": {
+    "not_found": "Carte mentale introuvable"
+  },
+  "summary": {
+    "not_found": "Résumé introuvable"
   }
 }
