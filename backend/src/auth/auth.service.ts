@@ -10,8 +10,8 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 import { JwtPayloadType } from './types/jwt-payload.type';
 import { JwtService } from '@nestjs/jwt';
 import { CurrentUser } from './types/current-user';
-import { UserService } from 'src/user/user.service';
 import { randomUUID } from 'crypto';
+import { UserService } from '@/user/user.service';
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-  ) {}
+  ) { }
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
   }

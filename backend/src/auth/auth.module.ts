@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UserModule } from 'src/user/user.module';
 import { LocalStartegy } from './strategies/local.strat';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
 import { jwtStrategy } from './strategies/jwt.strat';
+import { UserModule } from '@/user/user.module';
 
 @Module({
   controllers: [AuthController],
@@ -17,4 +17,4 @@ import { jwtStrategy } from './strategies/jwt.strat';
     ConfigModule.forFeature(jwtConfig),
   ],
 })
-export class AuthModule {}
+export class AuthModule { }
