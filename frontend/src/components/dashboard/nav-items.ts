@@ -23,7 +23,7 @@ export type NavKey =
   | "pomodoro"
   | "leaderboard"
   | "profile"
-  | "Up to Date"
+  | "stay updated"
   | "subscription";
 
 export type NavItem = {
@@ -90,7 +90,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
 
   {
-    key: "Up to Date",
+    key: "stay updated",
     href: "/dashboard/uptodate",
     icon: BookAudioIcon,
     tone: "var(--accent)",
