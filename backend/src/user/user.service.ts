@@ -29,8 +29,8 @@ export class UserService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly i18n: I18nService,
     private readonly emailService: EmailService,
-    private readonly dataSource: DataSource
-  ) { }
+    private readonly dataSource: DataSource,
+  ) {}
 
   private generate6DigitOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -57,7 +57,6 @@ export class UserService {
       isActive: false,
       otpCode,
       otpExpiresAt,
-
     });
     user.isVerified = false;
     user.isActive = false;
@@ -85,26 +84,23 @@ export class UserService {
     return user;
   }
   async resetPasswordByEmail(email: string, password: string) {
+    const user = await this.findByEmail(email);
 
-    const user = await this.findByEmail(email)
-
-    const hashedpassword = await bcrypt.hash(password, 10)
-    user.password = hashedpassword
-    await this.userRepo.save(user)
+    const hashedpassword = await bcrypt.hash(password, 10);
+    user.password = hashedpassword;
+    await this.userRepo.save(user);
     return {
       message: this.i18n.translate('success.user.password_changed', {
         lang: this.currentLang,
       }),
     };
-
-
   }
 
   async findAll(page: number, limit: number, search?: string) {
     const [users, total] = await this.userRepo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      where: { role: Not("owner") }
+      where: { role: Not('owner') },
     });
     console.log(users);
 
@@ -112,7 +108,10 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    const user = await this.userRepo.findOne({ where: { id }, relations: { redeemCode: true } });
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: { redeemCode: true },
+    });
     if (!user) {
       throw new NotFoundException(
         this.i18n.translate('errors.user.not_found', {
@@ -206,70 +205,80 @@ export class UserService {
     return 'done';
   }
   async getAllUserStats(userEmail: string) {
-    const user = await this.findByEmail(userEmail)
+    const user = await this.findByEmail(userEmail);
     const sessions = await this.dataSource.getRepository(Session).count({
       where: {
-        user: { id: user.id }
-      }
-    })
+        user: { id: user.id },
+      },
+    });
     const sessionsDone = await this.dataSource.getRepository(Session).count({
       where: {
         user: { id: user.id },
-        status: SessionStatus.COMPLETED
-      }
-    })
-    const sessionsNotStarted = await this.dataSource.getRepository(Session).count({
-      where: {
-        user: { id: user.id },
-        status: SessionStatus.NOT_STARTED
-      }
-    })
-    const sessionsInProgress = await this.dataSource.getRepository(Session).count({
-      where: {
-        user: { id: user.id },
-        status: SessionStatus.IN_PROGRESS
-      }
-    })
+        status: SessionStatus.COMPLETED,
+      },
+    });
+    const sessionsNotStarted = await this.dataSource
+      .getRepository(Session)
+      .count({
+        where: {
+          user: { id: user.id },
+          status: SessionStatus.NOT_STARTED,
+        },
+      });
+    const sessionsInProgress = await this.dataSource
+      .getRepository(Session)
+      .count({
+        where: {
+          user: { id: user.id },
+          status: SessionStatus.IN_PROGRESS,
+        },
+      });
     const exams = await this.dataSource.getRepository(Exam).count({
       where: {
-        user: { id: user.id }
-      }
-    })
+        user: { id: user.id },
+      },
+    });
     const examsDone = await this.dataSource.getRepository(Exam).count({
       where: {
         user: { id: user.id },
-        sessions: { status: ExamSessionStatus.COMPLETED }
-      }
-    })
+        sessions: { status: ExamSessionStatus.COMPLETED },
+      },
+    });
     const examsInProgress = await this.dataSource.getRepository(Exam).count({
       where: {
         user: { id: user.id },
-        sessions: { status: ExamSessionStatus.IN_PROGRESS }
-      }
-    })
+        sessions: { status: ExamSessionStatus.IN_PROGRESS },
+      },
+    });
     const examsPaused = await this.dataSource.getRepository(Exam).count({
       where: {
         user: { id: user.id },
-        sessions: { status: ExamSessionStatus.PAUSED }
-      }
-    })
-    const correctAnswers = await this.dataSource.getRepository(SessionQuestion).count({
-      where: {
-        session: { user: { id: user.id } },
-        isCorrect: true
-      }
-    })
-    const wrongAnswers = await this.dataSource.getRepository(SessionQuestion).count({
-      where: {
-        session: { user: { id: user.id } },
-        isCorrect: false
-      }
-    })
-    const allQuestions = await this.dataSource.getRepository(SessionQuestion).count({
-      where: {
-        session: { user: { id: user.id } }
-      }
-    })
+        sessions: { status: ExamSessionStatus.PAUSED },
+      },
+    });
+    const correctAnswers = await this.dataSource
+      .getRepository(SessionQuestion)
+      .count({
+        where: {
+          session: { user: { id: user.id } },
+          isCorrect: true,
+        },
+      });
+    const wrongAnswers = await this.dataSource
+      .getRepository(SessionQuestion)
+      .count({
+        where: {
+          session: { user: { id: user.id } },
+          isCorrect: false,
+        },
+      });
+    const allQuestions = await this.dataSource
+      .getRepository(SessionQuestion)
+      .count({
+        where: {
+          session: { user: { id: user.id } },
+        },
+      });
 
     return {
       sessions,
@@ -283,22 +292,19 @@ export class UserService {
       correctAnswers,
       wrongAnswers,
       allQuestions,
-    }
+    };
   }
 
   async checkUserActivation(userId: string) {
     const user = await this.findOne(userId);
     if (!user.isActive) {
-      return false
+      return false;
     }
     return true;
   }
   async revokeSubscription(userId: string, password: string) {
-    const user = await this.findOne(userId)
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.password,
-    );
+    const user = await this.findOne(userId);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new BadRequestException(
         this.i18n.translate('errors.user.invalid_password', {
@@ -308,8 +314,8 @@ export class UserService {
     }
     user.isActive = false;
     const redeemCode = await this.dataSource.getRepository(RedeemCode).findOne({
-      where: { user: { id: user.id } }
-    })
+      where: { user: { id: user.id } },
+    });
     if (!redeemCode) {
       throw new NotFoundException(
         this.i18n.translate('errors.redeem_code.not_found', {
@@ -322,12 +328,18 @@ export class UserService {
     await this.dataSource.getRepository(RedeemCode).save(redeemCode);
 
     // 2. Fetch the actual entities
-    const sessionsToRemove = await this.dataSource.getRepository(Session).find({ where: { user: { id: user.id } } });
-    const examsToRemove = await this.dataSource.getRepository(Exam).find({ where: { user: { id: user.id } } });
+    const sessionsToRemove = await this.dataSource
+      .getRepository(Session)
+      .find({ where: { user: { id: user.id } } });
+    const examsToRemove = await this.dataSource
+      .getRepository(Exam)
+      .find({ where: { user: { id: user.id } } });
 
     // 3. Use .remove(), which respects TypeORM cascades and hooks
-    if (sessionsToRemove.length) await this.dataSource.getRepository(Session).remove(sessionsToRemove);
-    if (examsToRemove.length) await this.dataSource.getRepository(Exam).remove(examsToRemove);
+    if (sessionsToRemove.length)
+      await this.dataSource.getRepository(Session).remove(sessionsToRemove);
+    if (examsToRemove.length)
+      await this.dataSource.getRepository(Exam).remove(examsToRemove);
 
     // 4. Update the user (if you need the user's redeemCode to be null in the DB)
     user.redeemCode = null;
@@ -343,11 +355,23 @@ export class UserService {
     const user = await this.findOne(userId);
     return user.isVerified;
   }
+
+  async updateCurrentJti(userId: string, jti: string) {
+    const user = await this.findOne(userId);
+    user.currentJti = jti;
+    await this.userRepo.save(user);
+  }
   async getLeaderboardWithUserRank(currentUserId: string) {
     // 1. Fetch the Top 10 Leaderboard (selecting username instead of email)
-    const top10Users = await this.userRepo.createQueryBuilder('user')
+    const top10Users = await this.userRepo
+      .createQueryBuilder('user')
       .leftJoin('user.sessions', 'session')
-      .leftJoin('session.questions', 'question', 'question.isCorrect = :isCorrect', { isCorrect: true })
+      .leftJoin(
+        'session.questions',
+        'question',
+        'question.isCorrect = :isCorrect',
+        { isCorrect: true },
+      )
       .select(['user.id AS id', 'user.username AS username']) // Changed to username
       .addSelect('CAST(COUNT(question.id) AS INTEGER)', 'correctAnswers')
       .where('user.isActive = :isActive', { isActive: true })
@@ -361,12 +385,12 @@ export class UserService {
       .getRawMany();
 
     // 2. Check if the current user is already in the Top 10
-    const top10Index = top10Users.findIndex(u => u.id === currentUserId);
+    const top10Index = top10Users.findIndex((u) => u.id === currentUserId);
 
     // Optional: Map the array to remove the 'id' if you want strictly usernames returned to the frontend
-    const formattedLeaderboard = top10Users.map(user => ({
+    const formattedLeaderboard = top10Users.map((user) => ({
       username: user.username,
-      correctAnswers: user.correctAnswers
+      correctAnswers: user.correctAnswers,
     }));
 
     if (top10Index !== -1) {
@@ -376,15 +400,23 @@ export class UserService {
         currentUser: {
           username: top10Users[top10Index].username,
           correctAnswers: top10Users[top10Index].correctAnswers,
-          rank: top10Index + 1
-        }
+          rank: top10Index + 1,
+        },
       };
     }
 
     // 3. User is NOT in the Top 10. Get their specific score and username.
-    const currentUserScoreResult = await this.userRepo.createQueryBuilder('user')
-      .leftJoin('user.sessions', 'session', 'session.status = :status', { status: SessionStatus.COMPLETED })
-      .leftJoin('session.questions', 'question', 'question.isCorrect = :isCorrect', { isCorrect: true })
+    const currentUserScoreResult = await this.userRepo
+      .createQueryBuilder('user')
+      .leftJoin('user.sessions', 'session', 'session.status = :status', {
+        status: SessionStatus.COMPLETED,
+      })
+      .leftJoin(
+        'session.questions',
+        'question',
+        'question.isCorrect = :isCorrect',
+        { isCorrect: true },
+      )
       .select('CAST(COUNT(question.id) AS INTEGER)', 'score')
       .addSelect('user.username', 'username') // Changed to username
       .where('user.id = :userId', { userId: currentUserId })
@@ -396,7 +428,8 @@ export class UserService {
     const username = currentUserScoreResult?.username || 'Unknown User';
 
     // 4. Calculate their rank using raw SQL for maximum performance
-    const [{ rankOffset }] = await this.userRepo.query(`
+    const [{ rankOffset }] = await this.userRepo.query(
+      `
     SELECT COUNT(*) AS "rankOffset"
     FROM (
       SELECT u.id
@@ -407,7 +440,9 @@ export class UserService {
       GROUP BY u.id
       HAVING COUNT(q.id) > $1
     ) AS higher_scorers
-  `, [score]);
+  `,
+      [score],
+    );
 
     const currentUserRank = parseInt(rankOffset, 10) + 1;
 
@@ -416,8 +451,8 @@ export class UserService {
       currentUser: {
         username: username,
         correctAnswers: score,
-        rank: currentUserRank
-      }
+        rank: currentUserRank,
+      },
     };
   }
 }

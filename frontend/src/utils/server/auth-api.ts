@@ -134,6 +134,19 @@ export async function authOtp() {
   }
 }
 export async function logOut() {
+  try {
+    await api.post(
+      "/auth/logout",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${await GetToken()}`,
+        },
+      },
+    );
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
   const cookieStore = await cookies();
   cookieStore.delete("token");
   cookieStore.delete("role");

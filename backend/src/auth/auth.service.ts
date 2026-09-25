@@ -11,6 +11,7 @@ import { JwtPayloadType } from './types/jwt-payload.type';
 import { JwtService } from '@nestjs/jwt';
 import { CurrentUser } from './types/current-user';
 import { UserService } from 'src/user/user.service';
+import { randomUUID } from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,12 +42,27 @@ export class AuthService {
     return { id: user.id, role: user.role, email: user.email };
   }
   async generateAccessToken(userId: string, role: string, email: string) {
+    const user = await this.userService.findOne(userId);
+
+    if (user.currentJti) {
+      throw new UnauthorizedException(
+        this.i18n.translate('errors.user.already_logged_in', {
+          lang: this.currentLang,
+          defaultValue:
+            'Another user is already using this account. Please wait for them to disconnect.',
+        }),
+      );
+    }
+
+    const jti = randomUUID();
     const payload: JwtPayloadType = {
       sub: userId,
       role,
       email,
+      jti,
     };
 
+    await this.userService.updateCurrentJti(userId, jti);
     return this.jwtService.sign(payload);
   }
   async validateJwtUser(userId: string) {
@@ -64,5 +80,15 @@ export class AuthService {
       email: user.email,
     };
     return curretnUser;
+  }
+
+  async logout(userId: string) {
+    await this.userService.updateCurrentJti(userId, '');
+    return {
+      message: this.i18n.translate('success.user.logged_out', {
+        lang: this.currentLang,
+        defaultValue: 'Logged out successfully',
+      }),
+    };
   }
 }
