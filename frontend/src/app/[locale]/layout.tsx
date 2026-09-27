@@ -12,10 +12,16 @@ import PreferencesNav from "@/components/dashboard/preferenceNav";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Pharmaspace',
+  },
   title:
-    "Pharmacie QCM Algérie | Examens, Cours et QCMs pour Étudiants en Pharmacie",
+    "Pharmaspace",
   description:
-    "La plateforme n°1 de préparation aux examens et QCMs pour les étudiants en pharmacie en Algérie. Entraînez-vous avec des QCMs corrigés, simulez vos EMDs et maîtrisez vos cours de la 1ère à la 5ème année.",
+    "Pharmaspace: La plateforme n°1 de préparation aux examens et QCMs pour les étudiants en pharmacie en Algérie. Entraînez-vous avec des QCMs corrigés, simulez vos EMDs et maîtrisez vos cours de la 1ère à la 5ème année.",
   keywords: [
     "qcm pharmacie",
     "qcm pharmacie algérie",
@@ -38,21 +44,21 @@ export const metadata: Metadata = {
     title: "Pharmacie QCM Algérie – Simulateur d'Examens & QCMs",
     description:
       "Révisez efficacement vos modules de pharmacie en Algérie. QCMs conformes aux examens EMD, corrections détaillées et suivi de progression par année.",
-    url: "https://pharmacie-dz.com", // Update with your actual domain
-    siteName: "Pharmacie QCM Algérie",
+    url: "https://pharmaspace-dz.com", // Update with your actual domain
+    siteName: "pharmaspace",
     locale: "fr_DZ",
     type: "website",
     images: [
       {
-        url: "/images/pharmacy_thumbnail.png",
+        url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Pharmacie QCM Algérie Dashboard",
+        alt: "Pharmaspace",
       },
     ],
   },
   icons: {
-    icon: "/images/logo-pharmacy.png",
+    icon: "/logo.png",
   },
 };
 
@@ -76,7 +82,7 @@ export default async function RootLayout({ children, params }: Props) {
     >
       <body>
         <NextIntlClientProvider locale={locale}>
-          {/* <TopBar /> */}
+
           <main>{children}</main>
 
         </NextIntlClientProvider>

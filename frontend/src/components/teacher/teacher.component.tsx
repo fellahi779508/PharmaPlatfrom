@@ -2655,8 +2655,8 @@ export default function TeacherPageComponent() {
                             <div className={styles.listItemBody}>
                               <div
                                 className={`${styles.listItemIcon} ${a.isCorrect
-                                    ? styles.iconCorrect
-                                    : styles.iconIncorrect
+                                  ? styles.iconCorrect
+                                  : styles.iconIncorrect
                                   }`}
                               >
                                 {a.isCorrect ? (
@@ -2870,8 +2870,8 @@ export default function TeacherPageComponent() {
                                     })
                                   }
                                   className={`${styles.toggleCorrect} ${draft.isCorrect
-                                      ? styles.toggleCorrectOn
-                                      : ""
+                                    ? styles.toggleCorrectOn
+                                    : ""
                                     }`}
                                   aria-label={t("fields.isCorrect")}
                                   title={t("fields.isCorrect")}
@@ -3190,6 +3190,238 @@ export default function TeacherPageComponent() {
         )}
       </AnimatePresence>
 
+      {/* ==================== Summary + Mindmap Modal ==================== */}
+      <AnimatePresence>
+        {summaryModalOpen && (
+          <motion.div
+            className={styles.overlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !savingSummary && setSummaryModalOpen(false)}
+          >
+            <motion.div
+              className={`${styles.modal} ${styles.modalWide}`}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>
+                  {courseSummary
+                    ? t.has("summary.modalEditTitle")
+                      ? t("summary.modalEditTitle")
+                      : "Edit summary & mind map"
+                    : t.has("summary.modalCreateTitle")
+                      ? t("summary.modalCreateTitle")
+                      : "New summary & mind map"}
+                </h2>
+                <button
+                  onClick={() => !savingSummary && setSummaryModalOpen(false)}
+                  className={styles.iconButton}
+                  aria-label={t("actions.close")}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveSummary} className={styles.form}>
+                {/* Cover image uploader */}
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>
+                    {t.has("summary.coverImage")
+                      ? t("summary.coverImage")
+                      : "Cover image"}
+                  </label>
+                  <div className={styles.imageUploader}>
+                    {imagePreview || courseImage?.url ? (
+                      <div className={styles.imagePreviewWrap}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imagePreview ?? courseImage?.url}
+                          alt=""
+                          className={styles.imagePreview}
+                        />
+                        <button
+                          type="button"
+                          className={styles.imageRemove}
+                          onClick={async () => {
+                            if (pendingImageFile) {
+                              clearPendingImage();
+                              return;
+                            }
+                            await handleRemoveExistingImage();
+                          }}
+                          aria-label="Remove image"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className={styles.imageDropZone}>
+                        {uploadingImage ? (
+                          <Loader2 size={22} className={styles.spinning} />
+                        ) : (
+                          <Upload size={22} />
+                        )}
+                        <span>
+                          Click to upload an image (JPG, PNG, WebP — max 5 MB)
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className={styles.imageInput}
+                          onChange={handlePickImage}
+                          disabled={uploadingImage || savingSummary}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Summary text */}
+                <TextField
+                  label={
+                    t.has("summary.textLabel")
+                      ? t("summary.textLabel")
+                      : "Summary text"
+                  }
+                  value={summaryText}
+                  onChange={setSummaryText}
+                  textarea
+                  required
+                />
+
+                {/* Mindmap name */}
+                <TextField
+                  label={
+                    t.has("summary.mindmapName")
+                      ? t("summary.mindmapName")
+                      : "Mind map name"
+                  }
+                  value={mindmapName}
+                  onChange={setMindmapName}
+                />
+
+                {/* Terms builder */}
+                <div className={styles.answerBuilder}>
+                  <div className={styles.answerBuilderHeader}>
+                    <span className={styles.answerBuilderLabel}>
+                      {t.has("summary.termsLabel")
+                        ? t("summary.termsLabel")
+                        : `Terms (${terms.length})`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={addTerm}
+                      className={styles.ghostButton}
+                    >
+                      <Plus size={14} />
+                      {t.has("summary.addTerm")
+                        ? t("summary.addTerm")
+                        : "Add term"}
+                    </button>
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {terms.map((term, idx) => (
+                      <motion.div
+                        key={term._key}
+                        layout
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className={styles.answerRow}
+                      >
+                        <div className={styles.answerRowTop}>
+                          <span className={styles.answerRowIndex}>
+                            #{idx + 1}
+                          </span>
+                          <input
+                            type="text"
+                            value={term.french}
+                            onChange={(e) =>
+                              updateTerm(term._key, {
+                                french: e.target.value,
+                              })
+                            }
+                            placeholder="French"
+                            className={styles.input}
+                          />
+                          <input
+                            type="text"
+                            value={term.english}
+                            onChange={(e) =>
+                              updateTerm(term._key, {
+                                english: e.target.value,
+                              })
+                            }
+                            placeholder="English"
+                            className={styles.input}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeTerm(term._key)}
+                            className={`${styles.iconButton} ${styles.danger}`}
+                            aria-label={t("actions.delete")}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={term.definition}
+                          onChange={(e) =>
+                            updateTerm(term._key, {
+                              definition: e.target.value,
+                            })
+                          }
+                          placeholder="Definition"
+                          className={`${styles.input} ${styles.inputSmall}`}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                <div className={styles.modalFooter}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      !savingSummary && setSummaryModalOpen(false)
+                    }
+                    className={styles.secondaryButton}
+                    disabled={savingSummary}
+                  >
+                    {t("actions.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={savingSummary || uploadingImage}
+                  >
+                    {savingSummary || uploadingImage ? (
+                      <Loader2 className={styles.spinning} size={16} />
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        <span>
+                          {courseSummary
+                            ? t("actions.save")
+                            : t("actions.createShort")}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ==================== Confirm delete entity ==================== */}
       <AnimatePresence>
         {confirmDelete && (
@@ -3364,8 +3596,8 @@ export default function TeacherPageComponent() {
         {toast && (
           <motion.div
             className={`${styles.toast} ${toast.type === "success"
-                ? styles.toastSuccess
-                : styles.toastError
+              ? styles.toastSuccess
+              : styles.toastError
               }`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

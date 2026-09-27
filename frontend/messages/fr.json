@@ -77,7 +77,7 @@
   },
   "teacher": {
     "title": "Gestion du cursus",
-    "subtitle": "Structurez le cursus de pharmacie : années, semestres, matières, cours, TD, TP, QCM et réponses.",
+    "subtitle": "Structurez le cursus de pharmacie : années, trimestres, modules, cours, TD, TP, QCM et réponses.",
     "loading": "Chargement…",
     "refresh": "Actualiser",
     "imageLabel": "Image de couverture",
@@ -111,8 +111,8 @@
     },
     "tabs": {
       "years": "Années",
-      "semesters": "Semestres",
-      "subjects": "Matières",
+      "semesters": "Trimestres",
+      "subjects": "Modules",
       "courses": "Cours",
       "tds": "TD",
       "tps": "TP",
@@ -121,14 +121,14 @@
     },
     "labels": {
       "year": "Année",
-      "semester": "Semestre",
-      "subject": "Matière",
+      "semester": "Trimestre",
+      "subject": "Module",
       "course": "Cours",
       "td": "TD",
       "tp": "TP",
       "qcm": "QCM",
-      "subjects": "matières",
-      "semesters": "semestres",
+      "subjects": "modules",
+      "semesters": "trimestres",
       "courses": "cours",
       "tds": "TD",
       "tps": "TP",
@@ -136,7 +136,7 @@
       "answers": "réponses",
       "correct": "Correcte",
       "incorrect": "Incorrecte",
-      "unassigned": "Semestre non assigné"
+      "unassigned": "Trimestre non assigné"
     },
     "actions": {
       "edit": "Modifier",
@@ -147,8 +147,8 @@
       "createShort": "Créer",
       "editEntity": {
         "year": "Modifier l'année",
-        "semester": "Modifier le semestre",
-        "subject": "Modifier la matière",
+        "semester": "Modifier le trimestre",
+        "subject": "Modifier le module",
         "course": "Modifier le cours",
         "td": "Modifier le TD",
         "tp": "Modifier le TP",
@@ -157,8 +157,8 @@
       },
       "create": {
         "years": "Nouvelle année",
-        "semesters": "Nouveau semestre",
-        "subjects": "Nouvelle matière",
+        "semesters": "Nouveau trimestre",
+        "subjects": "Nouveau module",
         "courses": "Nouveau cours",
         "tds": "Nouveau TD",
         "tps": "Nouveau TP",
@@ -169,7 +169,7 @@
     "fields": {
       "name": "Nom",
       "number": "Numéro",
-      "semester": "Semestre",
+      "semester": "Trimestre",
       "question": "Question",
       "answer": "Réponse",
       "isCorrect": "Marquer comme correcte",
@@ -182,16 +182,16 @@
       "explanationPlaceholder": "Pourquoi cette réponse est correcte/incorrecte ? (facultatif)"
     },
     "hints": {
-      "needSemesterFirst": "Créez d'abord un semestre dans cette année."
+      "needSemesterFirst": "Créez d'abord un trimestre dans cette année."
     },
     "empty": {
       "title": "Rien pour le moment",
       "yearsHint": "Créez la première année académique pour commencer.",
-      "semestersHint": "Ajoutez des semestres pour organiser les cours.",
-      "subjectsHint": "Ajoutez les matières enseignées cette année.",
-      "coursesHint": "Ajoutez des cours à cette matière. Chaque cours appartient à un semestre.",
-      "tdsHint": "Ajoutez des séances de TD (travaux dirigés) pour cette matière.",
-      "tpsHint": "Ajoutez des séances de TP (travaux pratiques) pour cette matière.",
+      "semestersHint": "Ajoutez des trimestres pour organiser les cours.",
+      "subjectsHint": "Ajoutez les modules enseignés cette année.",
+      "coursesHint": "Ajoutez des cours à ce module. Chaque cours appartient à un trimestre.",
+      "tdsHint": "Ajoutez des séances de TD (travaux dirigés) pour ce module.",
+      "tpsHint": "Ajoutez des séances de TP (travaux pratiques) pour ce module.",
       "qcmsHint": "Ajoutez des QCM pour évaluer les étudiants sur cet élément.",
       "answersHint": "Ajoutez les options de réponse pour cette question."
     },
@@ -268,14 +268,14 @@
       "description": "Créez votre compte."
     },
     "sessions": {
-      "tag": "Planning",
+      "tag": "Entrainement",
       "title": "Séances",
-      "description": "Consultez et gérez vos prochaines séances d'étude."
+      "description": "Entraînez-vous et améliorez vos compétences avec des QCMs."
     },
     "exams": {
-      "tag": "Échéances",
+      "tag": "Simulation",
       "title": "Examens",
-      "description": "Suivez vos examens à venir et les dates importantes."
+      "description": "Simulez des examens de pharmacie pour tester vos connaissances"
     },
     "dashboard": {
       "tag": "Tableau de bord",
@@ -414,7 +414,7 @@
   "Session": {
     "badge": "Sessions QCM",
     "title": "Vos sessions",
-    "subtitle": "Créez un quiz personnalisé à partir de vos matières et cours, puis répondez question par question. La progression est sauvegardée automatiquement, vous pouvez reprendre à tout moment.",
+    "subtitle": "Créez un quiz personnalisé à partir de vos modules et cours, puis répondez question par question. La progression est sauvegardée automatiquement, vous pouvez reprendre à tout moment.",
     "newSession": "Nouvelle session",
     "refresh": "Actualiser",
     "loadError": "Une erreur est survenue",
@@ -445,10 +445,10 @@
       "title": "Créer une nouvelle session",
       "sessionName": "Nom de la session",
       "sessionNamePlaceholder": "ex. Pharmacologie – Système cardiovasculaire",
-      "selectSubjectsAndCourses": "Sélectionner matières et cours",
-      "selectHint": "Cliquez sur une matière pour parcourir ses cours et définir le nombre de QCMs à inclure.",
-      "noSubjects": "Aucune matière disponible pour votre cursus.",
-      "noCourses": "Aucun cours trouvé pour cette matière.",
+      "selectSubjectsAndCourses": "Sélectionner modules et cours",
+      "selectHint": "Cliquez sur un module pour parcourir ses cours et définir le nombre de QCMs à inclure.",
+      "noSubjects": "Aucun module disponible pour votre cursus.",
+      "noCourses": "Aucun cours trouvé pour ce module.",
       "loadingCourses": "Chargement des cours…",
       "selected": "sélectionné(s)",
       "unavailable": "Indisponible",
@@ -550,7 +550,7 @@
     "title": "Mes examens",
     "subtitle": "Suivez votre progression et lancez un nouvel examen à tout moment.",
     "createNew": "Créer un examen",
-    "semester": "Semestre",
+    "semester": "Trimestre",
     "questions": "Questions",
     "time": "Temps",
     "score": "Score",
@@ -581,10 +581,10 @@
     },
     "modal": {
       "title": "Créer un nouvel examen",
-      "semester": "Semestre",
-      "subject": "Matière",
-      "selectSemester": "Choisir un semestre…",
-      "selectSubject": "Choisir une matière…",
+      "semester": "Trimestre",
+      "subject": "Module",
+      "selectSemester": "Choisir un trimestre…",
+      "selectSubject": "Choisir un module…",
       "questionCount": "Nombre de questions",
       "duration": "Durée",
       "oneHour": "1 heure",
@@ -732,7 +732,7 @@
   "Mindmap": {
     "badge": "fiches de révision",
     "title": "Cartes mentales",
-    "subtitle": "Choisissez une matière, puis un cours, pour lire son résumé et sa carte mentale bilingue.",
+    "subtitle": "Choisissez un module, puis un cours, pour lire son résumé et sa carte mentale bilingue.",
     "refresh": "Actualiser",
     "image": {
       "title": "Carte mentale",
@@ -740,15 +740,15 @@
       "clickToZoom": "Cliquer pour agrandir"
     },
     "breadcrumb": {
-      "home": "Matières"
+      "home": "Modules"
     },
     "search": {
-      "subjects": "Rechercher une matière…",
+      "subjects": "Rechercher un module…",
       "courses": "Rechercher un cours…",
       "clear": "Effacer la recherche"
     },
     "loading": {
-      "subjects": "Chargement de vos matières…",
+      "subjects": "Chargement de vos modules…",
       "courses": "Chargement des cours…",
       "detail": "Chargement du résumé et de la carte mentale…"
     },
@@ -766,11 +766,11 @@
       "terms": "termes"
     },
     "empty": {
-      "noSubjects": "Aucune matière pour le moment",
-      "noSubjectsHint": "Vos matières apparaîtront ici dès que votre abonnement sera actif.",
-      "noSubjectMatch": "Aucune matière correspondante",
+      "noSubjects": "Aucun module pour le moment",
+      "noSubjectsHint": "Vos modules apparaîtront ici dès que votre abonnement sera actif.",
+      "noSubjectMatch": "Aucun module correspondant",
       "noCourses": "Aucun cours pour le moment",
-      "noCoursesHint": "Cette matière n'a encore aucun cours publié.",
+      "noCoursesHint": "Ce module n'a encore aucun cours publié.",
       "noCourseMatch": "Aucun cours correspondant",
       "tryDifferentSearch": "Essayez un autre terme de recherche.",
       "noContent": "Rien ici pour le moment",
@@ -779,8 +779,8 @@
     },
     "errors": {
       "generic": "Une erreur est survenue. Veuillez réessayer.",
-      "loadSubjects": "Impossible de charger vos matières.",
-      "loadCourses": "Impossible de charger les cours de cette matière."
+      "loadSubjects": "Impossible de charger vos modules.",
+      "loadCourses": "Impossible de charger les cours de ce module."
     }
   },
   "Landing": {
@@ -788,7 +788,8 @@
       "study": "Révision",
       "exams": "Examens",
       "mindmaps": "Cartes mentales",
-      "pricing": "Tarifs"
+      "pricing": "Tarifs",
+      "about": "À propos"
     },
     "sections": {
       "hero": {
@@ -802,13 +803,21 @@
         "meta2": "Pensé pour la pharmacie",
         "meta3": "Rapide et hors ligne"
       },
+      "about": {
+        "eyebrow": "À propos",
+        "title": "Conçu par des étudiants en pharmacie, pour des étudiants en pharmacie",
+        "subtitle": "PharmaSpace est un compagnon d'étude conçu pour rendre l'apprentissage de la pharmacie plus rapide, plus clair et mieux organisé.",
+        "body": "Nous réunissons des résumés assistés par IA, des cartes mentales et des QCM structurés dans un seul espace de travail. Que vous révisiez un chapitre ou prépariez vos examens, tout reste au même endroit — pour passer moins de temps à chercher et plus de temps à apprendre.",
+        "telegramLabel": "Télégram",
+        "instagramLabel": "Instagram"
+      },
       "study": {
         "eyebrow": "Révision",
         "title": "Une révision structurée, sans encombrement.",
         "subtitle": "Tout ce qu'il faut pour un chapitre, organisé comme la pharmacie s'enseigne réellement — sans bruit, sans distraction.",
         "feature1": "Des fiches soignées alignées sur votre programme",
         "feature2": "Des flashcards avec répétition espacée intégrée",
-        "feature3": "Recherchez dans toutes les matières en quelques secondes",
+        "feature3": "Recherchez dans tous les modules en quelques secondes",
         "cta": "Commencer à réviser"
       },
       "exams": {
@@ -817,7 +826,7 @@
         "subtitle": "Des sessions d'examen réalistes avec correction instantanée, pour savoir exactement où vous en êtes avant le jour J.",
         "feature1": "Des examens blancs chronométrés au format de votre faculté",
         "feature2": "Corrections instantanées avec explications claires",
-        "feature3": "Suivi de la précision par matière et par thème",
+        "feature3": "Suivi de la précision par module et par thème",
         "cta": "Essayer un examen"
       },
       "mindmaps": {
@@ -834,7 +843,7 @@
         "title": "Sachez exactement où vous progressez.",
         "subtitle": "Des analyses simples et honnêtes qui montrent vos forces, vos points faibles et quoi travailler ensuite.",
         "feature1": "Suivi hebdomadaire de la progression et de la régularité",
-        "feature2": "Détection des points faibles par matière",
+        "feature2": "Détection des points faibles par module",
         "feature3": "Suggestions de révision personnalisées",
         "cta": "Voir votre progression"
       },
@@ -990,7 +999,7 @@
     "hide": "Masquer pour aujourd'hui",
     "revealAnswer": "Révéler la réponse",
     "correctAnswer": "Bonne réponse",
-    "semester": "Semestre",
+    "semester": "Trimestre",
     "revealMedicament": "Afficher les détails",
     "fields": {
       "indication": "Indication",

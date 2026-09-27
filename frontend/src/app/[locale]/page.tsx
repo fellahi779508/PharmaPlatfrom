@@ -24,6 +24,48 @@ import {
 import styles from "./landing.module.css";
 
 /* ------------------------------------------------------------------ */
+/* Brand Icons (inline SVG — lucide has no brand logos)               */
+/* ------------------------------------------------------------------ */
+
+function TelegramIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M21.94 4.51a1.5 1.5 0 0 0-1.6-.22L2.9 11.42a1.5 1.5 0 0 0 .09 2.78l3.88 1.42 1.5 4.71a1.5 1.5 0 0 0 2.5.6l2.2-2.2 4.1 3.02a1.5 1.5 0 0 0 2.36-.92l3-14.7a1.5 1.5 0 0 0-.59-1.62ZM9.9 14.83l-.6 3.42-1.02-3.2 8.55-6.62-6.93 6.4Zm7.55 4.55-4.6-3.38 6.2-8.72-1.6 12.1Z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Section registry                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -34,11 +76,12 @@ type SectionId =
   | "mindmaps"
   | "progress"
   | "pricing"
+  | "about"
   | "cta";
 
 interface SectionDef {
   id: SectionId;
-  layout: "hero" | "text-left" | "text-right" | "centered" | "pricing";
+  layout: "hero" | "text-left" | "text-right" | "centered" | "pricing" | "about";
   gif?: string;
   icon: React.ReactNode;
   accent: string;
@@ -51,8 +94,18 @@ const SECTIONS: SectionDef[] = [
   { id: "mindmaps", layout: "text-left", gif: "section4.png", icon: <Network size={14} />, accent: "var(--success)" },
   { id: "progress", layout: "text-right", gif: "progress.png", icon: <LineChart size={14} />, accent: "var(--warning)" },
   { id: "pricing", layout: "pricing", icon: <Trophy size={14} />, accent: "var(--primary)" },
+  { id: "about", layout: "about", icon: <Users size={14} />, accent: "var(--info)" },
   { id: "cta", layout: "centered", icon: <Trophy size={14} />, accent: "var(--primary)" },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Contact constants                                                  */
+/* ------------------------------------------------------------------ */
+
+const TELEGRAM_URL = "https://t.me/+213540028596";
+const TELEGRAM_DISPLAY = "0540028596";
+const INSTAGRAM_URL = "https://www.instagram.com/pharmaspace_dz/";
+const INSTAGRAM_DISPLAY = "@pharmaspace_dz";
 
 /* ------------------------------------------------------------------ */
 /* Component                                                          */
@@ -70,6 +123,7 @@ export default function LandingComponent() {
     mindmaps: null,
     progress: null,
     pricing: null,
+    about: null,
     cta: null,
   });
 
@@ -126,6 +180,7 @@ export default function LandingComponent() {
 
   return (
     <div className={styles.root}>
+      <title>Pharmaspace | main</title>
       {/* ---------- Header ---------- */}
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ""}`}>
         <Link href="/" className={styles.brand}>
@@ -149,10 +204,12 @@ export default function LandingComponent() {
           <button type="button" className={styles.navLink} onClick={() => scrollTo("pricing")}>
             {t("nav.pricing")}
           </button>
+          <button type="button" className={styles.navLink} onClick={() => scrollTo("about")}>
+            {t("nav.about")}
+          </button>
         </nav>
 
         <div className={styles.headerActions}>
-
           <Link href="/login" className={styles.primaryBtn}>
             {t("sections.hero.cta")}
             <ArrowRight size={15} />
@@ -183,6 +240,7 @@ export default function LandingComponent() {
           const isHero = section.layout === "hero";
           const isCentered = section.layout === "centered";
           const isPricing = section.layout === "pricing";
+          const isAbout = section.layout === "about";
           const textFirst = section.layout === "text-left" || isHero;
           const hasVisual = !!section.gif;
 
@@ -198,7 +256,9 @@ export default function LandingComponent() {
                   ? styles.sectionCentered
                   : isPricing
                     ? styles.sectionCentered
-                    : styles.sectionSplit
+                    : isAbout
+                      ? styles.sectionCentered
+                      : styles.sectionSplit
                 }`}
               style={{ ["--section-accent" as any]: section.accent }}
             >
@@ -335,15 +395,93 @@ export default function LandingComponent() {
                       </li>
                     </ul>
 
-                    <Link
-                      href="/register"
-                      className={`${styles.primaryBtnLarge} ${styles.priceBtn}`}
-                    >
-                      {t("sections.pricing.cta")}
-                      <ArrowRight size={16} />
-                    </Link>
+                    {/* --- Contact actions (Telegram + Instagram) --- */}
+                    <div className={styles.priceActions}>
+                      <a
+                        href={TELEGRAM_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${styles.primaryBtnLarge} ${styles.priceBtn}`}
+                      >
+                        {t("sections.pricing.cta")}
+                        <TelegramIcon size={16} />
+                      </a>
+
+                      <a
+                        href={INSTAGRAM_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.instaBtn}
+                        aria-label="Instagram"
+                      >
+                        <InstagramIcon size={16} />
+                        <span>{INSTAGRAM_DISPLAY}</span>
+                      </a>
+                    </div>
 
                     <p className={styles.priceNote}>{t("sections.pricing.note")}</p>
+                  </div>
+                </motion.div>
+              ) : isAbout ? (
+                /* ============ ABOUT US ============ */
+                <motion.div
+                  className={styles.aboutWrap}
+                  initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
+                  whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                  <div className={styles.aboutHead}>
+                    <span className={styles.eyebrow}>
+                      <Users size={14} />
+                      {t("sections.about.eyebrow")}
+                    </span>
+                    <h2 className={styles.splitTitle}>{t("sections.about.title")}</h2>
+                    <p className={styles.splitSubtitle}>{t("sections.about.subtitle")}</p>
+                  </div>
+
+                  <p className={styles.aboutBody}>{t("sections.about.body")}</p>
+
+                  <div className={styles.contactGrid}>
+                    <a
+                      href={TELEGRAM_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.contactCard}
+                    >
+                      <span className={`${styles.contactIcon} ${styles.contactIconTelegram}`}>
+                        <TelegramIcon size={18} />
+                      </span>
+                      <span className={styles.contactInfo}>
+                        <span className={styles.contactLabel}>
+                          {t("sections.about.telegramLabel")}
+                        </span>
+                        <span className={styles.contactValue} dir="ltr">
+                          {TELEGRAM_DISPLAY}
+                        </span>
+                      </span>
+                      <ArrowUpRight size={16} className={styles.contactArrow} />
+                    </a>
+
+                    <a
+                      href={INSTAGRAM_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.contactCard}
+                    >
+                      <span className={`${styles.contactIcon} ${styles.contactIconInstagram}`}>
+                        <InstagramIcon size={18} />
+                      </span>
+                      <span className={styles.contactInfo}>
+                        <span className={styles.contactLabel}>
+                          {t("sections.about.instagramLabel")}
+                        </span>
+                        <span className={styles.contactValue} dir="ltr">
+                          {INSTAGRAM_DISPLAY}
+                        </span>
+                      </span>
+                      <ArrowUpRight size={16} className={styles.contactArrow} />
+                    </a>
                   </div>
                 </motion.div>
               ) : isCentered ? (

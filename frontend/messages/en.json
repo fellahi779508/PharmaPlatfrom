@@ -268,14 +268,14 @@
       "description": "Create your account."
     },
     "sessions": {
-      "tag": "Planning",
+      "tag": "Practice",
       "title": "Sessions",
-      "description": "View and manage your upcoming study sessions."
+      "description": "Practice and improve your skills with targeted study MCQ."
     },
     "exams": {
-      "tag": "Deadlines",
+      "tag": "Simulation",
       "title": "Exams",
-      "description": "Track your upcoming exams and important dates."
+      "description": "Simulate pharmacy exams to test your knowledge"
     },
     "dashboard": {
       "tag": "Dashboard",
@@ -788,7 +788,8 @@
       "study": "Study",
       "exams": "Exams",
       "mindmaps": "Mind Maps",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "about": "About"
     },
     "sections": {
       "hero": {
@@ -801,6 +802,14 @@
         "meta1": "Loved by students",
         "meta2": "Made for pharmacy",
         "meta3": "Fast & offline-ready"
+      },
+      "about": {
+        "eyebrow": "About us",
+        "title": "Built by pharmacy students, for pharmacy students",
+        "subtitle": "PharmaSpace is a study companion designed to make pharmacy learning faster, clearer, and more organized.",
+        "body": "We combine AI-powered summaries, mind maps, and structured QCM practice into one focused workspace. Whether you're revising a chapter or preparing for exams, PharmaSpace keeps everything in one place — so you can spend less time searching and more time learning.",
+        "telegramLabel": "Telegram",
+        "instagramLabel": "Instagram"
       },
       "study": {
         "eyebrow": "Study",
