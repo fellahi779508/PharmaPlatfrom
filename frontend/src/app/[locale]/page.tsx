@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import styles from "./landing.module.css";
+import QuickNav from "@/components/dashboard/quickNav";
 
 /* ------------------------------------------------------------------ */
 /* Brand Icons (inline SVG — lucide has no brand logos)               */
@@ -218,7 +219,7 @@ export default function LandingComponent() {
       </header>
 
       {/* ---------- Side dot navigation ---------- */}
-      <nav className={styles.dots} aria-label="sections">
+      {/* <nav className={styles.dots} aria-label="sections">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
@@ -231,7 +232,7 @@ export default function LandingComponent() {
             <span className={styles.dotInner} style={{ backgroundColor: s.accent }} />
           </button>
         ))}
-      </nav>
+      </nav> */}
 
       {/* ---------- Snap-scroll sections ---------- */}
       <div ref={containerRef} className={styles.scroller}>
@@ -578,6 +579,7 @@ export default function LandingComponent() {
           );
         })}
       </div>
+      <QuickNav variant="sidebar" />
     </div>
   );
 }

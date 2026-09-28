@@ -57,7 +57,7 @@ const statusClass: Record<ExamSessionStatus, string> = {
 
 type FilterKey = "all" | ExamSessionStatus;
 
-const DURATION_OPTIONS = [45, 60, 90] as const;
+const DURATION_OPTIONS = [30, 45, 60] as const;
 type DurationOption = (typeof DURATION_OPTIONS)[number];
 
 /* ------------------------------------------------------------------ */
