@@ -143,9 +143,7 @@ export class SessionController {
     return this.sessionService.update(id, dto);
   }
 
-  // DELETE /sessions/:id
-  @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
-  @UseGuards(RolesGuard)
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req) {

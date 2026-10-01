@@ -55,8 +55,7 @@ export class TodoController {
   update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
     return this.todoService.update(+id, updateTodoDto);
   }
-  @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
-  @UseGuards(RolesGuard)
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {

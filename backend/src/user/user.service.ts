@@ -30,7 +30,7 @@ export class UserService {
     private readonly i18n: I18nService,
     private readonly emailService: EmailService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   private generate6DigitOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
