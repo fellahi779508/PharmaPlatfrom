@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Summary } from 'src/summary/entities/summary.entity';
 import { Medicament } from 'src/medicament/entities/medicament.entity';
+import { Qcm } from 'src/qcm/entities/qcm.entity';
 
 @Entity('image')
 export class Image {
@@ -64,4 +65,14 @@ export class Image {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @OneToOne(() => Qcm, (qcm) => qcm.image, {
+        onDelete: 'CASCADE',
+        nullable: true,
+    })
+    @JoinColumn({ name: 'qcmId' })
+    qcm: Qcm | null;
+
+    @Column({ type: 'int', nullable: true })
+    qcmId: number | null;
 }

@@ -37,6 +37,7 @@ interface QcmData {
     course: { id: number; name: string } | null;
     td: { id: number; name: string } | null;
     tp: { id: number; name: string } | null;
+    image: { id: number; url: string; width: number; height: number } | null;
 }
 
 interface MedicamentData {
@@ -303,6 +304,34 @@ export default function FlashcardComponent() {
                                                 {t("badgeQcm")}
                                             </span>
                                         </header>
+
+                                        {/* ---------- QCM image (only if available) ---------- */}
+                                        {card.qcm.image?.url && (
+                                            <button
+                                                type="button"
+                                                className={styles.qcmImageButton}
+                                                onClick={(e) =>
+                                                    openLightbox(e, card.qcm!.image!.url)
+                                                }
+                                                aria-label={t("enlargePhoto")}
+                                                title={t("enlargePhoto")}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={card.qcm.image.url}
+                                                    alt=""
+                                                    className={styles.qcmImage}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                />
+                                                <span
+                                                    className={styles.qcmZoomBadge}
+                                                    aria-hidden
+                                                >
+                                                    <Maximize2 size={12} />
+                                                </span>
+                                            </button>
+                                        )}
 
                                         <p className={styles.question}>{card.qcm.question}</p>
 

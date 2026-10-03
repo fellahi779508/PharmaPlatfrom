@@ -5,11 +5,13 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Td } from 'src/td/entities/td.entity';
 import { Tp } from 'src/tp/entities/tp.entity';
 import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
+import { Image } from 'src/image/entities/image.entity';
 
 @Entity('qcm')
 export class Qcm {
@@ -32,6 +34,9 @@ export class Qcm {
 
   @OneToMany(() => SessionQuestion, (sq) => sq.qcm)
   sessionQuestions: SessionQuestion[];
+
+  @OneToOne(() => Image, (image) => image.qcm)
+  image: Image;
 
 
 }

@@ -263,7 +263,7 @@ export class SessionService implements OnModuleInit {
       where: { id: sessionId, user: { id: userId } },
       relations: {
         questions: {
-          qcm: { answers: true },
+          qcm: { answers: true, image: true },
           selectedAnswers: { qcmAnswer: true },
         },
       },
@@ -332,7 +332,7 @@ export class SessionService implements OnModuleInit {
 
       const sq = await manager.findOne(SessionQuestion, {
         where: { id: questionId, session: { id: sessionId } },
-        relations: { qcm: { answers: true }, selectedAnswers: true },
+        relations: { qcm: { answers: true, image: true }, selectedAnswers: true },
       });
 
       if (!sq) {
@@ -410,7 +410,7 @@ export class SessionService implements OnModuleInit {
       where: { id: sessionId, user: { id: userId } },
       relations: {
         questions: {
-          qcm: { answers: true },
+          qcm: { answers: true, image: true },
           selectedAnswers: { qcmAnswer: true },
         },
       },
@@ -499,7 +499,7 @@ export class SessionService implements OnModuleInit {
       const session = await manager.findOne(Session, {
         where: { id: sessionId, user: { id: userId } },
         relations: {
-          questions: { selectedAnswers: true },
+          questions: { selectedAnswers: true, qcm: { answers: true, image: true } },
         },
       });
 
@@ -622,7 +622,17 @@ export class SessionService implements OnModuleInit {
         isRevealed: sq.isRevealed,
         isCorrect: sq.isRevealed ? sq.isCorrect : null,
         selectedAnswerIds: selectedIds,
-        // Map over the shuffled array instead of sq.qcm.answers directly
+
+        // 🔽 NEW — include the image (null when the QCM has none)
+        image: sq.qcm?.image
+          ? {
+            id: sq.qcm.image.id,
+            url: sq.qcm.image.url,
+            width: sq.qcm.image.width,
+            height: sq.qcm.image.height,
+          }
+          : null,
+
         answers: shuffledAnswers.map((a) => ({
           id: a.id,
           answer: a.answer,

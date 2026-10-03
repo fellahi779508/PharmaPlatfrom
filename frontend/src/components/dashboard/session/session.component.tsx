@@ -59,6 +59,7 @@ import { Subject, Course, Td, Tp } from "@/utils/types/allTypes";
 import { getTdsBySubject } from "@/utils/server/td-api";
 import { getTpsBySubject } from "@/utils/server/tp-api";
 import { generateExplanation } from "@/utils/server/qcm-api";
+import Image from "next/image";
 
 // ===========================================================================
 // Small helpers
@@ -85,6 +86,34 @@ function formatDate(d: string | Date | undefined) {
   } catch {
     return "";
   }
+}
+
+/**
+ * Try to extract a QCM image URL from a question object coming from the
+ * session play API. Handles multiple shapes:
+ *   - question.image.url
+ *   - question.qcm.image.url
+ *   - question.image (string)
+ *   - question.qcmImage?.url
+ */
+function getQuestionImageUrl(question: any): string | null {
+  if (!question) return null;
+
+  const candidates: any[] = [
+    question?.image,
+    question?.qcm?.image,
+    question?.qcmImage,
+    question?.qcm_image,
+  ];
+
+  for (const c of candidates) {
+    if (!c) continue;
+    if (typeof c === "string" && c.trim()) return c;
+    if (typeof c === "object" && typeof c.url === "string" && c.url.trim()) {
+      return c.url;
+    }
+  }
+  return null;
 }
 
 // ===========================================================================
@@ -957,6 +986,12 @@ function PlaySessionModal({
   const question = state?.question;
   const isRevealed = !!question?.isRevealed;
 
+  /** Image URL for the current question (null if none). */
+  const questionImageUrl = useMemo(
+    () => getQuestionImageUrl(question),
+    [question],
+  );
+
   /* -------- Load play state -------- */
   const loadPlay = useCallback(async () => {
     setLoading(true);
@@ -1291,6 +1326,37 @@ function PlaySessionModal({
 
               <h3 className={styles.questionText}>{question.question}</h3>
 
+              {/* ---------- QCM image (only if available) ---------- */}
+              {questionImageUrl && (
+                <div
+                  style={{
+                    margin: "0.75rem 0 1rem",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    border: "1px solid var(--border, rgba(0,0,0,0.08))",
+                    background: "var(--card, #fff)",
+                    display: "flex",
+                    justifyContent: "center",
+                    maxHeight: "320px",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={questionImageUrl}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      height: "auto",
+                      maxHeight: "320px",
+                      objectFit: "contain",
+                    }}
+                  />
+                </div>
+              )}
+
               {isRevealed && (
                 <div
                   className={`${styles.questionResultBanner} ${question.isCorrect ? styles.correct : styles.incorrect
@@ -1517,5 +1583,3 @@ function PlaySessionModal({
     </div>
   );
 }
-
-

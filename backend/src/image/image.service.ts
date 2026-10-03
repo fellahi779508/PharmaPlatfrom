@@ -11,6 +11,7 @@ import { Image } from './entities/image.entity';
 import { Summary } from 'src/summary/entities/summary.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Medicament } from 'src/medicament/entities/medicament.entity';
+import { Qcm } from 'src/qcm/entities/qcm.entity';
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -165,6 +166,70 @@ export class ImageService {
         originalName: file.originalname ?? null,
         medicamentId,
         summaryId: null, // never both
+        qcmId: null,
+      });
+
+      const saved = await manager.getRepository(Image).save(newImage);
+
+      if (previousId) {
+        await manager.getRepository(Image).delete(previousId);
+      }
+      if (previousPublicId) {
+        this.cloudinary
+          .destroy(previousPublicId)
+          .catch((e) => console.warn('Cloudinary cleanup failed:', e));
+      }
+
+      return saved;
+    });
+  }
+  async uploadForQcm(
+    qcmId: number,
+    file: Express.Multer.File,
+  ): Promise<Image> {
+    if (!file) throw new BadRequestException('File is required');
+
+    if (!ALLOWED_MIME.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Unsupported file type: ${file.mimetype}`,
+      );
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      throw new BadRequestException(
+        `File too large. Max ${MAX_SIZE_BYTES / 1024 / 1024} MB.`,
+      );
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const qcm = await manager
+        .getRepository(Qcm)
+        .findOne({
+          where: { id: qcmId },
+          relations: { image: true },
+        });
+
+      if (!qcm) {
+        throw new NotFoundException('Qcm not found');
+      }
+
+      const previous = qcm.image;
+      const previousPublicId = previous?.publicId ?? null;
+      const previousId = previous?.id ?? null;
+
+      // Upload first — a failure keeps the old image intact
+      const uploaded = await this.cloudinary.uploadBuffer(file, 'qcms');
+
+      const newImage = manager.getRepository(Image).create({
+        url: uploaded.secureUrl,
+        publicId: uploaded.publicId,
+        format: uploaded.format,
+        width: uploaded.width,
+        height: uploaded.height,
+        bytes: uploaded.bytes,
+        originalName: file.originalname ?? null,
+        qcmId,
+        summaryId: null,
+        medicamentId: null, // never both
       });
 
       const saved = await manager.getRepository(Image).save(newImage);
@@ -195,6 +260,20 @@ export class ImageService {
     await this.imageRepo.remove(image);
     this.cloudinary.destroy(image.publicId).catch(() => { });
     return { success: true };
+  }
+  async removeForQcm(
+    qcmId: number,
+  ): Promise<{ success: true }> {
+    const image = await this.imageRepo.findOne({ where: { qcmId } });
+    if (!image) return { success: true };
+
+    await this.imageRepo.remove(image);
+    this.cloudinary.destroy(image.publicId).catch(() => { });
+    return { success: true };
+  }
+
+  async findByQcm(qcmId: number): Promise<Image | null> {
+    return this.imageRepo.findOne({ where: { qcmId } });
   }
 
   /* ------------------------------------------------------------------ */

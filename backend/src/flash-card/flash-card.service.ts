@@ -75,7 +75,7 @@ export class FlashcardService {
   async getOrCreateCard(yearId: number, date = this.today()) {
     const relations = {
       year: true,
-      qcm: { answers: true, course: true, td: true, tp: true },
+      qcm: { answers: true, course: true, td: true, tp: true, image: true },
       medicament: { image: true },
     } as const;
 
@@ -288,6 +288,14 @@ export class FlashcardService {
             : null,
           td: q.td ? { id: q.td.id, name: q.td.name } : null,
           tp: q.tp ? { id: q.tp.id, name: q.tp.name } : null,
+          image: q.image
+            ? {
+              id: q.image.id,
+              url: q.image.url,
+              width: q.image.width,
+              height: q.image.height,
+            }
+            : null,
         }
         : null,
 

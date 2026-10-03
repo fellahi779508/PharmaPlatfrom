@@ -66,6 +66,9 @@ import {
   createQcm,
   updateQcm,
   deleteQcm,
+  UploadQcmImage,
+  DeleteQcmImage,
+  getQcmImage,
 } from "@/utils/server/qcm-api";
 import {
   getQcmAnswers,
@@ -180,6 +183,13 @@ type MedicamentImage = {
   id: number;
   url: string;
   publicId?: string;
+  width?: number;
+  height?: number;
+};
+
+type QcmImage = {
+  id: number;
+  url: string;
   width?: number;
   height?: number;
 };
@@ -424,6 +434,12 @@ export default function TeacherPageComponent() {
     useState<MedicamentImage | null>(null);
   const [uploadingMedicamentImage, setUploadingMedicamentImage] =
     useState(false);
+
+  /* ---------- QCM image ---------- */
+  const [qcmImage, setQcmImage] = useState<QcmImage | null>(null);
+  const [qcmImagePreview, setQcmImagePreview] = useState<string | null>(null);
+  const [qcmPendingFile, setQcmPendingFile] = useState<File | null>(null);
+  const [uploadingQcmImage, setUploadingQcmImage] = useState(false);
 
   /* ---------- Flat data ---------- */
   const [years, setYears] = useState<Year[]>([]);
@@ -932,6 +948,47 @@ export default function TeacherPageComponent() {
   };
 
   /* ------------------------------------------------------------------ */
+  /* QCM image handlers                                                 */
+  /* ------------------------------------------------------------------ */
+
+  const handlePickQcmImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("error", "Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "Image must be under 5 MB");
+      return;
+    }
+
+    if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
+    setQcmPendingFile(file);
+    setQcmImagePreview(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const clearQcmPendingImage = () => {
+    if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
+    setQcmImagePreview(null);
+    setQcmPendingFile(null);
+  };
+
+  const handleRemoveQcmImage = async () => {
+    if (!editing?.id) return;
+    try {
+      const res = await DeleteQcmImage(editing.id);
+      if (!res.status) throw new Error(res.message ?? "Failed to remove image");
+      setQcmImage(null);
+      showToast("success", t("success.deleted"));
+    } catch (e: any) {
+      showToast("error", e?.message ?? t("error.generic"));
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
   /* Fetch all flat lists                                                */
   /* ------------------------------------------------------------------ */
 
@@ -1347,6 +1404,11 @@ export default function TeacherPageComponent() {
         break;
       case "qcm":
         initial.question = "";
+        // reset QCM image state
+        setQcmImage(null);
+        if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
+        setQcmImagePreview(null);
+        setQcmPendingFile(null);
         break;
       case "answer":
         initial.answer = "";
@@ -1375,7 +1437,7 @@ export default function TeacherPageComponent() {
     }
   };
 
-  const openEdit = (type: EntityType, item: any) => {
+  const openEdit = async (type: EntityType, item: any) => {
     setEditing(item);
     setModalType(type);
     const initial: Record<string, any> = {};
@@ -1404,6 +1466,31 @@ export default function TeacherPageComponent() {
     }
     setFormState(initial);
     setAnswerDrafts([]);
+
+    // QCM image handling
+    if (type === "qcm") {
+      if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
+      setQcmImagePreview(null);
+      setQcmPendingFile(null);
+
+      if (item.image) {
+        setQcmImage(item.image);
+      } else {
+        try {
+          const res = await getQcmImage(item.id);
+          setQcmImage(
+            res.status ? unwrapEntity<QcmImage>(res.response) : null,
+          );
+        } catch {
+          setQcmImage(null);
+        }
+      }
+    } else {
+      setQcmImage(null);
+      if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
+      setQcmImagePreview(null);
+      setQcmPendingFile(null);
+    }
   };
 
   /* ---------- QCM answer drafts ---------- */
@@ -1514,6 +1601,27 @@ export default function TeacherPageComponent() {
         : await (api.create as any)(payload);
 
       if (res.status) {
+        // If we just created/updated a QCM, handle its image too.
+        if (modalType === "qcm") {
+          const targetId =
+            editing?.id ?? unwrapEntity<Qcm>(res.response)?.id;
+
+          if (targetId && qcmPendingFile) {
+            setUploadingQcmImage(true);
+            const imgRes = await UploadQcmImage(targetId, qcmPendingFile);
+            setUploadingQcmImage(false);
+
+            if (!imgRes.status) {
+              showToast(
+                "error",
+                imgRes.message ?? "Failed to upload image",
+              );
+              // continue anyway — the QCM itself was saved
+            }
+            clearQcmPendingImage();
+          }
+        }
+
         showToast(
           "success",
           editing ? t("success.updated") : t("success.created"),
@@ -1521,6 +1629,10 @@ export default function TeacherPageComponent() {
         setModalType(null);
         setEditing(null);
         setAnswerDrafts([]);
+        setQcmImage(null);
+        if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
+        setQcmImagePreview(null);
+        setQcmPendingFile(null);
         await refreshLoadedDetails();
       } else {
         showToast("error", res.message || t("error.saveFailed"));
@@ -1529,6 +1641,7 @@ export default function TeacherPageComponent() {
       showToast("error", t("error.generic"));
     } finally {
       setSaving(false);
+      setUploadingQcmImage(false);
     }
   };
 
@@ -2567,7 +2680,21 @@ export default function TeacherPageComponent() {
                           >
                             <div className={styles.listItemBody}>
                               <div className={styles.listItemIcon}>
-                                <FileText size={16} />
+                                {q.image?.url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={q.image.url}
+                                    alt=""
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      borderRadius: "6px",
+                                    }}
+                                  />
+                                ) : (
+                                  <FileText size={16} />
+                                )}
                               </div>
                               <div>
                                 <h4 className={styles.listItemTitle}>
@@ -2619,6 +2746,22 @@ export default function TeacherPageComponent() {
                         {selectedQcm.question}
                       </p>
                     </div>
+
+                    {/* QCM image (if any) */}
+                    {(qcmDetail?.image?.url ?? selectedQcm.image?.url) && (
+                      <div className={styles.summaryImageWrap}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={
+                            (qcmDetail?.image?.url ??
+                              selectedQcm.image?.url) as string
+                          }
+                          alt=""
+                          className={styles.summaryImage}
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
 
                     <SectionHeader
                       title={t("tabs.qcmAnswers")}
@@ -2811,6 +2954,63 @@ export default function TeacherPageComponent() {
 
                 {modalType === "qcm" && (
                   <>
+                    {/* QCM image uploader */}
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label}>Photo</label>
+                      <div className={styles.imageUploader}>
+                        {qcmImagePreview || qcmImage?.url ? (
+                          <div className={styles.imagePreviewWrap}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={qcmImagePreview ?? qcmImage?.url}
+                              alt=""
+                              className={styles.imagePreview}
+                            />
+                            <button
+                              type="button"
+                              className={styles.imageRemove}
+                              onClick={async () => {
+                                if (qcmPendingFile) {
+                                  clearQcmPendingImage();
+                                  return;
+                                }
+                                if (editing?.id) {
+                                  await handleRemoveQcmImage();
+                                } else {
+                                  setQcmImage(null);
+                                }
+                              }}
+                              aria-label="Remove image"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className={styles.imageDropZone}>
+                            {uploadingQcmImage ? (
+                              <Loader2
+                                size={22}
+                                className={styles.spinning}
+                              />
+                            ) : (
+                              <Upload size={22} />
+                            )}
+                            <span>
+                              Click to upload an image (JPG, PNG, WebP — max 5
+                              MB)
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className={styles.imageInput}
+                              onChange={handlePickQcmImage}
+                              disabled={uploadingQcmImage || saving}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
                     <TextField
                       label={t("fields.question")}
                       value={formState.question ?? ""}

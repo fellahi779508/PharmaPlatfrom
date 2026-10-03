@@ -87,10 +87,8 @@ export class ExamService {
     const examQcmRepo = this.dataSource.getRepository(ExamQcm);
     const userRepo = this.dataSource.getRepository(User);
 
-
     const user = await userRepo.findOne({
       where: { id: userId },
-
     });
     if (!user) throw new NotFoundException(`User ${userId} not found`);
 
@@ -135,9 +133,10 @@ export class ExamService {
       .map((x) => x.id)
       .slice(0, Math.min(questionCount, candidateIds.length));
 
+    // 🔽 include the image relation here
     const qcms = await qcmRepo.find({
       where: { id: In(picked) },
-      relations: { answers: true },
+      relations: { answers: true, image: true },
     });
 
     const ordered = picked
@@ -179,7 +178,8 @@ export class ExamService {
       relations: {
         semester: true,
         subject: true,
-        examQcms: { qcm: { answers: true } },
+        // 🔽 include image on every qcm
+        examQcms: { qcm: { answers: true, image: true } },
       },
     });
     if (!exam) throw new NotFoundException('Exam not found');
@@ -200,6 +200,15 @@ export class ExamService {
         order: eq.order,
         qcmId: eq.qcm.id,
         question: eq.qcm.question,
+        // 🔽 serialize image (null when absent)
+        image: (eq.qcm as any).image
+          ? {
+            id: (eq.qcm as any).image.id,
+            url: (eq.qcm as any).image.url,
+            width: (eq.qcm as any).image.width,
+            height: (eq.qcm as any).image.height,
+          }
+          : null,
         answers: (eq.qcm.answers ?? []).map((a) => ({ id: a.id, answer: a.answer })),
       })),
     };
@@ -327,9 +336,10 @@ export class ExamService {
       throw new BadRequestException('Session is paused or completed');
     }
 
+    // 🔽 include image here too so any subsequent read stays consistent
     const examQcm = await examQcmRepo.findOne({
       where: { exam: { id: session.exam.id }, qcm: { id: dto.qcmId } },
-      relations: { qcm: { answers: true } },
+      relations: { qcm: { answers: true, image: true } },
     });
     if (!examQcm) throw new BadRequestException('QCM does not belong to this exam');
 
@@ -415,7 +425,8 @@ export class ExamService {
       exam: {
         subject: true,
         semester: true,
-        examQcms: { qcm: { answers: true } },
+        // 🔽 include image here
+        examQcms: { qcm: { answers: true, image: true } },
       },
       answers: { qcm: true, selectedAnswers: true },
     });
@@ -450,6 +461,17 @@ export class ExamService {
           order: eq.order,
           qcmId: eq.qcm.id,
           question: eq.qcm.question,
+
+          // 🔽 serialize image (null when absent)
+          image: (eq.qcm as any).image
+            ? {
+              id: (eq.qcm as any).image.id,
+              url: (eq.qcm as any).image.url,
+              width: (eq.qcm as any).image.width,
+              height: (eq.qcm as any).image.height,
+            }
+            : null,
+
           answers: (eq.qcm.answers ?? []).map((a) => ({
             id: a.id,
             answer: a.answer,

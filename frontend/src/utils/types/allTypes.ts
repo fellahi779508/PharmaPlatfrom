@@ -53,6 +53,8 @@ export type Qcm = {
   tpId?: number;
   tp?: Tp;
   answers?: QcmAnswer[];
+  image?: { id: number; url: string; width: number; height: number } | null;
+
 };
 
 export type QcmAnswer = {
@@ -153,6 +155,7 @@ export type CreateQcm = {
   tdId?: number;
   tpId?: number;
   answers: CreateQcmAnswer[];
+
 };
 
 export type CreateQcmAnswer = {

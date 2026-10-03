@@ -66,6 +66,39 @@ export class ImageController {
     return this.imageService.uploadForMedicament(medicamentId, file);
   }
 
+  @Post('qcm/:qcmId')
+  @Roles(Role.ADMIN, Role.OWNER, Role.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  uploadQcm(
+    @Param('qcmId', ParseIntPipe) qcmId: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('file is required');
+    return this.imageService.uploadForQcm(qcmId, file);
+  }
+
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
+  @Get('qcm/:qcmId')
+  findByQcm(@Param('qcmId', ParseIntPipe) qcmId: number) {
+    return this.imageService.findByQcm(qcmId);
+  }
+
+  @Delete('qcm/:qcmId')
+  @Roles(Role.ADMIN, Role.OWNER, Role.TEACHER)
+  @UseGuards(RolesGuard)
+  removeQcmImage(
+    @Param('qcmId', ParseIntPipe) qcmId: number,
+  ) {
+    return this.imageService.removeForQcm(qcmId);
+  }
+
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('medicament/:medicamentId')
   findByMedicament(@Param('medicamentId', ParseIntPipe) medicamentId: number) {
     return this.imageService.findByMedicament(medicamentId);

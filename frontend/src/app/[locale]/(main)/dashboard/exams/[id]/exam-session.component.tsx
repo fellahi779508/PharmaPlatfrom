@@ -15,6 +15,7 @@ import {
     Flag,
     HelpCircle,
     Loader2,
+    Maximize2,
     Pause,
     Play,
     RotateCcw,
@@ -22,6 +23,7 @@ import {
     SkipForward,
     Sparkles,
     Trophy,
+    X,
     XCircle,
 } from "lucide-react";
 
@@ -177,6 +179,34 @@ function questionOutcome(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Image helpers                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Safely extracts an image URL from a question object regardless of
+ * the shape it comes in from the backend.
+ */
+function getQuestionImageUrl(question: any): string | null {
+    if (!question) return null;
+
+    const candidates: any[] = [
+        question.image,
+        question.qcm?.image,
+        question.qcmImage,
+        question.qcm_image,
+    ];
+
+    for (const c of candidates) {
+        if (!c) continue;
+        if (typeof c === "string" && c.trim()) return c;
+        if (typeof c === "object" && typeof c.url === "string" && c.url.trim()) {
+            return c.url;
+        }
+    }
+    return null;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -193,6 +223,9 @@ export default function ExamSessionComponent() {
     const [busy, setBusy] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+
+    /** Fullscreen lightbox for viewing a question's image. */
+    const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
     /**
      * Pending selection(s) per qcmId (before saving).
@@ -241,6 +274,16 @@ export default function ExamSessionComponent() {
         load();
     }, [load]);
 
+    /* ------------------------- Escape closes lightbox ------------------------- */
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && lightboxUrl) setLightboxUrl(null);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [lightboxUrl]);
+
     /* ------------------------- Timer ------------------------- */
 
     useEffect(() => {
@@ -278,6 +321,12 @@ export default function ExamSessionComponent() {
     );
     const currentQuestion: ExamQuestion | undefined = questions[currentIndex];
     const isCurrentAnswered = !!currentQuestion?.userAnswer;
+
+    /** Image URL for the currently displayed question (null if none). */
+    const currentImageUrl = useMemo(
+        () => getQuestionImageUrl(currentQuestion),
+        [currentQuestion],
+    );
 
     const effectiveSelection = useMemo<number[]>(() => {
         if (!currentQuestion) return [];
@@ -657,6 +706,35 @@ export default function ExamSessionComponent() {
                                     {currentQuestion?.question}
                                 </h2>
 
+                                {/* ---------- QCM image (only if available) ---------- */}
+                                {currentImageUrl && (
+                                    <button
+                                        type="button"
+                                        className={styles.questionImageButton}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setLightboxUrl(currentImageUrl);
+                                        }}
+                                        aria-label="Enlarge image"
+                                        title="Enlarge image"
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={currentImageUrl}
+                                            alt=""
+                                            className={styles.questionImage}
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                        <span
+                                            className={styles.questionImageZoom}
+                                            aria-hidden
+                                        >
+                                            <Maximize2 size={12} />
+                                        </span>
+                                    </button>
+                                )}
+
                                 <div className={styles.multiHint}>
                                     {isCurrentAnswered
                                         ? t("canChangeAnswer")
@@ -843,6 +921,46 @@ export default function ExamSessionComponent() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* ==================== Lightbox ==================== */}
+            <AnimatePresence>
+                {lightboxUrl && (
+                    <motion.div
+                        className={styles.lightboxOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setLightboxUrl(null)}
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <button
+                            type="button"
+                            className={styles.lightboxClose}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxUrl(null);
+                            }}
+                            aria-label="Close"
+                            title="Close"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <motion.img
+                            src={lightboxUrl}
+                            alt=""
+                            className={styles.lightboxImage}
+                            initial={{ scale: 0.92, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.92, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+                            onClick={(e) => e.stopPropagation()}
+                            draggable={false}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -863,9 +981,19 @@ function ResultsView({
     const t = useTranslations("exams.session");
 
     const [mode, setMode] = useState<GradingMode>("all-or-nothing");
+    const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
     const questions = progress.questions;
     const total = progress.totalQuestions;
+
+    /* --- Escape closes lightbox in results too --- */
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && lightboxUrl) setLightboxUrl(null);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [lightboxUrl]);
 
     /* --- Breakdowns for every mode (computed once) --- */
     const breakdowns = useMemo(
@@ -1066,6 +1194,8 @@ function ResultsView({
                                 selectedIds.includes(a.id),
                             );
 
+                            const qImageUrl = getQuestionImageUrl(q);
+
                             const qScore = current.perQuestion[i];
                             const outcome = questionOutcome(
                                 qScore,
@@ -1114,6 +1244,35 @@ function ResultsView({
                                         </span>
                                     </div>
                                     <p className={styles.reviewQuestion}>{q.question}</p>
+
+                                    {/* ---------- QCM image in the review (only if available) ---------- */}
+                                    {qImageUrl && (
+                                        <button
+                                            type="button"
+                                            className={styles.reviewImageButton}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setLightboxUrl(qImageUrl);
+                                            }}
+                                            aria-label="Enlarge image"
+                                            title="Enlarge image"
+                                        >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={qImageUrl}
+                                                alt=""
+                                                className={styles.reviewImage}
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                            <span
+                                                className={styles.reviewImageZoom}
+                                                aria-hidden
+                                            >
+                                                <Maximize2 size={12} />
+                                            </span>
+                                        </button>
+                                    )}
 
                                     {selectedAnswers.length > 0 && !ua?.isSkipped && (
                                         <div
@@ -1174,6 +1333,46 @@ function ResultsView({
                     </div>
                 </div>
             </div>
+
+            {/* ==================== Lightbox (shared with main view) ==================== */}
+            <AnimatePresence>
+                {lightboxUrl && (
+                    <motion.div
+                        className={styles.lightboxOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setLightboxUrl(null)}
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <button
+                            type="button"
+                            className={styles.lightboxClose}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxUrl(null);
+                            }}
+                            aria-label="Close"
+                            title="Close"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <motion.img
+                            src={lightboxUrl}
+                            alt=""
+                            className={styles.lightboxImage}
+                            initial={{ scale: 0.92, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.92, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+                            onClick={(e) => e.stopPropagation()}
+                            draggable={false}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
