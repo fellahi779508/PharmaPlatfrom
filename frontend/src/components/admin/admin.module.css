@@ -1161,3 +1161,106 @@
   gap: 0.5rem;
   margin-bottom: 0.85rem;
 }
+
+/* ---------- Pagination bar ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 12px 4px 4px;
+  border-top: 1px solid var(--border);
+}
+
+.paginationInfo {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paginationBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+
+.paginationBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.paginationBtnActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground, #fff);
+}
+
+.paginationBtnActive:hover:not(:disabled) {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.paginationEllipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 32px;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  user-select: none;
+}
+
+.paginationSelect {
+  height: 32px;
+  padding: 0 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.paginationSelect:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------- Table loading overlay ---------- */
+.tableLoadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--card) 55%, transparent);
+  backdrop-filter: blur(1px);
+  z-index: 2;
+  pointer-events: none;
+  color: var(--primary);
+}

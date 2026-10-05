@@ -71,7 +71,7 @@
       "label": "Code de Vérification",
       "placeholder": "123456",
       "verifyButton": "Vérifier le code",
-      "backButton": "Retour à l'inscription",
+      "backButton": "Retour à la connexion",
       "resendButton": "Renvoyer le code"
     }
   },
@@ -905,6 +905,12 @@
     "subtitle": "Gérez les utilisateurs et les codes d'activation de la plateforme.",
     "refresh": "Actualiser les données",
     "loading": "Chargement…",
+    "pagination": {
+      "showing": "{from}–{to} sur {total} utilisateurs",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "pageSize": "Utilisateurs par page"
+    },
     "searchPlaceholder": "Rechercher par nom, email ou pseudo…",
     "tabs": {
       "users": "Utilisateurs",

@@ -71,7 +71,7 @@
       "label": "Verification Code",
       "placeholder": "123456",
       "verifyButton": "Verify code",
-      "backButton": "Back to registration",
+      "backButton": "Back to login",
       "resendButton": "Resend code"
     }
   },
@@ -904,6 +904,12 @@
     "title": "Admin Panel",
     "subtitle": "Manage platform users and activation codes.",
     "refresh": "Refresh data",
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total} users",
+      "previous": "Previous page",
+      "next": "Next page",
+      "pageSize": "Users per page"
+    },
     "loading": "Loading…",
     "searchPlaceholder": "Search by name, email, or username…",
     "tabs": {

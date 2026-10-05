@@ -135,15 +135,18 @@ export async function authOtp() {
 }
 export async function logOut() {
   try {
-    await api.post(
-      "/auth/logout",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${await GetToken()}`,
+    const token = await GetToken();
+    if (token) {
+      await api.post(
+        "/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      },
-    );
+      );
+    }
   } catch (error) {
     console.error("Logout error:", error);
   }

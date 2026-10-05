@@ -13,8 +13,8 @@ import { getLanguage } from "./lang-api";
 
 // User Management APIs for Admin
 export async function getAllUsers(
-  page: number = 1,
-  limit: number = 10,
+  page: number,
+  limit: number,
   search?: string,
 ) {
   try {

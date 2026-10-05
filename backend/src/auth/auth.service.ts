@@ -43,18 +43,6 @@ export class AuthService {
     return { id: user.id, role: user.role, email: user.email };
   }
   async generateAccessToken(userId: string, role: string, email: string) {
-    const user = await this.userService.findOne(userId);
-
-    if (user.currentJti) {
-      throw new UnauthorizedException(
-        this.i18n.translate('errors.user.already_logged_in', {
-          lang: this.currentLang,
-          defaultValue:
-            'Another user is already using this account. Please wait for them to disconnect.',
-        }),
-      );
-    }
-
     const jti = randomUUID();
     const payload: JwtPayloadType = {
       sub: userId,

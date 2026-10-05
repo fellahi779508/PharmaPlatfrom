@@ -461,10 +461,7 @@ export default function RegisterComponent() {
                     <button
                       type="button"
                       onClick={() => {
-                        setStep("form");
-                        setError("");
-                        setSuccess("");
-                        setOtp("");
+                        router.push("/login");
                       }}
                       className={styles.backButton}
                     >

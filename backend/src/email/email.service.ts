@@ -30,7 +30,7 @@ export class EmailService {
       });
       const user = await this.userService.findByEmail(email);
       user.otpCode = otp;
-      user.otpExpiresAt = new Date(Date.now() + 60 * 1000); // 10 minutes
+      user.otpExpiresAt = new Date(Date.now() + 60 * 5 * 1000); // 5 minutes
       await this.userService.update(user.id, {
         otpCode: otp,
         otpExpiresAt: user.otpExpiresAt,

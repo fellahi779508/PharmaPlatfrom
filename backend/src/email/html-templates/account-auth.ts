@@ -8,7 +8,7 @@ export const accountAuthTemplate = (otp: string) => {
           ${otp}
         </span>
       </div>
-      <p style="color: #64748b; font-size: 13px; text-align: center;">This code expires in <strong>1 minute</strong>.</p>
+      <p style="color: #64748b; font-size: 13px; text-align: center;">This code expires in <strong>5 minutes</strong>.</p>
     </div>
   `;
 };

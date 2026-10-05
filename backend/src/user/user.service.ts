@@ -88,6 +88,7 @@ export class UserService {
 
     const hashedpassword = await bcrypt.hash(password, 10);
     user.password = hashedpassword;
+    user.currentJti = '';
     await this.userRepo.save(user);
     return {
       message: this.i18n.translate('success.user.password_changed', {
@@ -179,6 +180,7 @@ export class UserService {
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
+    user.currentJti = '';
     await this.userRepo.save(user);
     return {
       message: this.i18n.translate('success.user.password_changed', {
@@ -313,6 +315,7 @@ export class UserService {
       );
     }
     user.isActive = false;
+    user.currentJti = '';
     const redeemCode = await this.dataSource.getRepository(RedeemCode).findOne({
       where: { user: { id: user.id } },
     });
@@ -358,7 +361,18 @@ export class UserService {
 
   async updateCurrentJti(userId: string, jti: string) {
     const user = await this.findOne(userId);
-    user.currentJti = jti;
+    if (jti === '') {
+      user.currentJti = null;
+    } else {
+      user.currentJti = jti;
+    }
+
+    await this.userRepo.save(user);
+  }
+
+  async updateCurrentIp(userId: string, ip: string | null) {
+    const user = await this.findOne(userId);
+    user.currentIp = ip;
     await this.userRepo.save(user);
   }
   async getLeaderboardWithUserRank(currentUserId: string) {

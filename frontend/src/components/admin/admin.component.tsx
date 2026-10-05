@@ -22,6 +22,7 @@ import {
   Loader2,
   Save,
   ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 
 import {
@@ -48,15 +49,12 @@ import {
   User,
   Year,
 } from "@/utils/types/allTypes";
+import page from "@/app/[locale]/page";
 
 /* ------------------------------------------------------------------ */
-/* Response normalizer                                                 */
+/* Response normalizer — plain arrays                                  */
 /* ------------------------------------------------------------------ */
 
-/**
- * Walks the response (up to 6 levels deep) and returns the first array
- * of objects it finds. Handles any NestJS list shape.
- */
 const extractArray = <T,>(root: any, label = "response"): T[] => {
   const seen = new WeakSet<object>();
 
@@ -110,6 +108,185 @@ const extractArray = <T,>(root: any, label = "response"): T[] => {
 };
 
 /* ------------------------------------------------------------------ */
+/* Response normalizer — paginated arrays                              */
+/* ------------------------------------------------------------------ */
+
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface PaginatedResult<T> {
+  items: T[];
+  meta: PaginationMeta;
+}
+
+const TOTAL_KEYS = ["total", "count", "totalCount", "totalItems", "totalRecords"];
+const LIMIT_KEYS = ["limit", "pageSize", "perPage", "size", "take"];
+const PAGE_KEYS = ["page", "currentPage", "pageNumber", "pageIndex"];
+const TOTAL_PAGES_KEYS = ["totalPages", "pageCount", "pages"];
+const META_WRAPPERS = ["meta", "pagination", "pageInfo", "page_info", "paging"];
+
+/**
+ * Attempts to pull pagination meta out of a node. Looks both at the
+ * node's own keys and inside common wrapper keys (meta, pagination, ...).
+ */
+const extractPaginationMeta = (
+  node: any,
+  fallbackLimit: number,
+): PaginationMeta | null => {
+  if (!node || typeof node !== "object") return null;
+
+  // Try keys on this node first
+  let total: number | undefined;
+  for (const k of TOTAL_KEYS) {
+    if (typeof node[k] === "number") {
+      total = node[k];
+      break;
+    }
+  }
+
+  if (typeof total === "number") {
+    let limit = fallbackLimit;
+    for (const k of LIMIT_KEYS) {
+      if (typeof node[k] === "number" && node[k] > 0) {
+        limit = node[k];
+        break;
+      }
+    }
+    let page = 1;
+    for (const k of PAGE_KEYS) {
+      if (typeof node[k] === "number" && node[k] > 0) {
+        page = node[k];
+        break;
+      }
+    }
+    let totalPages = Math.max(1, Math.ceil(total / limit));
+    for (const k of TOTAL_PAGES_KEYS) {
+      if (typeof node[k] === "number" && node[k] >= 0) {
+        totalPages = node[k];
+        break;
+      }
+    }
+    return { total, page, limit, totalPages };
+  }
+
+  // Recurse into wrapper keys
+  for (const k of META_WRAPPERS) {
+    const sub = node[k];
+    if (sub && typeof sub === "object") {
+      const found = extractPaginationMeta(sub, fallbackLimit);
+      if (found) return found;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Walks the response to find the first array of objects AND its
+ * sibling pagination metadata. Falls back to `extractArray` if no meta
+ * is found (so unpaginated endpoints still work).
+ */
+const extractPaginated = <T,>(
+  root: any,
+  fallbackLimit: number,
+): PaginatedResult<T> => {
+  const seen = new WeakSet<object>();
+
+  const walk = (node: any, depth: number): PaginatedResult<T> | null => {
+    if (depth > 6 || node == null) return null;
+    if (typeof node !== "object") return null;
+    if (seen.has(node as object)) return null;
+    seen.add(node as object);
+
+    const arrayPriority = [
+      "users",
+      "data",
+      "items",
+      "results",
+      "rows",
+      "list",
+      "records",
+      "response",
+    ];
+    const allKeys = Object.keys(node);
+    const ordered = [
+      ...arrayPriority.filter((k) => allKeys.includes(k)),
+      ...allKeys.filter((k) => !arrayPriority.includes(k)),
+    ];
+
+    // 1. Look for a sibling array of objects
+    for (const k of ordered) {
+      const child = (node as any)[k];
+      if (Array.isArray(child)) {
+        const first = child[0];
+        const isObjArray =
+          child.length === 0 || (first != null && typeof first === "object");
+        if (isObjArray) {
+          const meta = extractPaginationMeta(node, fallbackLimit);
+          if (meta) {
+            return { items: child as T[], meta };
+          }
+        }
+      }
+    }
+
+    // 2. Recurse
+    for (const k of ordered) {
+      const found = walk((node as any)[k], depth + 1);
+      if (found) return found;
+    }
+
+    return null;
+  };
+
+  const result = walk(root, 0);
+  if (result) return result;
+
+  // Fallback: unpaginated array
+  const arr = extractArray<T>(root, "paginated-fallback");
+  return {
+    items: arr,
+    meta: {
+      total: arr.length,
+      page: 1,
+      limit: fallbackLimit,
+      totalPages: Math.max(1, Math.ceil(arr.length / fallbackLimit)),
+    },
+  };
+};
+
+/* ------------------------------------------------------------------ */
+/* Pagination helpers                                                  */
+/* ------------------------------------------------------------------ */
+
+/** [1, 2, 3, …, 9, 10] */
+function getPaginationRange(
+  current: number,
+  totalPages: number,
+): (number | "ellipsis")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const range: (number | "ellipsis")[] = [];
+  range.push(1);
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(totalPages - 1, current + 1);
+
+  if (start > 2) range.push("ellipsis");
+  for (let i = start; i <= end; i++) range.push(i);
+  if (end < totalPages - 1) range.push("ellipsis");
+
+  range.push(totalPages);
+  return range;
+}
+
+/* ------------------------------------------------------------------ */
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -128,11 +305,18 @@ export default function AdminComponent() {
   /* ---------- Navigation ---------- */
   const [activeTab, setActiveTab] = useState<AdminTab>("users");
 
-  /* ---------- Users ---------- */
+  /* ---------- Users (paginated from server) ---------- */
   const [users, setUsers] = useState<User[]>([]);
   const [userSearch, setUserSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState<string>("all");
   const [userStatusFilter, setUserStatusFilter] = useState<string>("all");
+
+  const [userPage, setUserPage] = useState(1);
+  const [userLimit, setUserLimit] = useState(20);
+  const [userTotal, setUserTotal] = useState(0);
+  const [userTotalPages, setUserTotalPages] = useState(1);
+  const [usersLoading, setUsersLoading] = useState(true);
 
   /* ---------- Redeem codes + years ---------- */
   const [redeemCodes, setRedeemCodes] = useState<RedeemCode[]>([]);
@@ -161,7 +345,6 @@ export default function AdminComponent() {
     email: "",
     password: "",
     role: "teacher",
-
   });
 
   const [redeemCodeForm, setRedeemCodeForm] = useState<RedeemCodeFormData>({
@@ -188,73 +371,106 @@ export default function AdminComponent() {
   );
 
   /* ------------------------------------------------------------------ */
-  /* Load data                                                           */
+  /* Fetch users (paginated + filtered server-side)                      */
   /* ------------------------------------------------------------------ */
 
-  const fetchAllData = useCallback(
-    async (silent = false) => {
-      silent ? setRefreshing(true) : setLoading(true);
+  const fetchUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const res = await getAllUsers(userPage, userLimit, debouncedSearch.trim());
+
+      if (res.status) {
+        const { items, meta } = extractPaginated<User>(res, userLimit);
+        setUsers(items);
+        setUserTotal(meta.total);
+        setUserTotalPages(meta.totalPages);
+
+        // If the current page no longer exists (e.g. after filtering),
+        // clamp it back into range — a re-render will refetch.
+        if (meta.totalPages > 0 && userPage > meta.totalPages) {
+          setUserPage(meta.totalPages);
+        }
+      } else {
+        showToast("error", res.message || "Failed to load users");
+      }
+    } catch {
+      showToast("error", "Failed to load users");
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [
+    userPage,
+    userLimit,
+    debouncedSearch,
+    userRoleFilter,
+    userStatusFilter,
+    showToast,
+  ]);
+
+  /* ------------------------------------------------------------------ */
+  /* Fetch redeem codes + years                                          */
+  /* ------------------------------------------------------------------ */
+
+  const fetchCodesAndYears = useCallback(async () => {
+    try {
+      const [codesRes, yearsRes] = await Promise.all([
+        getAllRedeemCodes(),
+        getYears(),
+      ]);
+
+      if (codesRes.status) {
+        setRedeemCodes(extractArray<RedeemCode>(codesRes, "redeemCodes"));
+      }
+      if (yearsRes.status) {
+        setYears(extractArray<Year>(yearsRes, "years"));
+      }
+    } catch {
+      showToast("error", "Failed to load data");
+    }
+  }, [showToast]);
+
+  /* ------------------------------------------------------------------ */
+  /* Effects                                                             */
+  /* ------------------------------------------------------------------ */
+
+  // Initial page load: only codes + years. Users are loaded by their own effect.
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
       try {
-        const [usersRes, codesRes, yearsRes] = await Promise.all([
-          getAllUsers(),
-          getAllRedeemCodes(),
-          getYears(),
-        ]);
-
-        if (usersRes.status) {
-          setUsers(extractArray<User>(usersRes, "users"));
-        } else {
-          showToast("error", usersRes.message || "Failed to load users");
-        }
-
-        if (codesRes.status) {
-          setRedeemCodes(extractArray<RedeemCode>(codesRes, "redeemCodes"));
-        }
-
-        if (yearsRes.status) {
-          setYears(extractArray<Year>(yearsRes, "years"));
-        }
-      } catch {
-        showToast("error", "Failed to load data");
+        await fetchCodesAndYears();
       } finally {
         setLoading(false);
-        setRefreshing(false);
       }
-    },
-    [showToast],
-  );
+    })();
+  }, [fetchCodesAndYears]);
 
+  // Users: refetch whenever any relevant param changes (fetchUsers identity).
   useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Debounce the search input → updates debouncedSearch + resets to page 1
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(userSearch);
+      setUserPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
 
   /* ------------------------------------------------------------------ */
-  /* Derived — filtered users                                            */
+  /* Refresh                                                             */
   /* ------------------------------------------------------------------ */
 
-  const filteredUsers = useMemo(() => {
-    let list = [...users];
-
-    if (userSearch.trim()) {
-      const q = userSearch.toLowerCase();
-      list = list.filter(
-        (u) =>
-          u.username?.toLowerCase().includes(q) ||
-          u.email?.toLowerCase().includes(q) ||
-          u.firstName?.toLowerCase().includes(q) ||
-          u.lastName?.toLowerCase().includes(q),
-      );
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([fetchUsers(), fetchCodesAndYears()]);
+    } finally {
+      setRefreshing(false);
     }
-
-    if (userRoleFilter !== "all") {
-      list = list.filter((u) => u.role === userRoleFilter);
-    }
-
-    if (userStatusFilter === "active") list = list.filter((u) => u.isActive);
-    if (userStatusFilter === "inactive") list = list.filter((u) => !u.isActive);
-
-    return list;
-  }, [users, userSearch, userRoleFilter, userStatusFilter]);
+  };
 
   /* ------------------------------------------------------------------ */
   /* Derived — redeem codes grouped by year                              */
@@ -273,7 +489,6 @@ export default function AdminComponent() {
       map.get(key)!.push(code);
     }
 
-    // Build sorted groups
     const groups: {
       key: number | "none";
       year: Year | null;
@@ -286,9 +501,7 @@ export default function AdminComponent() {
       const year =
         key === "none"
           ? null
-          : years.find((y) => y.id === key) ??
-          codes[0]?.year ??
-          null;
+          : years.find((y) => y.id === key) ?? codes[0]?.year ?? null;
       groups.push({
         key,
         year,
@@ -298,7 +511,6 @@ export default function AdminComponent() {
       });
     });
 
-    // Sort by year id ascending, "no year" last
     groups.sort((a, b) => {
       if (a.key === "none") return 1;
       if (b.key === "none") return -1;
@@ -320,7 +532,6 @@ export default function AdminComponent() {
     email: "",
     password: "",
     role: "teacher",
-
   });
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -332,7 +543,7 @@ export default function AdminComponent() {
         showToast("success", "User created successfully");
         setUserModalOpen(false);
         setUserForm(emptyUserForm());
-        await fetchAllData(true);
+        await fetchUsers();
       } else {
         showToast("error", res.message || "Failed to create user");
       }
@@ -355,7 +566,6 @@ export default function AdminComponent() {
         phone: userForm.phone,
         email: userForm.email,
         role: userForm.role,
-
       };
       const res = await updateUser(editingUser.id, data);
       if (res.status) {
@@ -363,7 +573,7 @@ export default function AdminComponent() {
         setUserModalOpen(false);
         setEditingUser(null);
         setUserForm(emptyUserForm());
-        await fetchAllData(true);
+        await fetchUsers();
       } else {
         showToast("error", res.message || "Failed to update user");
       }
@@ -382,7 +592,7 @@ export default function AdminComponent() {
       if (res.status) {
         showToast("success", "User deleted successfully");
         setConfirmDeleteUser(null);
-        await fetchAllData(true);
+        await fetchUsers();
       } else {
         showToast("error", res.message || "Failed to delete user");
       }
@@ -405,7 +615,6 @@ export default function AdminComponent() {
         email: user.email,
         password: "",
         role: user.role,
-
       });
     } else {
       setEditingUser(null);
@@ -433,7 +642,7 @@ export default function AdminComponent() {
         showToast("success", "Redeem code created successfully");
         setRedeemCodeModalOpen(false);
         setRedeemCodeForm({ yearId: undefined });
-        await fetchAllData(true);
+        await fetchCodesAndYears();
       } else {
         showToast("error", res.message || "Failed to create redeem code");
       }
@@ -462,7 +671,7 @@ export default function AdminComponent() {
         setRedeemCodeModalOpen(false);
         setEditingRedeemCode(null);
         setRedeemCodeForm({ yearId: undefined });
-        await fetchAllData(true);
+        await fetchCodesAndYears();
       } else {
         showToast("error", res.message || "Failed to update redeem code");
       }
@@ -481,7 +690,7 @@ export default function AdminComponent() {
       if (res.status) {
         showToast("success", "Redeem code deleted successfully");
         setConfirmDeleteRedeemCode(null);
-        await fetchAllData(true);
+        await fetchCodesAndYears();
       } else {
         showToast("error", res.message || "Failed to delete redeem code");
       }
@@ -507,8 +716,37 @@ export default function AdminComponent() {
   };
 
   /* ------------------------------------------------------------------ */
+  /* Filter change handlers (reset to page 1)                            */
+  /* ------------------------------------------------------------------ */
+
+  const handleRoleFilterChange = (value: string) => {
+    setUserRoleFilter(value);
+    setUserPage(1);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setUserStatusFilter(value);
+    setUserPage(1);
+  };
+
+  const handleLimitChange = (value: number) => {
+    setUserLimit(value);
+    setUserPage(1);
+  };
+
+  /* ------------------------------------------------------------------ */
   /* Render                                                              */
   /* ------------------------------------------------------------------ */
+
+  const showEmptyState =
+    users.length === 0 &&
+    userTotal === 0 &&
+    !debouncedSearch.trim() &&
+    userRoleFilter === "all" &&
+    userStatusFilter === "all";
+
+  const rangeFrom = userTotal === 0 ? 0 : (userPage - 1) * userLimit + 1;
+  const rangeTo = Math.min(userPage * userLimit, userTotal);
 
   return (
     <div className={styles.page}>
@@ -532,7 +770,7 @@ export default function AdminComponent() {
               <ChevronRight size={14} />
             </a>
             <button
-              onClick={() => fetchAllData(true)}
+              onClick={handleRefresh}
               className={styles.iconButton}
               aria-label={t("refresh")}
               disabled={refreshing}
@@ -554,7 +792,7 @@ export default function AdminComponent() {
           >
             <Users size={18} />
             <span>{t("tabs.users")}</span>
-            <span className={styles.tabCount}>{users.length}</span>
+            <span className={styles.tabCount}>{userTotal}</span>
           </button>
           <button
             onClick={() => setActiveTab("redeemCodes")}
@@ -598,7 +836,7 @@ export default function AdminComponent() {
 
                   <select
                     value={userRoleFilter}
-                    onChange={(e) => setUserRoleFilter(e.target.value)}
+                    onChange={(e) => handleRoleFilterChange(e.target.value)}
                     className={styles.filterSelect}
                   >
                     <option value="all">{t("filters.allRoles")}</option>
@@ -609,7 +847,7 @@ export default function AdminComponent() {
 
                   <select
                     value={userStatusFilter}
-                    onChange={(e) => setUserStatusFilter(e.target.value)}
+                    onChange={(e) => handleStatusFilterChange(e.target.value)}
                     className={styles.filterSelect}
                   >
                     <option value="all">{t("filters.allStatus")}</option>
@@ -626,7 +864,13 @@ export default function AdminComponent() {
                   </button>
                 </div>
 
-                <div className={styles.tableContainer}>
+                <div className={styles.tableContainer} style={{ position: "relative" }}>
+                  {usersLoading && (
+                    <div className={styles.tableLoadingOverlay}>
+                      <Loader2 size={22} className={styles.spinning} />
+                    </div>
+                  )}
+
                   <table className={styles.table}>
                     <thead>
                       <tr>
@@ -639,7 +883,7 @@ export default function AdminComponent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredUsers.map((user) => (
+                      {users.map((user) => (
                         <tr key={user.id}>
                           <td>
                             <div className={styles.userCell}>
@@ -718,17 +962,97 @@ export default function AdminComponent() {
                     </tbody>
                   </table>
 
-                  {filteredUsers.length === 0 && (
+                  {users.length === 0 && (
                     <div className={styles.emptyState}>
                       <Users size={48} />
                       <p>
-                        {users.length === 0
+                        {showEmptyState
                           ? t("empty.usersNoData")
                           : t("empty.users")}
                       </p>
                     </div>
                   )}
                 </div>
+
+                {/* ---------- Pagination ---------- */}
+                {userTotal > 0 && (
+                  <div className={styles.pagination}>
+                    <div className={styles.paginationInfo}>
+                      {t("pagination.showing", {
+                        from: rangeFrom,
+                        to: rangeTo,
+                        total: userTotal,
+                      })}
+                    </div>
+
+                    <div className={styles.paginationControls}>
+                      <button
+                        type="button"
+                        className={styles.paginationBtn}
+                        disabled={userPage <= 1 || usersLoading}
+                        onClick={() => setUserPage((p) => Math.max(1, p - 1))}
+                        aria-label={t("pagination.previous")}
+                        title={t("pagination.previous")}
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+
+                      {getPaginationRange(userPage, userTotalPages).map(
+                        (item, i) =>
+                          item === "ellipsis" ? (
+                            <span
+                              key={`e-${i}`}
+                              className={styles.paginationEllipsis}
+                            >
+                              …
+                            </span>
+                          ) : (
+                            <button
+                              key={item}
+                              type="button"
+                              className={`${styles.paginationBtn} ${item === userPage
+                                ? styles.paginationBtnActive
+                                : ""
+                                }`}
+                              disabled={usersLoading}
+                              onClick={() => setUserPage(item)}
+                            >
+                              {item}
+                            </button>
+                          ),
+                      )}
+
+                      <button
+                        type="button"
+                        className={styles.paginationBtn}
+                        disabled={
+                          userPage >= userTotalPages || usersLoading
+                        }
+                        onClick={() =>
+                          setUserPage((p) => Math.min(userTotalPages, p + 1))
+                        }
+                        aria-label={t("pagination.next")}
+                        title={t("pagination.next")}
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+
+                      <select
+                        className={styles.paginationSelect}
+                        value={userLimit}
+                        onChange={(e) => handleLimitChange(Number(e.target.value))}
+                        disabled={usersLoading}
+                        aria-label={t("pagination.pageSize")}
+                        title={t("pagination.pageSize")}
+                      >
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
               </motion.section>
             )}
 
@@ -754,7 +1078,6 @@ export default function AdminComponent() {
                   </button>
                 </div>
 
-                {/* Year filter chips */}
                 <div className={styles.yearFilter}>
                   <button
                     onClick={() => setSelectedYearId("all")}
@@ -788,7 +1111,6 @@ export default function AdminComponent() {
                   })}
                 </div>
 
-                {/* Groups */}
                 {codesByYear.length === 0 ? (
                   <div className={styles.emptyState}>
                     <Key size={48} />
@@ -1066,8 +1388,6 @@ export default function AdminComponent() {
                     {t("form.roleHint")}
                   </p>
                 </div>
-
-
 
                 <div className={styles.modalFooter}>
                   <button
