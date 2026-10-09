@@ -605,6 +605,13 @@ export default function TeacherPageComponent() {
 
   const handleRemoveExistingImage = async () => {
     if (!courseSummary?.id) return;
+    if (
+      !window.confirm(
+        "Delete the summary cover image? This action cannot be undone.",
+      )
+    )
+      return;
+
     try {
       const res = await deleteSummaryImage(courseSummary.id);
       if (!res.status) throw new Error(res.message ?? "Failed to remove image");
@@ -713,6 +720,12 @@ export default function TeacherPageComponent() {
 
   const handleDeleteSummary = async () => {
     if (!selectedCourse) return;
+    if (
+      !window.confirm(
+        "Delete the summary, its mind map, and its cover image? This action cannot be undone.",
+      )
+    )
+      return;
 
     setDeletingSummary(true);
     try {
@@ -841,6 +854,13 @@ export default function TeacherPageComponent() {
 
   const handleRemoveMedicamentImage = async () => {
     if (!editingMedicament?.id) return;
+    if (
+      !window.confirm(
+        `Delete the photo of "${editingMedicament.name ?? "this medicament"}"? This action cannot be undone.`,
+      )
+    )
+      return;
+
     try {
       const res = await deleteMedicamentImage(editingMedicament.id);
       if (!res.status) throw new Error(res.message ?? "Failed to remove image");
@@ -927,6 +947,13 @@ export default function TeacherPageComponent() {
 
   const handleDeleteMedicament = async () => {
     if (!confirmDeleteMedicament) return;
+    if (
+      !window.confirm(
+        `Delete "${confirmDeleteMedicament.name}" and its photo? This action cannot be undone.`,
+      )
+    )
+      return;
+
     setDeleting(true);
     try {
       const imgRes = await deleteMedicamentImage(confirmDeleteMedicament.id);
@@ -978,6 +1005,13 @@ export default function TeacherPageComponent() {
 
   const handleRemoveQcmImage = async () => {
     if (!editing?.id) return;
+    if (
+      !window.confirm(
+        "Delete this QCM image? This action cannot be undone.",
+      )
+    )
+      return;
+
     try {
       const res = await DeleteQcmImage(editing.id);
       if (!res.status) throw new Error(res.message ?? "Failed to remove image");
@@ -987,7 +1021,6 @@ export default function TeacherPageComponent() {
       showToast("error", e?.message ?? t("error.generic"));
     }
   };
-
   /* ------------------------------------------------------------------ */
   /* Fetch all flat lists                                                */
   /* ------------------------------------------------------------------ */
@@ -1648,6 +1681,13 @@ export default function TeacherPageComponent() {
   /* ---------- Delete entity ---------- */
   const handleDelete = async () => {
     if (!confirmDelete) return;
+    if (
+      !window.confirm(
+        `Delete "${confirmDelete.label}"? This action cannot be undone.`,
+      )
+    )
+      return;
+
     setDeleting(true);
     try {
       const res = await (API_MAP[confirmDelete.type].remove as any)(
