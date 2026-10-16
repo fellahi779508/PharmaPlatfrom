@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -12,6 +13,7 @@ import { Semester } from 'src/semester/entities/semester.entity';
 import { ExamQcm } from './examQcm.entity';
 import { ExamSession } from './examSession.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Room } from 'src/room/entities/room.entity';
 
 @Entity('exam')
 export class Exam {
@@ -48,4 +50,7 @@ export class Exam {
 
   @ManyToOne(() => User, (user) => user.exams, { onDelete: 'CASCADE', nullable: true })
   user: User;
+
+  @OneToMany(() => Room, (room) => room.exam, { onDelete: 'CASCADE' })
+  room: Room;
 }

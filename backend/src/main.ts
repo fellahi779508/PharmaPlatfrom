@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 import {
   I18nValidationExceptionFilter,
@@ -8,6 +9,9 @@ import {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable Socket.IO WebSocket adapter
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   app.useGlobalPipes(
     new I18nValidationPipe({
@@ -21,6 +25,13 @@ async function bootstrap() {
       detailedErrors: false,
     }),
   );
+
+  // Enable CORS for frontend
+  app.enableCors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  });
 
   return app;
 }
@@ -37,7 +48,6 @@ if (!process.env.VERCEL) {
   });
 }
 
-// 2. VERCEL SERVERLESS: Export a cached server handler
 // 2. VERCEL SERVERLESS: Export a cached server handler
 let cachedServer: any;
 
