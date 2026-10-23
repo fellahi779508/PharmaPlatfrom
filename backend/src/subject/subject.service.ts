@@ -84,12 +84,19 @@ export class SubjectService {
       where: {
         id: userId,
       },
-      relations: { redeemCode: { year: true } },
+      relations: { redeemCode: { year: true }, demoYear: true },
     });
     if (!user) {
       throw new NotFoundException(
         this.i18n.t('errors.user.not_found', { lang: this.currentLang }),
       );
+    }
+    if (user.demoYear) {
+      const subjects = await this.subjectRepository.find({
+        relations: { year: true },
+        where: { year: { id: user.demoYear.id }, isDemo: true },
+      });
+      return subjects;
     }
     if (user.redeemCode) {
 

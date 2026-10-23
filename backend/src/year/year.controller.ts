@@ -39,6 +39,12 @@ export class YearController {
     return this.yearService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('demo')
+  getDemoYears() {
+    return this.yearService.getDemoYears();
+  }
+
   @Roles(Role.ADMIN, Role.OWNER, Role.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard, SubscriptionGuard)

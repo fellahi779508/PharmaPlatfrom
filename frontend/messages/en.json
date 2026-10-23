@@ -173,7 +173,8 @@
       "question": "Question",
       "answer": "Answer",
       "isCorrect": "Mark as correct",
-      "explanation": "Explanation (optional)"
+      "explanation": "Explanation (optional)",
+      "isDemo": "Demo Version (isDemo)"
     },
     "qcm": {
       "answersLabel": "Answer options",
@@ -779,6 +780,24 @@
       "submit": "Activate subscription",
       "submitting": "Activating…"
     },
+    "tabs": {
+      "redeem": "Redeem Code",
+      "demo": "Try Demo Version"
+    },
+    "demo": {
+      "title": "Free Demo Version",
+      "description": "Choose a study year to explore demo subjects, courses, and interactive questions without a code.",
+      "badge": "Demo Preview",
+      "activeBanner": "You are currently exploring in demo mode ({year}). Redeem an activation code at any time for full platform access.",
+      "currentYear": "Active Year",
+      "subscribe": "Try this year",
+      "subscribing": "Activating…",
+      "subscribed": "Current year",
+      "noYears": "No demo years are currently available.",
+      "features": "Access to courses and questions marked as demo",
+      "success": "Demo year activated successfully!",
+      "goToSessions": "Go to demo courses"
+    },
     "revokeModal": {
       "title": "Revoke subscription?",
       "description": "Your access will end immediately. You will need a new code to reactivate.",
@@ -1030,6 +1049,7 @@
       "roleHint": "Teachers can manage courses, MCQs, summaries, and mind maps. Administrators have full access.",
       "isActive": "Active account",
       "isVerified": "Verified",
+      "isDemo": "Demo Account",
       "year": "Year",
       "selectYear": "Choose a year…",
       "yearRequired": "Please select a year",

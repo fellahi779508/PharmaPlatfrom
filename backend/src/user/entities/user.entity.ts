@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -17,6 +18,7 @@ import { RedeemCode } from 'src/redeem_code/entities/redeem_code.entity';
 import { Session } from 'src/session/entities/session.entity';
 import { Exam } from 'src/exam/entities/exam.entity';
 import { RoomPlayer } from 'src/room-player/entities/room-player.entity';
+import { Year } from 'src/year/entities/year.entity';
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -67,7 +69,15 @@ export class User {
     nullable: true,
   })
   todos: Todo[] | null;
+  @Column({ default: false, type: 'boolean' })
+  isDemo: boolean;
 
+  @ManyToOne(() => Year, (year) => year.users, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+
+  demoYear: Year | null;
 
   @OneToOne(() => RedeemCode, (redeemCode) => redeemCode.user, {
     onDelete: 'SET NULL',

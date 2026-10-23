@@ -14,6 +14,8 @@ export class Td {
   id: number;
   @Column()
   name: string;
+  @Column({ default: false, nullable: true })
+  isDemo: boolean;
   @ManyToOne(() => Subject, (subject) => subject.tds, {
     nullable: true,
     onDelete: 'CASCADE',

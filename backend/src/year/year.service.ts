@@ -11,7 +11,7 @@ export class YearService {
   constructor(
     @InjectRepository(Year) private readonly yearRepository: Repository<Year>,
     private readonly i18n: I18nService,
-  ) {}
+  ) { }
 
   private get currentLang(): string {
     return I18nContext.current()?.lang!;
@@ -63,5 +63,8 @@ export class YearService {
   async remove(id: number) {
     const year = await this.findOne(id);
     return await this.yearRepository.remove(year);
+  }
+  async getDemoYears() {
+    return await this.yearRepository.find({ where: { isDemo: true } });
   }
 }

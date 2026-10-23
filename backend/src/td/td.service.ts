@@ -73,6 +73,17 @@ export class TdService {
     return this.tdRepository.remove(td);
   }
   async getTdsBySubject(subjectId: number) {
+    const subject = await this.dataSource.getRepository(Subject).findOneBy({ id: subjectId });
+    if (subject?.isDemo) {
+      const tds = await this.tdRepository.find({
+        where: { subject: { id: subjectId }, isDemo: true },
+        relations: { qcms: true },
+      });
+      return tds.map((t) => ({
+        ...t,
+        qcms: (t.qcms || []).filter((q) => q.isDemo),
+      }));
+    }
     return this.tdRepository.find({
       where: { subject: { id: subjectId } },
       relations: { qcms: true },

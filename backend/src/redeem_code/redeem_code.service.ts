@@ -222,6 +222,7 @@ export class RedeemCodeService {
       user.activationDate = now;
       user.endDate = expiry;
       user.isActive = true;
+      user.demoYear = null;
       await userRepo.save(user);
 
       return {
@@ -374,4 +375,5 @@ export class RedeemCodeService {
       }),
     };
   }
+
 }

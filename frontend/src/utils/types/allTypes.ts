@@ -5,6 +5,7 @@
 export type Year = {
   id: number;
   name: string;
+  isDemo?: boolean;
   semesters?: Semester[];
   subjects?: Subject[];
 };
@@ -22,6 +23,7 @@ export type Subject = {
   name: string;
   createdAt: string;
   updatedAt: string;
+  isDemo?: boolean;
   yearId?: number;
   year?: Year;
   courses?: Course[];
@@ -32,6 +34,7 @@ export type Subject = {
 export type Course = {
   id: number;
   name: string;
+  isDemo?: boolean;
   subjectId?: number;
   subject?: Subject;
   semesterId?: number;
@@ -46,6 +49,7 @@ export type CourseWithQcmCount = Course & {
 export type Qcm = {
   id: number;
   question: string;
+  isDemo?: boolean;
   courseId?: number;
   course?: Course;
   tdId?: number;
@@ -54,7 +58,6 @@ export type Qcm = {
   tp?: Tp;
   answers?: QcmAnswer[];
   image?: { id: number; url: string; width: number; height: number } | null;
-
 };
 
 export type QcmAnswer = {
@@ -69,6 +72,7 @@ export type QcmAnswer = {
 export type Td = {
   id: number;
   name: string;
+  isDemo?: boolean;
   subjectId?: number;
   subject?: Subject;
   qcms?: Qcm[];
@@ -81,6 +85,7 @@ export type TdWithQcmCount = Td & {
 export type Tp = {
   id: number;
   name: string;
+  isDemo?: boolean;
   subjectId?: number;
   subject?: Subject;
   qcms?: Qcm[];
@@ -120,6 +125,9 @@ export type User = {
   endDate?: string;
   role: string;
   isVerified: boolean;
+  isDemo?: boolean;
+  demoYear?: Year | null;
+  redeemCode?: RedeemCode | null;
   otpCode?: string | null;
   otpExpiresAt?: string | null;
   aiGenerationCount?: number;
@@ -131,6 +139,7 @@ export type User = {
 
 export type CreateYear = {
   name: string;
+  isDemo?: boolean;
 };
 
 export type CreateSemester = {
@@ -141,12 +150,14 @@ export type CreateSemester = {
 export type CreateSubject = {
   name: string;
   yearId: number;
+  isDemo?: boolean;
 };
 
 export type CreateCourse = {
   name: string;
   subjectId: number;
   semesterId: number;
+  isDemo?: boolean;
 };
 
 export type CreateQcm = {
@@ -155,7 +166,7 @@ export type CreateQcm = {
   tdId?: number;
   tpId?: number;
   answers: CreateQcmAnswer[];
-
+  isDemo?: boolean;
 };
 
 export type CreateQcmAnswer = {
@@ -167,11 +178,13 @@ export type CreateQcmAnswer = {
 export type CreateTd = {
   name: string;
   subjectId: number;
+  isDemo?: boolean;
 };
 
 export type CreateTp = {
   name: string;
   subjectId: number;
+  isDemo?: boolean;
 };
 
 export type CreateExam = {
@@ -190,7 +203,7 @@ export type CreateUser = {
   email: string;
   password: string;
   role: string;
-
+  isDemo?: boolean;
 };
 
 export type CreateRoom = {

@@ -47,43 +47,43 @@ export class QcmController {
     return this.qcmService.create(createQcmDto);
   }
 
-  @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
-  @Post('import-ai')
-  @UseInterceptors(FileInterceptor('file'))
-  async importFile(
-    @UploadedFile() file: File,
-    @Body('courseId') courseId: string,
-    @Body('tdId') tdId?: string,
-    @Body('tpId') tpId?: string,
-  ) {
-    if (!file) throw new BadRequestException('No file uploaded.');
-    if (!courseId) throw new BadRequestException('courseId is required.');
+  // @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
+  // @UseGuards(RolesGuard)
+  // @UseGuards(JwtAuthGuard)
+  // @Post('import-ai')
+  // @UseInterceptors(FileInterceptor('file'))
+  // async importFile(
+  //   @UploadedFile() file: File,
+  //   @Body('courseId') courseId: string,
+  //   @Body('tdId') tdId?: string,
+  //   @Body('tpId') tpId?: string,
+  // ) {
+  //   if (!file) throw new BadRequestException('No file uploaded.');
+  //   if (!courseId) throw new BadRequestException('courseId is required.');
 
-    // 1. Pass the raw file directly to Gemini (handles DOCX, PDF, and Images natively)
-    const extractedQcms = await this.qcmService.extractQcmsFromFile(file);
+  //   // 1. Pass the raw file directly to Gemini (handles DOCX, PDF, and Images natively)
+  //   const extractedQcms = await this.qcmService.extractQcmsFromFile(file);
 
-    // 2. Map the extracted JSON array to your DTO and save via your transaction method
-    const savedResults: any = [];
-    for (const item of extractedQcms) {
-      const dto: CreateQcmDto = {
-        question: item.question,
-        courseId: parseInt(courseId, 10),
-        tdId: tdId ? parseInt(tdId, 10) : undefined,
-        tpId: tpId ? parseInt(tpId, 10) : undefined,
-        answers: item.answers,
-      };
+  //   // 2. Map the extracted JSON array to your DTO and save via your transaction method
+  //   const savedResults: any = [];
+  //   for (const item of extractedQcms) {
+  //     const dto: CreateQcmDto = {
+  //       question: item.question,
+  //       courseId: parseInt(courseId, 10),
+  //       tdId: tdId ? parseInt(tdId, 10) : undefined,
+  //       tpId: tpId ? parseInt(tpId, 10) : undefined,
+  //       answers: item.answers,
+  //     };
 
-      // const saved = await this.qcmService.create(dto);
-      savedResults.push(dto);
-    }
+  //     // const saved = await this.qcmService.create(dto);
+  //     savedResults.push(dto);
+  //   }
 
-    return {
-      message: `Successfully imported ${savedResults.length} QCMs.`,
-      data: savedResults,
-    };
-  }
+  //   return {
+  //     message: `Successfully imported ${savedResults.length} QCMs.`,
+  //     data: savedResults,
+  //   };
+  // }
 
   @Roles(Role.ADMIN, Role.TEACHER, Role.OWNER)
   @UseGuards(RolesGuard)
@@ -118,12 +118,12 @@ export class QcmController {
     }
 
     // 2. Pass the extracted text to your new service function
-    return this.qcmService.importQcmsFromText(
-      rawText,
-      parseInt(courseId, 10),
-      tdId ? parseInt(tdId, 10) : undefined,
-      tpId ? parseInt(tpId, 10) : undefined,
-    );
+    // return this.qcmService.importQcmsFromText(
+    //   rawText,
+    //   parseInt(courseId, 10),
+    //   tdId ? parseInt(tdId, 10) : undefined,
+    //   tpId ? parseInt(tpId, 10) : undefined,
+    // );
   }
 
 

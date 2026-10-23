@@ -19,6 +19,8 @@ export class Qcm {
   id: number;
   @Column()
   question: string;
+  @Column({ default: false, nullable: true })
+  isDemo: boolean;
   @ManyToOne(() => Course, (course) => course.qcms, {
     nullable: true,
     onDelete: 'SET NULL',

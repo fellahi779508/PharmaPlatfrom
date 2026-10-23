@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
   IsObject,
   IsOptional,
@@ -21,4 +22,7 @@ export class CreateQcmDto {
   tpId?: number;
   @IsArray()
   answers: { answer: string; isCorrect: boolean; explanation: string }[];
+  @IsBoolean()
+  @IsOptional()
+  isDemo: boolean;
 }

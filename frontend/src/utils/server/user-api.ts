@@ -233,4 +233,41 @@ export async function getUserByEmail(email: string) {
     };
   }
 }
+export async function assignUserToDemoYear(yearId: number) {
+  try {
+    const response = await api.post("/user/assign-demo-year", { yearId }, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    console.log(response.data);
+
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
+
+export async function unsetUserDemoYear() {
+  try {
+    const response = await api.post("/user/unset-demo-year", {}, {
+      headers: {
+        "Accept-Language": await getLanguage(),
+        Authorization: `Bearer ${await GetToken()}`,
+      },
+    });
+    return { status: true, response: response.data };
+  } catch (error: any) {
+    return {
+      status: false,
+      message: error.response?.data?.message,
+    };
+  }
+}
 

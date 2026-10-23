@@ -88,15 +88,21 @@ export class SemesterService {
       where: {
         id: studentId,
       },
-      relations: { redeemCode: { year: true } },
+      relations: { redeemCode: { year: true }, demoYear: true },
     });
     if (!user) {
       throw new NotFoundException(
         this.i18n.t('errors.user.not_found', { lang: this.currentLang }),
       );
     }
+    if (user.demoYear) {
+      const semesters = await this.semesterRepository.find({
+        relations: { year: true },
+        where: { year: { id: user.demoYear.id } },
+      });
+      return semesters;
+    }
     if (user.redeemCode) {
-
       const semesters = await this.semesterRepository.find({
         relations: { year: true },
         where: { year: { id: user.redeemCode.year.id } },
@@ -104,6 +110,6 @@ export class SemesterService {
 
       return semesters;
     }
-
+    return [];
   }
 }

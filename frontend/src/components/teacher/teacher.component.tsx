@@ -1420,16 +1420,19 @@ export default function TeacherPageComponent() {
     switch (type) {
       case "year":
         initial.name = "";
+        initial.isDemo = false;
         break;
       case "semester":
         initial.number = 1;
         break;
       case "subject":
         initial.name = "";
+        initial.isDemo = false;
         break;
       case "course":
         initial.name = "";
         initial.semesterId = yearSemesters[0]?.id ?? "";
+        initial.isDemo = false;
         break;
       case "td":
       case "tp":
@@ -1437,6 +1440,7 @@ export default function TeacherPageComponent() {
         break;
       case "qcm":
         initial.question = "";
+        initial.isDemo = false;
         // reset QCM image state
         setQcmImage(null);
         if (qcmImagePreview) URL.revokeObjectURL(qcmImagePreview);
@@ -1476,7 +1480,13 @@ export default function TeacherPageComponent() {
     const initial: Record<string, any> = {};
     switch (type) {
       case "year":
+        initial.name = item.name ?? "";
+        initial.isDemo = Boolean(item.isDemo);
+        break;
       case "subject":
+        initial.name = item.name ?? "";
+        initial.isDemo = Boolean(item.isDemo);
+        break;
       case "td":
       case "tp":
         initial.name = item.name ?? "";
@@ -1487,9 +1497,11 @@ export default function TeacherPageComponent() {
       case "course":
         initial.name = item.name ?? "";
         initial.semesterId = item.semesterId ?? (item as any).semester?.id;
+        initial.isDemo = Boolean(item.isDemo);
         break;
       case "qcm":
         initial.question = item.question ?? "";
+        initial.isDemo = Boolean(item.isDemo);
         break;
       case "answer":
         initial.answer = item.answer ?? "";
@@ -1550,7 +1562,10 @@ export default function TeacherPageComponent() {
   const buildPayload = (type: EntityType): any => {
     switch (type) {
       case "year":
-        return { name: formState.name.trim() } satisfies CreateYear;
+        return {
+          name: formState.name.trim(),
+          isDemo: Boolean(formState.isDemo),
+        } satisfies CreateYear;
       case "semester":
         return {
           number: Number(formState.number),
@@ -1560,12 +1575,14 @@ export default function TeacherPageComponent() {
         return {
           name: formState.name.trim(),
           yearId: selectedYear!.id,
+          isDemo: Boolean(formState.isDemo),
         } satisfies CreateSubject;
       case "course":
         return {
           name: formState.name.trim(),
           subjectId: selectedSubject!.id,
           semesterId: Number(formState.semesterId),
+          isDemo: Boolean(formState.isDemo),
         } satisfies CreateCourse;
       case "td":
         return {
@@ -1588,6 +1605,7 @@ export default function TeacherPageComponent() {
         const payload: any = {
           question: formState.question.trim(),
           answers: cleanAnswers,
+          isDemo: Boolean(formState.isDemo),
         };
         if (selectedCourse) payload.courseId = Number(selectedCourse.id);
         if (selectedTd) payload.tdId = Number(selectedTd.id);
@@ -2930,12 +2948,28 @@ export default function TeacherPageComponent() {
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 {modalType === "year" && (
-                  <TextField
-                    label={t("fields.name")}
-                    value={formState.name ?? ""}
-                    onChange={(v) => setFormState({ ...formState, name: v })}
-                    required
-                  />
+                  <>
+                    <TextField
+                      label={t("fields.name")}
+                      value={formState.name ?? ""}
+                      onChange={(v) => setFormState({ ...formState, name: v })}
+                      required
+                    />
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(formState.isDemo)}
+                        onChange={(e) =>
+                          setFormState({
+                            ...formState,
+                            isDemo: e.target.checked,
+                          })
+                        }
+                        className={styles.checkbox}
+                      />
+                      <span>{t("fields.isDemo")}</span>
+                    </label>
+                  </>
                 )}
 
                 {modalType === "semester" && (
@@ -2951,12 +2985,28 @@ export default function TeacherPageComponent() {
                 )}
 
                 {modalType === "subject" && (
-                  <TextField
-                    label={t("fields.name")}
-                    value={formState.name ?? ""}
-                    onChange={(v) => setFormState({ ...formState, name: v })}
-                    required
-                  />
+                  <>
+                    <TextField
+                      label={t("fields.name")}
+                      value={formState.name ?? ""}
+                      onChange={(v) => setFormState({ ...formState, name: v })}
+                      required
+                    />
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(formState.isDemo)}
+                        onChange={(e) =>
+                          setFormState({
+                            ...formState,
+                            isDemo: e.target.checked,
+                          })
+                        }
+                        className={styles.checkbox}
+                      />
+                      <span>{t("fields.isDemo")}</span>
+                    </label>
+                  </>
                 )}
 
                 {(modalType === "td" || modalType === "tp") && (
@@ -2989,6 +3039,20 @@ export default function TeacherPageComponent() {
                       placeholder={t("selectPlaceholder")}
                       required
                     />
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(formState.isDemo)}
+                        onChange={(e) =>
+                          setFormState({
+                            ...formState,
+                            isDemo: e.target.checked,
+                          })
+                        }
+                        className={styles.checkbox}
+                      />
+                      <span>{t("fields.isDemo")}</span>
+                    </label>
                   </>
                 )}
 
@@ -3060,6 +3124,21 @@ export default function TeacherPageComponent() {
                       textarea
                       required
                     />
+
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(formState.isDemo)}
+                        onChange={(e) =>
+                          setFormState({
+                            ...formState,
+                            isDemo: e.target.checked,
+                          })
+                        }
+                        className={styles.checkbox}
+                      />
+                      <span>{t("fields.isDemo")}</span>
+                    </label>
 
                     {!editing && (
                       <div className={styles.answerBuilder}>

@@ -53,6 +53,10 @@ export class Room {
   @Column({ type: 'uuid', nullable: true })
   hostId: string | null;
 
+  /** Whether the host has an activated account */
+  @Column({ type: 'boolean', default: false })
+  requiresActivatedAccount: boolean;
+
   /** Flat ordered list of qcm IDs for this room (JSON array) */
   @Column({ type: 'jsonb', nullable: true })
   qcmIds: number[] | null;

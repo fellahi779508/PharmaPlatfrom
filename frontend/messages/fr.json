@@ -173,7 +173,8 @@
       "question": "Question",
       "answer": "Réponse",
       "isCorrect": "Marquer comme correcte",
-      "explanation": "Explication (facultatif)"
+      "explanation": "Explication (facultatif)",
+      "isDemo": "Version Démo (isDemo)"
     },
     "qcm": {
       "answersLabel": "Options de réponse",
@@ -718,6 +719,24 @@
       "submit": "Activer l'abonnement",
       "submitting": "Activation…"
     },
+    "tabs": {
+      "redeem": "Code d'activation",
+      "demo": "Essayer la version démo"
+    },
+    "demo": {
+      "title": "Version Démo Gratuite",
+      "description": "Sélectionnez votre année d'études pour découvrir les matières, cours et QCMs de démonstration sans code d'activation.",
+      "badge": "Aperçu Démo",
+      "activeBanner": "Vous utilisez actuellement la version démo ({year}). Entrez un code d'activation à tout moment pour débloquer l'accès complet.",
+      "currentYear": "Année active",
+      "subscribe": "Activer cette année",
+      "subscribing": "Activation…",
+      "subscribed": "Année actuelle",
+      "noYears": "Aucune année de démonstration n'est disponible pour le moment.",
+      "features": "Accès aux cours et QCMs marqués démo",
+      "success": "Année de démonstration activée avec succès !",
+      "goToSessions": "Accéder aux cours démo"
+    },
     "revokeModal": {
       "title": "Révoquer l'abonnement ?",
       "description": "Votre accès prendra fin immédiatement. Vous aurez besoin d'un nouveau code pour réactiver.",
@@ -969,6 +988,7 @@
       "roleHint": "Les enseignants peuvent gérer les cours, QCM, résumés et cartes mentales. Les administrateurs ont un accès complet.",
       "isActive": "Compte actif",
       "isVerified": "Vérifié",
+      "isDemo": "Compte Démo",
       "year": "Année",
       "selectYear": "Choisir une année…",
       "yearRequired": "Veuillez sélectionner une année",

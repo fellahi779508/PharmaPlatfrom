@@ -18,6 +18,8 @@ export class Course {
   id: number;
   @Column()
   name: string;
+  @Column({ default: false, nullable: true })
+  isDemo: boolean;
   @ManyToOne(() => Subject, (subject) => subject.courses, {
     nullable: true,
     onDelete: 'CASCADE',
