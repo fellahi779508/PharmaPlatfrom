@@ -72,6 +72,11 @@ export class RoomService {
         throw new BadRequestException('No QCMs available for the selected content');
       }
 
+      // Fetch host user
+      const userRepo = manager.getRepository(User);
+      const host = await userRepo.findOne({ where: { id: hostId } });
+      if (!host) throw new NotFoundException('Host user not found');
+
       // Create session or exam based on mode
       let session: Session | null = null;
       let exam: Exam | null = null;
@@ -79,12 +84,8 @@ export class RoomService {
       if (dto.mode === DtoRoomMode.QCM_SPEED_RUN) {
         // Create a temporary session for this room
         const sessionRepo = manager.getRepository(Session);
-        const userRepo = manager.getRepository(User);
         const qcmRepo = manager.getRepository(Qcm);
         const sessionQuestionRepo = manager.getRepository(SessionQuestion);
-
-        const host = await userRepo.findOne({ where: { id: hostId } });
-        if (!host) throw new NotFoundException('Host user not found');
 
         session = sessionRepo.create({
           name: `Challenge Room ${code}`,
@@ -161,6 +162,7 @@ export class RoomService {
         timerSeconds: dto.timerSeconds,
         currentQuestionIndex: 0,
         hostId,
+        requiresActivatedAccount: host.isActive,
         qcmIds,
         session,
         exam,
@@ -169,10 +171,7 @@ export class RoomService {
       const savedRoom = await manager.save(Room, CreateRoom);
 
       // Add host as a player
-      const userRepo = manager.getRepository(User);
       const roomPlayerRepo = manager.getRepository(RoomPlayer);
-      const host = await userRepo.findOne({ where: { id: hostId } });
-      if (!host) throw new NotFoundException('Host user not found');
 
       const hostPlayer = roomPlayerRepo.create({
         room: savedRoom,
@@ -363,6 +362,14 @@ export class RoomService {
 
     const user = await this.dataSource.getRepository(User).findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
+
+    // Check if host has activated account and enforce matching activation status
+    if (room.requiresActivatedAccount && !user.isActive) {
+      throw new BadRequestException('This room requires an activated account to join');
+    }
+    if (!room.requiresActivatedAccount && user.isActive) {
+      throw new BadRequestException('This room is for non-activated accounts only');
+    }
 
     const player = this.roomPlayerRepo.create({
       room,

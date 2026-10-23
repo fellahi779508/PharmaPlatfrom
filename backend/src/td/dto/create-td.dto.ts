@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateTdDto {
   @IsString()
@@ -6,4 +6,7 @@ export class CreateTdDto {
 
   @IsNumber()
   subjectId: number;
+  @IsBoolean()
+  @IsOptional()
+  isDemo: boolean;
 }

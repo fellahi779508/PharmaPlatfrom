@@ -146,6 +146,7 @@ export class QcmService {
           tdId,
           tpId,
           answers,
+          isDemo: false
         });
       }
     };
@@ -213,8 +214,24 @@ export class QcmService {
     return this.qcmRepository.find({ relations: { answers: true, course: true, td: true, tp: true } });
   }
   async findByCourse(courseId: number) {
+    const course = await this.dataSource.getRepository(Course).findOneBy({
+      id: courseId,
+    });
+    if (!course) {
+      throw new NotFoundException(
+        this.i18n.translate('errors.course.not_found', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    if (course.isDemo) {
+      return this.qcmRepository.find({
+        where: { course: { id: courseId }, isDemo: true },
+        relations: { answers: true, course: true, td: true, tp: true },
+      });
+    }
     return this.qcmRepository.find({
-      where: { course: { id: courseId } },
+      where: { course: { id: courseId }, isDemo: false },
       relations: { answers: true, course: true, td: true, tp: true },
     });
   }

@@ -1,6 +1,7 @@
 export type Qcm = {
   id: number;
   question: string;
+  isDemo?: boolean;
   courseId?: number;
   tdId?: number;
   tpId?: number;
@@ -11,6 +12,7 @@ export type CreateQcm = {
   courseId: number;
   tdId?: number;
   tpId?: number;
+  isDemo?: boolean;
   answers?: QcmAnswer[];
 };
 

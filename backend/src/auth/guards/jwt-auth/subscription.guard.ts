@@ -21,18 +21,21 @@ export class SubscriptionGuard implements CanActivate {
 
         const user = await this.dataSource.getRepository(User).findOne({
             where: { id: userId },
-            relations: { redeemCode: true },
+            relations: { redeemCode: true, demoYear: true },
         });
         if (user?.role == Role.OWNER || user?.role == Role.ADMIN || user?.role == Role.TEACHER) {
             return true;
         }
 
         const code = user?.redeemCode;
-        const active =
+        const isRedeemActive =
             user?.isActive === true &&
             code?.isActivated === true &&
             !!code?.expiryDate &&
             new Date(code.expiryDate).getTime() > Date.now();
+        const isDemoActive = Boolean(user?.isDemo && user?.demoYear);
+
+        const active = isRedeemActive || isDemoActive;
 
         if (!active) throw new ForbiddenException('subscription_expired');
         return true;

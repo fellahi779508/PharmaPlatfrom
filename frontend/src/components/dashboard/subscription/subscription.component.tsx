@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
+import { motion, MotionConfig, useReducedMotion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
     CheckCircle2,
@@ -20,23 +20,27 @@ import {
     MailWarning,
     ArrowRight,
     UserCircle2,
+    GraduationCap,
+    BookOpen,
+    Check,
 } from "lucide-react";
 
 import {
+    assignUserToDemoYear,
     GetUserProfile,
-    IsActived,
     isVerifedUser,
     RedeemCode,
     revokeSubscription,
 } from "@/utils/server/user-api";
+import { getDemoYears } from "@/utils/server/year-api";
 import styles from "./subscription.module.css";
-import { User } from "@/utils/types/allTypes";
+import { User, Year } from "@/utils/types/allTypes";
 
 export default function SubscriptionComponent() {
     const t = useTranslations("Subscription");
     const shouldReduceMotion = useReducedMotion();
 
-    const [isActivated, setIsActivated] = useState<boolean | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
     const [isVerified, setIsVerified] = useState<boolean | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -49,27 +53,49 @@ export default function SubscriptionComponent() {
     const [revoking, setRevoking] = useState(false);
     const [user, setUser] = useState<User | null>(null);
 
+    const [activeTab, setActiveTab] = useState<"redeem" | "demo">("redeem");
+
+    /* ------------------------------------------------------------------ */
+    /*  Mount Check                                                       */
+    /* ------------------------------------------------------------------ */
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     /* ------------------------------------------------------------------ */
     /*  Load status + profile + verification (parallel)                   */
     /* ------------------------------------------------------------------ */
 
+    const refreshProfile = async () => {
+        try {
+            const profileRes = await GetUserProfile();
+            if (profileRes.status && profileRes.response) {
+                setUser(profileRes.response);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
+        if (!isMounted) return;
+
         (async () => {
             try {
-                const [activeRes, profileRes, verifiedRes] = await Promise.all([
-                    IsActived(),
+                const [profileRes, verifiedRes] = await Promise.all([
                     GetUserProfile(),
                     isVerifedUser(),
                 ]);
 
-                if (activeRes.status) {
-                    setIsActivated(activeRes.response);
-                } else {
-                    setError(activeRes.message ?? "");
-                }
-
-                if (profileRes.status) {
-                    setUser(profileRes.response);
+                if (profileRes.status && profileRes.response) {
+                    const userData: User = profileRes.response;
+                    setUser(userData);
+                    if (userData.isDemo && userData.demoYear && !userData.redeemCode) {
+                        setActiveTab("demo");
+                    }
+                } else if (profileRes.message) {
+                    setError(profileRes.message);
                 }
 
                 if (verifiedRes.status) {
@@ -86,7 +112,10 @@ export default function SubscriptionComponent() {
                 setLoading(false);
             }
         })();
-    }, []);
+    }, [isMounted, t]);
+
+    // An activated user is strictly one with an active redeem code
+    const isActivatedUser = Boolean(user?.isActive && user?.redeemCode);
 
     /* ------------------------------------------------------------------ */
     /*  Redeem                                                             */
@@ -100,10 +129,8 @@ export default function SubscriptionComponent() {
         try {
             const response = await RedeemCode(code.trim());
             if (response.status) {
-                setIsActivated(true);
                 setCode("");
-                const profileRes = await GetUserProfile();
-                if (profileRes.status) setUser(profileRes.response);
+                await refreshProfile();
             } else {
                 setError(response.message ?? t("errors.redeemFailed"));
             }
@@ -127,14 +154,9 @@ export default function SubscriptionComponent() {
         try {
             const response = await revokeSubscription(password);
             if (response.status) {
-                setIsActivated(false);
                 setShowRevoke(false);
                 setPassword("");
-                setUser((prev) =>
-                    prev
-                        ? { ...prev, activationDate: undefined, endDate: undefined }
-                        : prev,
-                );
+                await refreshProfile();
             } else {
                 setError(response.message ?? t("errors.revokeFailed"));
             }
@@ -153,164 +175,218 @@ export default function SubscriptionComponent() {
         setError("");
     };
 
+    if (!isMounted) {
+        return null;
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Render                                                             */
     /* ------------------------------------------------------------------ */
 
     return (
-        <main className={styles.page}>
-            <div className={styles.contentWrapper}>
-                {/* Header */}
-                <motion.header
-                    className={styles.header}
-                    initial={shouldReduceMotion ? undefined : { opacity: 0, y: -12 }}
-                    animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                >
-                    <span className={styles.badge}>
-                        <Crown size={13} />
-                        {t("badge")}
-                    </span>
-                    <h1 className={styles.title}>{t("title")}</h1>
-                    <p className={styles.subtitle}>{t("subtitle")}</p>
-                </motion.header>
+        <MotionConfig reducedMotion="user">
+            <main className={styles.page} suppressHydrationWarning>
+                <div className={styles.contentWrapper}>
+                    {/* Header */}
+                    <motion.header
+                        className={styles.header}
+                        initial={shouldReduceMotion ? undefined : { opacity: 0, y: -12 }}
+                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                    >
+                        <span className={styles.badge}>
+                            <Crown size={13} />
+                            {t("badge")}
+                        </span>
+                        <h1 className={styles.title}>{t("title")}</h1>
+                        <p className={styles.subtitle}>{t("subtitle")}</p>
+                    </motion.header>
 
-                {/* Card */}
-                <motion.section
-                    className={styles.card}
-                    initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
-                    animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.35, ease: "easeOut", delay: 0.05 }}
-                >
-                    {loading || isVerified === null ? (
-                        <div className={styles.loading}>
-                            <Loader2 size={26} className={styles.spinner} />
-                            <span>{t("loading")}</span>
-                        </div>
-                    ) : !isVerified ? (
-                        <VerifyEmailView t={t} />
-                    ) : isActivated ? (
-                        <ActivatedView
-                            t={t}
-                            user={user}
-                            onRevoke={() => setShowRevoke(true)}
-                        />
-                    ) : (
-                        <RedeemView
-                            t={t}
-                            code={code}
-                            setCode={setCode}
-                            onSubmit={handleRedeem}
-                            submitting={submitting}
-                        />
-                    )}
-
-                    <AnimatePresence>
-                        {error && (
-                            <motion.div
-                                className={styles.errorBox}
-                                initial={{ opacity: 0, y: -6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -6 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <AlertTriangle size={15} />
-                                <span>{error}</span>
-                                <button
-                                    type="button"
-                                    className={styles.errorClose}
-                                    onClick={() => setError("")}
-                                    aria-label={t("errors.dismiss")}
-                                >
-                                    <X size={14} />
-                                </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.section>
-            </div>
-
-            {/* Revoke confirmation modal */}
-            <AnimatePresence>
-                {showRevoke && isVerified && (
-                    <div className={styles.modalOverlay} onClick={closeRevoke}>
-                        <motion.div
-                            className={styles.confirmModal}
-                            initial={
-                                shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }
-                            }
-                            animate={
-                                shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }
-                            }
-                            exit={
-                                shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }
-                            }
-                            transition={{ duration: 0.18, ease: "easeOut" }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className={styles.confirmIcon}>
-                                <AlertTriangle size={24} />
+                    {/* Card */}
+                    <motion.section
+                        className={styles.card}
+                        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+                        animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.35, ease: "easeOut", delay: 0.05 }}
+                    >
+                        {loading || isVerified === null ? (
+                            <div className={styles.loading}>
+                                <Loader2 size={26} className={styles.spinner} />
+                                <span>{t("loading")}</span>
                             </div>
-                            <h3 className={styles.confirmTitle}>
-                                {t("revokeModal.title")}
-                            </h3>
-                            <p className={styles.confirmText}>
-                                {t("revokeModal.description")}
-                            </p>
-
-                            <form onSubmit={handleRevoke}>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="revokePassword" className={styles.formLabel}>
-                                        {t("revokeModal.passwordLabel")}
-                                    </label>
-                                    <div className={styles.inputWithIcon}>
-                                        <KeyRound size={16} className={styles.inputIcon} />
-                                        <input
-                                            id="revokePassword"
-                                            type="password"
-                                            className={styles.formInput}
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder={t("revokeModal.passwordPlaceholder")}
-                                            autoComplete="current-password"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className={styles.confirmActions}>
+                        ) : !isVerified ? (
+                            <VerifyEmailView t={t} />
+                        ) : isActivatedUser ? (
+                            <ActivatedView
+                                t={t}
+                                user={user}
+                                onRevoke={() => setShowRevoke(true)}
+                            />
+                        ) : (
+                            <div>
+                                {/* Tabs Navigation for Non-Activated Users */}
+                                <div className={styles.tabsNav} role="tablist">
                                     <button
                                         type="button"
-                                        className={styles.cancelButton}
-                                        onClick={closeRevoke}
-                                        disabled={revoking}
+                                        role="tab"
+                                        aria-selected={activeTab === "redeem"}
+                                        className={`${styles.tabItem} ${activeTab === "redeem" ? styles.tabItemActive : ""
+                                            }`}
+                                        onClick={() => {
+                                            setActiveTab("redeem");
+                                            setError("");
+                                        }}
                                     >
-                                        {t("revokeModal.cancel")}
+                                        <Ticket size={16} />
+                                        <span>{t("tabs.redeem")}</span>
                                     </button>
                                     <button
-                                        type="submit"
-                                        className={styles.dangerButton}
-                                        disabled={revoking || !password}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeTab === "demo"}
+                                        className={`${styles.tabItem} ${activeTab === "demo" ? styles.tabItemActive : ""
+                                            }`}
+                                        onClick={() => {
+                                            setActiveTab("demo");
+                                            setError("");
+                                        }}
                                     >
-                                        {revoking ? (
-                                            <>
-                                                <Loader2 size={15} className={styles.spinner} />
-                                                {t("revokeModal.revoking")}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Lock size={15} />
-                                                {t("revokeModal.confirm")}
-                                            </>
+                                        <Sparkles size={16} />
+                                        <span>{t("tabs.demo")}</span>
+                                        {user?.demoYear && (
+                                            <span className={styles.tabActiveBadge}>
+                                                {user.demoYear.name}
+                                            </span>
                                         )}
                                     </button>
                                 </div>
-                            </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </main>
+
+                                {activeTab === "redeem" ? (
+                                    <RedeemView
+                                        t={t}
+                                        code={code}
+                                        setCode={setCode}
+                                        onSubmit={handleRedeem}
+                                        submitting={submitting}
+                                        user={user}
+                                    />
+                                ) : (
+                                    <DemoView
+                                        t={t}
+                                        user={user}
+                                        onDemoAssigned={refreshProfile}
+                                    />
+                                )}
+                            </div>
+                        )}
+
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    className={styles.errorBox}
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <AlertTriangle size={15} />
+                                    <span>{error}</span>
+                                    <button
+                                        type="button"
+                                        className={styles.errorClose}
+                                        onClick={() => setError("")}
+                                        aria-label={t("errors.dismiss")}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.section>
+                </div>
+
+                {/* Revoke confirmation modal */}
+                <AnimatePresence>
+                    {showRevoke && isVerified && (
+                        <div className={styles.modalOverlay} onClick={closeRevoke}>
+                            <motion.div
+                                className={styles.confirmModal}
+                                initial={
+                                    shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }
+                                }
+                                animate={
+                                    shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }
+                                }
+                                exit={
+                                    shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }
+                                }
+                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className={styles.confirmIcon}>
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <h3 className={styles.confirmTitle}>
+                                    {t("revokeModal.title")}
+                                </h3>
+                                <p className={styles.confirmText}>
+                                    {t("revokeModal.description")}
+                                </p>
+
+                                <form onSubmit={handleRevoke}>
+                                    <div className={styles.formGroup}>
+                                        <label htmlFor="revokePassword" className={styles.formLabel}>
+                                            {t("revokeModal.passwordLabel")}
+                                        </label>
+                                        <div className={styles.inputWithIcon}>
+                                            <KeyRound size={16} className={styles.inputIcon} />
+                                            <input
+                                                id="revokePassword"
+                                                type="password"
+                                                className={styles.formInput}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder={t("revokeModal.passwordPlaceholder")}
+                                                autoComplete="current-password"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.confirmActions}>
+                                        <button
+                                            type="button"
+                                            className={styles.cancelButton}
+                                            onClick={closeRevoke}
+                                            disabled={revoking}
+                                        >
+                                            {t("revokeModal.cancel")}
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className={styles.dangerButton}
+                                            disabled={revoking || !password}
+                                        >
+                                            {revoking ? (
+                                                <>
+                                                    <Loader2 size={15} className={styles.spinner} />
+                                                    {t("revokeModal.revoking")}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Lock size={15} />
+                                                    {t("revokeModal.confirm")}
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </main>
+        </MotionConfig>
     );
 }
 
@@ -497,21 +573,32 @@ function RedeemView({
     setCode,
     onSubmit,
     submitting,
+    user,
 }: {
     t: any;
     code: string;
     setCode: (v: string) => void;
     onSubmit: (e: React.FormEvent) => void;
     submitting: boolean;
+    user: User | null;
 }) {
     return (
         <div className={styles.stateWrap}>
             <div className={`${styles.stateIcon} ${styles.stateIconAccent}`}>
-                <Sparkles size={28} strokeWidth={2.2} />
+                <Ticket size={28} strokeWidth={2.2} />
             </div>
 
             <h2 className={styles.stateTitle}>{t("inactive.title")}</h2>
             <p className={styles.stateText}>{t("inactive.description")}</p>
+
+            {user?.demoYear && (
+                <div className={styles.demoBanner}>
+                    <Sparkles size={18} className={styles.demoBannerIcon} />
+                    <span className={styles.demoBannerText}>
+                        {t("demo.activeBanner", { year: user.demoYear.name })}
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={onSubmit} className={styles.redeemForm}>
                 <div className={styles.formGroup}>
@@ -553,6 +640,197 @@ function RedeemView({
                     )}
                 </button>
             </form>
+        </div>
+    );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Demo view                                                          */
+/* ------------------------------------------------------------------ */
+
+function DemoView({
+    t,
+    user,
+    onDemoAssigned,
+}: {
+    t: any;
+    user: User | null;
+    onDemoAssigned: () => Promise<void>;
+}) {
+    const [demoYears, setDemoYears] = useState<Year[]>([]);
+    const [loadingYears, setLoadingYears] = useState(true);
+    const [subscribingId, setSubscribingId] = useState<number | null>(null);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMsg, setErrorMsg] = useState("");
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            setLoadingYears(true);
+            try {
+                const res = await getDemoYears();
+                if (mounted) {
+                    if (res.status && Array.isArray(res.response)) {
+                        setDemoYears(res.response);
+                    } else {
+                        setErrorMsg(res.message ?? t("errors.generic"));
+                    }
+                }
+            } catch (err) {
+                if (mounted) {
+                    setErrorMsg(t("errors.generic"));
+                }
+            } finally {
+                if (mounted) setLoadingYears(false);
+            }
+        })();
+        return () => {
+            mounted = false;
+        };
+    }, [t]);
+
+    const handleSelectDemoYear = async (yearId: number) => {
+        if (subscribingId !== null) return;
+        setSubscribingId(yearId);
+        setErrorMsg("");
+        setSuccessMessage("");
+        try {
+            const res = await assignUserToDemoYear(yearId);
+            if (res.status) {
+                setSuccessMessage(t("demo.success"));
+                await onDemoAssigned();
+            } else {
+                setErrorMsg(res.message ?? t("errors.generic"));
+            }
+        } catch (err) {
+            setErrorMsg(t("errors.generic"));
+        } finally {
+            setSubscribingId(null);
+        }
+    };
+
+    return (
+        <div className={styles.stateWrap}>
+            <div className={`${styles.stateIcon} ${styles.stateIconAccent}`}>
+                <GraduationCap size={28} strokeWidth={2.2} />
+            </div>
+
+            <h2 className={styles.stateTitle}>{t("demo.title")}</h2>
+            <p className={styles.stateText}>{t("demo.description")}</p>
+
+            <AnimatePresence>
+                {successMessage && (
+                    <motion.div
+                        className={styles.demoSuccessBox}
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <CheckCircle2 size={18} color="var(--success)" />
+                            <span>{successMessage}</span>
+                        </div>
+                        <Link href="/dashboard/sessions" className={styles.demoSessionsBtn}>
+                            <span>{t("demo.goToSessions")}</span>
+                            <ArrowRight size={13} />
+                        </Link>
+                    </motion.div>
+                )}
+
+                {errorMsg && (
+                    <motion.div
+                        className={styles.errorBox}
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                    >
+                        <AlertTriangle size={15} />
+                        <span>{errorMsg}</span>
+                        <button
+                            type="button"
+                            className={styles.errorClose}
+                            onClick={() => setErrorMsg("")}
+                            aria-label={t("errors.dismiss")}
+                        >
+                            <X size={14} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {loadingYears ? (
+                <div className={styles.loading}>
+                    <Loader2 size={24} className={styles.spinner} />
+                    <span>{t("loading")}</span>
+                </div>
+            ) : demoYears.length === 0 ? (
+                <p className={styles.stateText} style={{ marginTop: "1rem" }}>
+                    {t("demo.noYears")}
+                </p>
+            ) : (
+                <div className={styles.demoYearsGrid}>
+                    {demoYears.map((year) => {
+                        const isCurrent = user?.demoYear?.id === year.id;
+                        const isBusy = subscribingId === year.id;
+
+                        return (
+                            <div
+                                key={year.id}
+                                className={`${styles.demoYearCard} ${isCurrent ? styles.demoYearCardActive : ""
+                                    }`}
+                            >
+                                <div className={styles.demoYearCardHeader}>
+                                    <div className={styles.demoYearIconWrap}>
+                                        <BookOpen size={20} />
+                                    </div>
+                                    {isCurrent && (
+                                        <span className={styles.demoYearActivePill}>
+                                            <Check size={12} strokeWidth={3} />
+                                            {t("demo.currentYear")}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <h3 className={styles.demoYearTitle}>{year.name}</h3>
+                                    <p className={styles.demoYearDesc}>
+                                        {t("demo.features")}
+                                    </p>
+                                </div>
+
+                                {isCurrent ? (
+                                    <Link
+                                        href="/dashboard/sessions"
+                                        className={`${styles.demoYearButton} ${styles.demoYearButtonSecondary}`}
+                                    >
+                                        <span>{t("demo.goToSessions")}</span>
+                                        <ArrowRight size={14} />
+                                    </Link>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        disabled={isBusy}
+                                        onClick={() => handleSelectDemoYear(year.id)}
+                                        className={`${styles.demoYearButton} ${styles.demoYearButtonPrimary}`}
+                                    >
+                                        {isBusy ? (
+                                            <>
+                                                <Loader2 size={15} className={styles.spinner} />
+                                                <span>{t("demo.subscribing")}</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles size={15} />
+                                                <span>{t("demo.subscribe")}</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }

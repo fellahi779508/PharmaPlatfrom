@@ -89,6 +89,10 @@ export class SessionService implements OnModuleInit {
             );
           }
 
+          if (course.isDemo || user?.isDemo) {
+            course.qcms = (course.qcms || []).filter((q) => q.isDemo === true);
+          }
+
           if (!course.qcms || course.qcms.length === 0) {
             throw new BadRequestException(
               `Course with ID ${courseSel.courseId} has no available QCMs.`,
@@ -123,6 +127,10 @@ export class SessionService implements OnModuleInit {
             );
           }
 
+          if (td.isDemo || user?.isDemo) {
+            td.qcms = (td.qcms || []).filter((q) => q.isDemo === true);
+          }
+
           if (!td.qcms || td.qcms.length === 0) {
             throw new BadRequestException(
               `TD with ID ${tdSel.tdId} has no available QCMs.`,
@@ -155,6 +163,10 @@ export class SessionService implements OnModuleInit {
                 lang: this.currentLang,
               }),
             );
+          }
+
+          if (tp.isDemo || user?.isDemo) {
+            tp.qcms = (tp.qcms || []).filter((q) => q.isDemo === true);
           }
 
           if (!tp.qcms || tp.qcms.length === 0) {

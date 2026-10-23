@@ -36,6 +36,18 @@ export class UserController {
     return this.userService.revokeSubscription(req.user.id, password);
   }
 
+  @Post('assign-demo-year')
+  @UseGuards(JwtAuthGuard)
+  assignDemoYear(@Req() req: any, @Body('yearId') yearId: number) {
+    return this.userService.setDemo(req.user.id, yearId);
+  }
+
+  @Post('unset-demo-year')
+  @UseGuards(JwtAuthGuard)
+  unsetDemoYear(@Req() req: any) {
+    return this.userService.unsetDemo(req.user.id);
+  }
+
   @Roles(Role.ADMIN, Role.OWNER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)

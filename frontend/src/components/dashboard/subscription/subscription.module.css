@@ -725,3 +725,254 @@ a.primaryButton {
     min-width: 220px;
     margin-top: 0.5rem;
 }
+
+/* ==================================================================
+   Tabs Header (Redeem vs Demo)
+   ================================================================== */
+
+.tabsNav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.35rem;
+    margin-bottom: 2rem;
+    background: color-mix(in srgb, var(--surface-hover) 85%, var(--background));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+}
+
+.tabItem {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.75rem 1.1rem;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.tabItem:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+
+.tabItemActive {
+    color: var(--foreground);
+    background: var(--surface);
+    font-weight: 600;
+    box-shadow:
+        0 1px 3px color-mix(in srgb, var(--foreground) 5%, transparent),
+        0 1px 2px color-mix(in srgb, var(--foreground) 3%, transparent);
+    border-color: color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.tabActiveBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+}
+
+/* ==================================================================
+   Demo View
+   ================================================================== */
+
+.demoBanner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1.1rem;
+    margin-bottom: 1.25rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+    color: var(--foreground);
+    font-size: 0.88rem;
+    text-align: start;
+}
+
+.demoBannerIcon {
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+.demoBannerText {
+    flex: 1;
+    line-height: 1.45;
+}
+
+.demoYearsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.demoYearCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.25s ease;
+    text-align: start;
+    gap: 1.2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.demoYearCard:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.demoYearCardActive {
+    border-color: var(--accent);
+    background: linear-gradient(
+        155deg,
+        color-mix(in srgb, var(--accent) 8%, var(--surface)),
+        var(--surface)
+    );
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.demoYearCardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.demoYearIconWrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.demoYearActivePill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--accent-foreground, #fff);
+}
+
+.demoYearTitle {
+    margin: 0.5rem 0 0.25rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    font-family: var(--font-serif);
+    color: var(--foreground);
+}
+
+.demoYearDesc {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+    line-height: 1.5;
+}
+
+.demoYearButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.demoYearButtonPrimary {
+    background: var(--accent);
+    color: var(--accent-foreground, #fff);
+}
+
+.demoYearButtonPrimary:hover:not(:disabled) {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.demoYearButtonPrimary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.demoYearButtonSecondary {
+    background: color-mix(in srgb, var(--surface-hover) 80%, transparent);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+}
+
+.demoYearButtonSecondary:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.demoSuccessBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--success) 10%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--success) 30%, var(--border));
+    color: var(--foreground);
+    font-size: 0.88rem;
+    text-align: start;
+}
+
+.demoSessionsBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--success);
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+.demoSessionsBtn:hover {
+    opacity: 0.9;
+}

@@ -1,6 +1,8 @@
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MinLength,
@@ -56,4 +58,8 @@ export class CreateUserDto {
     message: i18nValidationMessage('errors.user.required_role'),
   })
   role: Role;
+
+  @IsBoolean()
+  @IsOptional()
+  isDemo?: boolean;
 }

@@ -28,6 +28,8 @@ export class Subject {
   createdAt: Date;
   @CreateDateColumn()
   updatedAt: Date;
+  @Column({ default: false, nullable: true })
+  isDemo: boolean;
   @ManyToOne(() => Year, (year) => year.subjects, { onDelete: 'CASCADE' })
   year: Year;
   @OneToMany(() => Course, (course) => course.subject, { nullable: true })

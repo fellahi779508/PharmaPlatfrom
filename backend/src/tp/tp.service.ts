@@ -73,6 +73,17 @@ export class TpService {
     return this.tpRepository.remove(tp);
   }
   async getTpsBySubject(subjectId: number) {
+    const subject = await this.dataSource.getRepository(Subject).findOneBy({ id: subjectId });
+    if (subject?.isDemo) {
+      const tps = await this.tpRepository.find({
+        where: { subject: { id: subjectId }, isDemo: true },
+        relations: { qcms: true },
+      });
+      return tps.map((t) => ({
+        ...t,
+        qcms: (t.qcms || []).filter((q) => q.isDemo),
+      }));
+    }
     return this.tpRepository.find({
       where: { subject: { id: subjectId } },
       relations: { qcms: true },

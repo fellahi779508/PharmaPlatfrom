@@ -53,8 +53,28 @@ export class CourseService {
   }
 
   async findBySubject(subjectId: number) {
+    const subject = await this.dataSource.getRepository(Subject).findOneBy({
+      id: subjectId,
+    });
+    if (!subject) {
+      throw new NotFoundException(
+        this.i18n.translate('errors.subject.not_found', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    if (subject.isDemo) {
+      const courses = await this.courseRepository.find({
+        where: { subject: { id: subjectId }, isDemo: true },
+        relations: { qcms: true },
+      });
+      return courses.map((c) => ({
+        ...c,
+        qcms: (c.qcms || []).filter((q) => q.isDemo),
+      }));
+    }
     return this.courseRepository.find({
-      where: { subject: { id: subjectId } },
+      where: { subject: { id: subjectId }, isDemo: false },
       relations: { qcms: true },
     });
   }

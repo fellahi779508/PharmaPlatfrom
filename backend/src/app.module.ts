@@ -101,7 +101,7 @@ import { RoomPlayerModule } from './room-player/room-player.module';
     FlashcardModule,
     MedicamentModule,
     RoomModule,
-    RoomPlayerModule
+    RoomPlayerModule,
   ],
   controllers: [],
   providers: [],

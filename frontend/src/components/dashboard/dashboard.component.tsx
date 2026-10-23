@@ -9,7 +9,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, MotionConfig, useReducedMotion } from "framer-motion";
 import {
   ArrowUpRight,
   GraduationCap,
@@ -105,8 +105,6 @@ function CardShell({
         <span className={styles.cardTitle}>{title}</span>
         <span className={styles.cardDesc}>{description}</span>
       </div>
-
-
     </>
   );
 
@@ -150,6 +148,12 @@ export default function DashboardPage() {
   const shouldReduceMotion = useReducedMotion();
   const { isLoggingOut, logout } = useLogout();
   const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  /* ---------------- Client Mount Guard ---------------- */
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   /* ---------------- Fetch role ---------------- */
   const fetchRole = useCallback(async () => {
@@ -163,8 +167,10 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchRole();
-  }, [fetchRole]);
+    if (isMounted) {
+      fetchRole();
+    }
+  }, [fetchRole, isMounted]);
 
   /* ---------------- Pointer tilt + spotlight ---------------- */
   const handlePointerMove = useCallback(
@@ -196,6 +202,11 @@ export default function DashboardPage() {
     el.style.setProperty("--my", `${rect.height / 2}px`);
   }, []);
 
+  /* Avoid rendering mismatch between server HTML and initial client hydration */
+  if (!isMounted) {
+    return null;
+  }
+
   /* ---------------- Role helpers ---------------- */
   const isTeacher = currentRole === "teacher" || currentRole === "admin" || currentRole === "owner";
   const isAdmin = currentRole === "admin" || currentRole === "owner";
@@ -207,101 +218,101 @@ export default function DashboardPage() {
   const nextIndex = () => cardIndex++;
 
   return (
-    <main className={styles.page}>
-      <div className={styles.contentWrapper}>
-        <motion.header
-          className={styles.header}
-          initial={shouldReduceMotion ? undefined : { opacity: 0, y: -12 }}
-          animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+    <MotionConfig reducedMotion="user">
+      <main className={styles.page} suppressHydrationWarning>
+        <div className={styles.contentWrapper}>
+          <motion.header
+            className={styles.header}
+            initial={shouldReduceMotion ? undefined : { opacity: 0, y: -12 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <span className={styles.badge}>
+              <Sparkles size={13} />
+              {t("badge")}
+            </span>
+            <h1 className={styles.title}>{t("title")}</h1>
+            <p className={styles.subtitle}>{t("subtitle")}</p>
+          </motion.header>
 
+          <motion.nav
+            className={styles.bentoGrid}
+            initial={shouldReduceMotion ? undefined : { opacity: 0 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            aria-label="Dashboard Main Navigation"
+          >
+            {navCards.map(({ key, href, icon: Icon, tone }) => (
+              <CardShell
+                key={key}
+                href={href}
+                icon={<Icon size={20} strokeWidth={2.2} />}
+                title={t(`${key}.title`)}
+                description={t(`${key}.description`)}
+                tag={t(`${key}.tag`)}
+                tone={tone}
+                gif={key}
+                index={nextIndex()}
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+              />
+            ))}
 
-        >
-          <span className={styles.badge}>
-            <Sparkles size={13} />
-            {t("badge")}
-          </span>
-          <h1 className={styles.title}>{t("title")}</h1>
-          <p className={styles.subtitle}>{t("subtitle")}</p>
-        </motion.header>
+            {isTeacher && (
+              <CardShell
+                href="/teacher"
+                icon={<GraduationCap size={20} strokeWidth={2.2} />}
+                title={t("teacher.title")}
+                description={t("teacher.description")}
+                tag={t("teacher.tag")}
+                tone="var(--primary)"
+                gif="teacher"
+                index={nextIndex()}
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+              />
+            )}
 
-        <motion.nav
-          className={styles.bentoGrid}
-          initial={shouldReduceMotion ? undefined : { opacity: 0 }}
-          animate={shouldReduceMotion ? undefined : { opacity: 1 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          aria-label="Dashboard Main Navigation"
-        >
-          {navCards.map(({ key, href, icon: Icon, tone }) => (
+            {isAdmin && (
+              <CardShell
+                href="/admin"
+                icon={<ShieldCheck size={20} strokeWidth={2.2} />}
+                title={t("admin.title")}
+                description={t("admin.description")}
+                tag={t("admin.tag")}
+                tone="var(--error)"
+                gif="admin"
+                index={nextIndex()}
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+              />
+            )}
+
             <CardShell
-              key={key}
-              href={href}
-              icon={<Icon size={20} strokeWidth={2.2} />}
-              title={t(`${key}.title`)}
-              description={t(`${key}.description`)}
-              tag={t(`${key}.tag`)}
-              tone={tone}
-              gif={key}
-              index={nextIndex()}
-              onPointerMove={handlePointerMove}
-              onPointerLeave={handlePointerLeave}
-            />
-          ))}
-
-          {isTeacher && (
-            <CardShell
-              href="/teacher"
-              icon={<GraduationCap size={20} strokeWidth={2.2} />}
-              title={t("teacher.title")}
-              description={t("teacher.description")}
-              tag={t("teacher.tag")}
-              tone="var(--primary)"
-              gif="teacher"
-              index={nextIndex()}
-              onPointerMove={handlePointerMove}
-              onPointerLeave={handlePointerLeave}
-            />
-          )}
-
-          {isAdmin && (
-            <CardShell
-              href="/admin"
-              icon={<ShieldCheck size={20} strokeWidth={2.2} />}
-              title={t("admin.title")}
-              description={t("admin.description")}
-              tag={t("admin.tag")}
+              isButton
+              onClick={logout}
+              disabled={isLoggingOut}
+              icon={
+                isLoggingOut ? (
+                  <Loader2 size={20} className={styles.spinner} />
+                ) : (
+                  <LogOut size={20} strokeWidth={2.2} />
+                )
+              }
+              title={t("logout.title")}
+              description={t("logout.description")}
+              tag={t("logout.tag")}
               tone="var(--error)"
-              gif="admin"
+              gif="logout"
               index={nextIndex()}
+              danger
               onPointerMove={handlePointerMove}
               onPointerLeave={handlePointerLeave}
             />
-          )}
-
-          <CardShell
-            isButton
-            onClick={logout}
-            disabled={isLoggingOut}
-            icon={
-              isLoggingOut ? (
-                <Loader2 size={20} className={styles.spinner} />
-              ) : (
-                <LogOut size={20} strokeWidth={2.2} />
-              )
-            }
-            title={t("logout.title")}
-            description={t("logout.description")}
-            tag={t("logout.tag")}
-            tone="var(--error)"
-            gif="logout"
-            index={nextIndex()}
-            danger
-            onPointerMove={handlePointerMove}
-            onPointerLeave={handlePointerLeave}
-          />
-        </motion.nav>
-      </div>
-      <FlashcardComponent />
-    </main>
+          </motion.nav>
+        </div>
+        <FlashcardComponent />
+      </main>
+    </MotionConfig>
   );
 }

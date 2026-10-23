@@ -22,6 +22,7 @@ import { SessionQuestion } from 'src/session-question/entities/session-question.
 import { SessionQuestionAnswer } from 'src/session-question-answer/entities/session-question-answer.entity';
 import { RedeemCode } from 'src/redeem_code/entities/redeem_code.entity';
 import { Role } from 'src/auth/enums/role.enum';
+import { Year } from 'src/year/entities/year.entity';
 
 @Injectable()
 export class UserService {
@@ -111,7 +112,7 @@ export class UserService {
   async findOne(id: string) {
     const user = await this.userRepo.findOne({
       where: { id },
-      relations: { redeemCode: true },
+      relations: { redeemCode: true, demoYear: true },
     });
     if (!user) {
       throw new NotFoundException(
@@ -299,7 +300,7 @@ export class UserService {
 
   async checkUserActivation(userId: string) {
     const user = await this.findOne(userId);
-    if (!user.isActive) {
+    if (!user.isActive && !(user.isDemo && user.demoYear)) {
       return false;
     }
     return true;
@@ -468,5 +469,39 @@ export class UserService {
         rank: currentUserRank,
       },
     };
+  }
+  async setDemo(userId: string, yearId: number) {
+    const user = await this.findOne(userId)
+    const year = await this.dataSource.getRepository(Year).findOne({ where: { id: yearId } })
+    if (!year) {
+      throw new BadRequestException(
+        this.i18n.translate('errors.user.year_not_found', {
+          lang: this.currentLang,
+        }),
+      );
+    }
+    user.isDemo = true
+    user.demoYear = year
+    await this.userRepo.save(user)
+    return {
+      message: this.i18n.translate('success.user.demo_set', {
+        lang: this.currentLang,
+      }),
+    }
+
+  }
+
+  async unsetDemo(userId: string) {
+    const user = await this.findOne(userId)
+
+    user.demoYear = null
+    user.isDemo = false
+    await this.userRepo.save(user)
+    return {
+      message: this.i18n.translate('success.user.demo_unset', {
+        lang: this.currentLang,
+      }),
+    }
+
   }
 }
