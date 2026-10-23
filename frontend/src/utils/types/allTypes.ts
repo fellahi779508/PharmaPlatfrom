@@ -193,6 +193,14 @@ export type CreateUser = {
 
 };
 
+export type CreateRoom = {
+  mode: string;
+  qcmCount: number;
+  timerSeconds: number;
+  examId?: number;
+  sessionId?: number;
+}
+
 type FlashcardKind = 'qcm' | 'medicament';
 
 interface FlashcardAnswer {

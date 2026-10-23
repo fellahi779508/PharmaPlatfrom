@@ -4,12 +4,14 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { User } from 'src/user/entities/user.entity';
 import { SessionQuestion } from 'src/session-question/entities/session-question.entity';
+import { Room } from 'src/room/entities/room.entity';
 
 export enum SessionStatus {
   NOT_STARTED = 'not_started',
@@ -53,4 +55,8 @@ export class Session {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Room, (room) => room.session, { onDelete: 'CASCADE' })
+  room: Room;
+
 }

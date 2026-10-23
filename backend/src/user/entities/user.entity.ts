@@ -16,6 +16,7 @@ import { Todo } from 'src/todo/entities/todo.entity';
 import { RedeemCode } from 'src/redeem_code/entities/redeem_code.entity';
 import { Session } from 'src/session/entities/session.entity';
 import { Exam } from 'src/exam/entities/exam.entity';
+import { RoomPlayer } from 'src/room-player/entities/room-player.entity';
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -83,6 +84,9 @@ export class User {
 
   @OneToMany(() => Exam, (exam) => exam.user)
   exams: Exam[] | null;
+
+  @OneToMany(() => RoomPlayer, (roomPlayer) => roomPlayer.user)
+  roomPlayers: RoomPlayer[] | null;
 
   //triggers-
   @BeforeInsert()

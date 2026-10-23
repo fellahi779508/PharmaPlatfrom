@@ -10,6 +10,7 @@ import {
   TreePine,
   Trophy,
   UserRound,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,8 +20,9 @@ export type NavKey =
   | "sessions"
   | "mindmaps"
   | "exams"
-  | "todos"
+  | "challenges"
   | "pomodoro"
+  | "todos"
   | "leaderboard"
   | "profile"
   | "stay updated"
@@ -62,6 +64,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/exams",
     icon: GraduationCap,
     tone: "var(--warning)",
+  },
+  {
+    key: "challenges",
+    href: "/dashboard/challenges",
+    icon: Users,
+    tone: "var(--info)",
   },
   {
     key: "pomodoro",

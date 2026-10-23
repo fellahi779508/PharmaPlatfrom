@@ -31,6 +31,8 @@ import { TpModule } from './tp/tp.module';
 import { UserModule } from './user/user.module';
 import { YearModule } from './year/year.module';
 import { join } from 'path';
+import { RoomModule } from './room/room.module';
+import { RoomPlayerModule } from './room-player/room-player.module';
 
 
 // Feature Modules
@@ -97,7 +99,9 @@ import { join } from 'path';
     ImageModule,
     CloudinaryModule,
     FlashcardModule,
-    MedicamentModule
+    MedicamentModule,
+    RoomModule,
+    RoomPlayerModule
   ],
   controllers: [],
   providers: [],

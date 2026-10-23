@@ -1,0 +1,1240 @@
+/* ==================================================================
+   Challenges Page
+   ================================================================== */
+
+.page {
+  --font-serif:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia,
+    "Times New Roman", serif;
+
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+
+  background-color: var(--background);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 8% 0%,
+      color-mix(in srgb, var(--primary) 8%, transparent),
+      transparent 30rem),
+    radial-gradient(circle at 92% 90%,
+      color-mix(in srgb, var(--accent) 6%, transparent),
+      transparent 28rem);
+
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  overflow-x: hidden;
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4rem) clamp(1.25rem, 4vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 4rem);
+  text-align: center;
+}
+
+/* ==================================================================
+   Header
+   ================================================================== */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 640px;
+  position: relative;
+}
+
+.header::before {
+  content: "";
+  position: absolute;
+  width: 72px;
+  height: 3px;
+  left: 50%;
+  top: -1rem;
+  transform: translateX(-50%);
+  background: var(--primary);
+  border-radius: 999px;
+  opacity: 0.8;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 70%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  border-radius: 5px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.86rem;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 3%, transparent);
+  transform: rotate(-1deg);
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.badge:hover {
+  transform: rotate(0deg) translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.title {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 6vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* ==================================================================
+   Action Cards (Create / Join)
+   ================================================================== */
+
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 3vw, 1.5rem);
+  width: 100%;
+  max-width: 720px;
+}
+
+.actionCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--background) 90%, transparent);
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 3%, transparent),
+    0 8px 24px -12px rgba(0, 0, 0, 0.25);
+}
+
+.actionCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 100% 0%,
+      color-mix(in srgb, var(--primary) 12%, transparent),
+      transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--border));
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+    0 18px 40px -16px rgba(0, 0, 0, 0.35);
+}
+
+.actionCard:hover::after {
+  opacity: 1;
+}
+
+.actionCard:active {
+  transform: translateY(-1px);
+}
+
+.actionCard:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.actionCardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  margin-bottom: 0.25rem;
+  transition: transform 0.25s ease;
+}
+
+.actionCard:hover .actionCardIcon {
+  transform: scale(1.05);
+}
+
+.actionCardTitle {
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.actionCardHint {
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+
+/* Create variant */
+.actionCardCreate .actionCardIcon {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+}
+
+.actionCardCreate:hover {
+  border-color: color-mix(in srgb, var(--primary) 65%, var(--border));
+}
+
+.actionCardCreate::after {
+  background: radial-gradient(circle at 100% 0%,
+      color-mix(in srgb, var(--primary) 18%, transparent),
+      transparent 60%);
+}
+
+/* Join variant */
+.actionCardJoin .actionCardIcon {
+  background: color-mix(in srgb, var(--info) 15%, transparent);
+  color: var(--info);
+}
+
+.actionCardJoin:hover {
+  border-color: color-mix(in srgb, var(--info) 65%, var(--border));
+}
+
+.actionCardJoin::after {
+  background: radial-gradient(circle at 100% 0%,
+      color-mix(in srgb, var(--info) 18%, transparent),
+      transparent 60%);
+}
+
+/* ==================================================================
+   Modal Overlay
+   ================================================================== */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--background);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.modalBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+  justify-content: flex-end;
+}
+
+/* ==================================================================
+   Form Fields
+   ================================================================== */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.input,
+.select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--background);
+  color: var(--foreground);
+  transition: border-color 0.2s ease;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  margin-top: 0.25rem;
+}
+
+.error {
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+  border-radius: 8px;
+  color: var(--error);
+  font-size: 0.85rem;
+}
+
+/* ==================================================================
+   Content Selection Grid
+   ================================================================== */
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.contentItem {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.contentItem:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--background));
+}
+
+.contentItemSelected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ==================================================================
+   Buttons
+   ================================================================== */
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: var(--muted);
+}
+
+.confirmButton {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.confirmButton:hover {
+  background: color-mix(in srgb, var(--primary) 85%, black);
+  transform: translateY(-1px);
+}
+
+.confirmButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==================================================================
+   Loading Spinner
+   ================================================================== */
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--muted-foreground);
+}
+
+/* ==================================================================
+   Game Room
+   ================================================================== */
+
+.gameRoom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
+
+.gameRoomHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.gameRoomHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.gameRoomContent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* ==================================================================
+   Waiting Room
+   ================================================================== */
+
+.waitingRoom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  padding: 2rem;
+}
+
+.waitingRoomLeft,
+.waitingRoomRight {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.waitingRoomLeft h3,
+.waitingRoomRight h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.playerItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.playerHost {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--muted));
+}
+
+.playerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.playerName {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.hostBadge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.readyIcon {
+  color: var(--success);
+}
+
+.readyButton {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.readyButton:hover:not(:disabled) {
+  background: var(--primary);
+  color: white;
+}
+
+.readyButtonReady {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.readyButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.roomInfo {
+  padding: 1.5rem;
+  background: var(--muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--muted-foreground);
+}
+
+.settingItem strong {
+  color: var(--foreground);
+}
+
+.startGameButton {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.startGameButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 85%, black);
+  transform: translateY(-2px);
+}
+
+.startGameButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==================================================================
+   Countdown
+   ================================================================== */
+
+.countdownContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.countdownNumber {
+  font-size: 8rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ==================================================================
+   Question View
+   ================================================================== */
+
+.questionView {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  height: 100%;
+}
+
+.questionMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.questionHeader {
+  padding: 1rem 1.5rem;
+  background: var(--muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.questionProgress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.questionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: var(--background);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.questionText {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  line-height: 1.6;
+}
+
+.questionImage {
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.answersList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answerOption {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.answerOption:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--background));
+}
+
+.answerSelected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--background));
+}
+
+.answerDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.answerRadio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.answerRadioDot {
+  width: 10px;
+  height: 10px;
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+.submitButton,
+.nextButton {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+}
+
+.submitButton:hover,
+.nextButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 85%, black);
+  transform: translateY(-2px);
+}
+
+.nextButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.questionSidebar {
+  padding: 1.5rem;
+  background: var(--muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: fit-content;
+}
+
+.questionSidebar h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.leaderboardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leaderboardItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--background);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.leaderboardRank {
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 30px;
+}
+
+.leaderboardName {
+  flex: 1;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.leaderboardScore {
+  font-weight: 600;
+  color: var(--success);
+}
+
+/* ==================================================================
+   Game Completed
+   ================================================================== */
+
+.gameCompleted {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+.gameCompletedHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.trophyIcon {
+  color: var(--warning);
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.gameCompletedHeader h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.gameCompletedHeader p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 1rem;
+}
+
+.finalLeaderboard {
+  width: 100%;
+  padding: 1.5rem;
+  background: var(--muted);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.finalLeaderboard h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.leaderboardTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leaderboardRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.leaderboardRank {
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 50px;
+  text-align: center;
+}
+
+.leaderboardPlayerInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.leaderboardPlayerInfo .leaderboardName {
+  font-weight: 600;
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.leaderboardStats {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.leaderboardRow .leaderboardScore {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.gameCompletedActions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.rematchButton,
+.newChallengeButton,
+.leaveButton,
+.deleteRoomButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+}
+
+.rematchButton {
+  background: var(--info);
+  color: white;
+}
+
+.rematchButton:hover {
+  background: color-mix(in srgb, var(--info) 85%, black);
+  transform: translateY(-2px);
+}
+
+.newChallengeButton {
+  background: var(--primary);
+  color: white;
+}
+
+.newChallengeButton:hover {
+  background: color-mix(in srgb, var(--primary) 85%, black);
+  transform: translateY(-2px);
+}
+
+.leaveButton {
+  background: var(--muted);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.leaveButton:hover {
+  background: var(--border);
+}
+
+.deleteRoomButton {
+  background: var(--error);
+  color: white;
+}
+
+.deleteRoomButton:hover {
+  background: color-mix(in srgb, var(--error) 85%, black);
+  transform: translateY(-2px);
+}
+
+/* ==================================================================
+   Responsive — Landing page
+   ================================================================== */
+
+@media (max-width: 640px) {
+  .actionGrid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+
+  .actionCard {
+    align-items: center;
+    text-align: center;
+  }
+
+  .actionCardIcon {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* ==================================================================
+   Responsive — Game room
+   ================================================================== */
+
+@media (max-width: 900px) {
+  .questionView {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .questionSidebar {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .gameRoomHeader {
+    padding: 0.85rem 1rem;
+  }
+
+  .gameRoomHeader h2 {
+    font-size: 1.05rem;
+  }
+
+  .gameRoomContent {
+    padding: 1rem;
+  }
+
+  .waitingRoom {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .questionContent {
+    padding: 1.25rem;
+  }
+
+  .questionText {
+    font-size: 1.05rem;
+  }
+
+  .submitButton,
+  .nextButton {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .countdownNumber {
+    font-size: 5.5rem;
+  }
+
+  .gameCompletedHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .leaderboardRow {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .leaderboardRank {
+    font-size: 1.15rem;
+    min-width: 38px;
+  }
+
+  .leaderboardRow .leaderboardScore {
+    font-size: 1rem;
+  }
+
+  .gameCompletedActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .rematchButton,
+  .newChallengeButton,
+  .leaveButton,
+  .deleteRoomButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .modalHeader,
+  .modalBody,
+  .modalFooter {
+    padding: 1.1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .contentGrid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+}
+
+/* ==================================================================
+   Reduced motion
+   ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .actionCard,
+  .actionCardIcon,
+  .badge,
+  .trophyIcon,
+  .countdownNumber,
+  .spinner,
+  .confirmButton,
+  .startGameButton,
+  .rematchButton,
+  .newChallengeButton,
+  .deleteRoomButton {
+    transition: none;
+    animation: none;
+  }
+
+  .actionCard:hover,
+  .actionCard:hover .actionCardIcon,
+  .confirmButton:hover,
+  .startGameButton:hover:not(:disabled),
+  .rematchButton:hover,
+  .newChallengeButton:hover,
+  .deleteRoomButton:hover {
+    transform: none;
+  }
+}
