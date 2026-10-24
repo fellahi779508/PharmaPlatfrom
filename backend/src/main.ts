@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-
 import {
   I18nValidationExceptionFilter,
   I18nValidationPipe,
@@ -26,9 +25,10 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS for frontend
+  // Fix CORS: Avoid wildcard origin with credentials: true
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   app.enableCors({
-    origin: '*',
+    origin: process.env.NODE_ENV === 'production' ? [frontendUrl] : true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
@@ -36,10 +36,10 @@ async function bootstrap() {
   return app;
 }
 
-// VPS/Local Development
+// VPS / Docker Deployment
 if (!process.env.VERCEL) {
   bootstrap().then((app) => {
-    const port = process.env.PORT ?? 7000;
+    const port = Number(process.env.PORT) || 7000;
     app.listen(port, '0.0.0.0', () => {
       console.log(`Server running on port ${port}`);
     });
@@ -59,7 +59,7 @@ export default async function (req: any, res: any) {
 
     return cachedServer(req, res);
   } catch (error) {
-    console.error('🔥 FATAL ERROR DURING APP INITIALIZATION:', error);
+    console.error('FATAL ERROR DURING APP INITIALIZATION:', error);
 
     res.status(500).send({
       message: 'Server failed to start',

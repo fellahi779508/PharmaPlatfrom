@@ -23,13 +23,15 @@ interface LeaveRoomPayload { roomId: string; userId: string; }
 
 const socketRoom = new Map<string, { roomId: string; userId: string }>();
 const answeredTracker = new Map<string, Set<string>>();
-const questionTimers = new Map<string, NodeJS.Timeout>(); // roomId -> timer
+const questionTimers = new Map<string, NodeJS.Timeout>();
 
 @WebSocketGateway({
-  cors: { origin: '*' },
   namespace: 'room',
+  cors: {
+    origin: process.env.FRONTEND_URL || '*',
+    credentials: true,
+  },
   transports: ['websocket', 'polling'],
-  path: '/socket.io/room',
 })
 export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
@@ -52,7 +54,6 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const room = await this.roomService.findById(roomId);
 
-      // Host left → destroy room
       if (room.hostId === userId) {
         await this.roomService.deleteRoom(roomId, userId);
         this.clearQuestionTimer(roomId);
@@ -86,12 +87,12 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('join_success', {
         room: sanitized,
         playerId: player.id,
-        userId: payload.userId,   // 👈 send back the real userId
+        userId: payload.userId,
         isHost: player.isHost,
       });
     } catch (err) {
       this.logger.error('Error joining room:', err);
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
@@ -113,7 +114,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     } catch (err) {
       this.logger.error('Error in player_ready:', err);
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
@@ -149,7 +150,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.startQuestionTimer(payload.roomId, 0, room.timerSeconds);
       }, 3000);
     } catch (err) {
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
@@ -161,17 +162,15 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const room = await this.roomService.resetRoom(payload.roomId, payload.userId);
 
-      // Clear per-question state
       answeredTracker.delete(payload.roomId);
       this.clearQuestionTimer(payload.roomId);
 
       const sanitized = this.sanitizeRoom(room);
 
-      // Tell everyone the room is fresh
       this.server.to(payload.roomId).emit('room_updated', sanitized);
       this.server.to(payload.roomId).emit('rematch_started', { room: sanitized });
     } catch (err) {
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
@@ -199,7 +198,6 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const room = await this.roomService.findById(payload.roomId);
       const totalPlayers = room.roomPlayers.length;
 
-      // 👇 NEW: broadcast progress so the host's button knows when to enable
       this.server.to(payload.roomId).emit('answer_progress', {
         answered: tracker.size,
         total: totalPlayers,
@@ -219,7 +217,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
         setTimeout(() => this.advanceToNext(payload.roomId, payload.questionIndex), 2000);
       }
     } catch (err) {
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
@@ -236,7 +234,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.clearQuestionTimer(payload.roomId);
       await this.advanceToNext(payload.roomId, room.currentQuestionIndex);
     } catch (err) {
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
@@ -248,7 +246,6 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const room = await this.roomService.findById(payload.roomId);
 
-      // Host leaving → delete room entirely
       if (room.hostId === payload.userId) {
         await this.roomService.deleteRoom(payload.roomId, payload.userId);
         this.clearQuestionTimer(payload.roomId);
@@ -269,11 +266,10 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(payload.roomId).emit('room_updated', this.sanitizeRoom(updatedRoom));
       client.emit('left_room', { success: true });
     } catch (err) {
-      client.emit('error', { message: err.message });
+      client.emit('error', { message: (err as Error).message });
     }
   }
 
-  // ── internal helpers ────────────────────────────────────────
   private async advanceToNext(roomId: string, currentIndex: number) {
     const nextIndex = await this.roomService.advanceQuestion(roomId);
     const question = await this.roomService.getQuestion(roomId, nextIndex);
