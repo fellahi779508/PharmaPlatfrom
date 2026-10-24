@@ -91,8 +91,14 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
 
       const token = await GetToken();
       socketInstance = io(
-        `${await getBackendUrl()}/room`,
-        { auth: { token }, transports: ["websocket"] },
+        `${await getBackendUrl()}/socket.io/room`,
+        { 
+          auth: { token },
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+        },
       );
 
       socketInstance.on("connect", () => console.log("Connected to room socket"));

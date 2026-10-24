@@ -25,7 +25,12 @@ const socketRoom = new Map<string, { roomId: string; userId: string }>();
 const answeredTracker = new Map<string, Set<string>>();
 const questionTimers = new Map<string, NodeJS.Timeout>(); // roomId -> timer
 
-@WebSocketGateway({ cors: { origin: '*' }, namespace: 'room' })
+@WebSocketGateway({
+  cors: { origin: '*' },
+  namespace: 'room',
+  transports: ['websocket', 'polling'],
+  path: '/socket.io/room',
+})
 export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private logger = new Logger('RoomGateway');
