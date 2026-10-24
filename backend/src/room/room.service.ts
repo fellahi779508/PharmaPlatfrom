@@ -74,7 +74,10 @@ export class RoomService {
 
       // Fetch host user
       const userRepo = manager.getRepository(User);
-      const host = await userRepo.findOne({ where: { id: hostId } });
+      const host = await userRepo.findOne({
+        where: { id: hostId },
+        relations: { demoYear: true, redeemCode: { year: true } },
+      });
       if (!host) throw new NotFoundException('Host user not found');
 
       // Create session or exam based on mode
@@ -360,15 +363,48 @@ export class RoomService {
       return { room, player: alreadyIn };
     }
 
-    const user = await this.dataSource.getRepository(User).findOne({ where: { id: userId } });
+    const userRepo = this.dataSource.getRepository(User);
+    const user = await userRepo.findOne({
+      where: { id: userId },
+      relations: { demoYear: true, redeemCode: { year: true } },
+    });
     if (!user) throw new NotFoundException('User not found');
 
     // Check if host has activated account and enforce matching activation status
     if (room.requiresActivatedAccount && !user.isActive) {
       throw new BadRequestException('This room requires an activated account to join');
     }
-    if (!room.requiresActivatedAccount && user.isActive) {
-      throw new BadRequestException('This room is for non-activated accounts only');
+    if (!room.requiresActivatedAccount && !user.isDemo) {
+      throw new BadRequestException('This room is for demo accounts only');
+    }
+
+    // Get the year ID for both host and joining user
+    const getYearId = (u: User): number | null => {
+      // For demo users, get from demoYear
+      if (u.isDemo && u.demoYear) {
+        return u.demoYear.id;
+      }
+      // For activated users, get from redeemCode.year
+      if (!u.isDemo && u.redeemCode?.year) {
+        return u.redeemCode.year.id;
+      }
+      return null;
+    };
+
+    // Check if both are in the same year
+    if (!room.hostId) throw new NotFoundException('Host user not found');
+
+    const host = await userRepo.findOne({
+      where: { id: room.hostId },
+      relations: { demoYear: true, redeemCode: { year: true } },
+    });
+    if (!host) throw new NotFoundException('Host user not found');
+
+    const hostYearId = getYearId(host);
+    const userYearId = getYearId(user);
+
+    if (hostYearId !== null && userYearId !== null && hostYearId !== userYearId) {
+      throw new BadRequestException('You must be subscribed to the same year as the host to join this room');
     }
 
     const player = this.roomPlayerRepo.create({

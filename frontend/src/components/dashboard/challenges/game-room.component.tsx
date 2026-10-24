@@ -22,7 +22,7 @@ import {
   LeaderboardEntry,
 } from "@/utils/types/room.types";
 import { findRoomById } from "@/utils/server/room-api";
-import { GetToken } from "@/utils/server/auth-api";
+import { getBackendUrl, GetToken } from "@/utils/server/auth-api";
 
 import styles from "./challenges.module.css";
 
@@ -91,7 +91,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
 
       const token = await GetToken();
       socketInstance = io(
-        `${process.env.BACKEND_URL || "http://localhost:7000"}/room`,
+        `${await getBackendUrl()}/room`,
         { auth: { token }, transports: ["websocket"] },
       );
 

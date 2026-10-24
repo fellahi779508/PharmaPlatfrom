@@ -485,6 +485,26 @@ function ActivatedView({
             <h2 className={styles.stateTitle}>{t("activated.title")}</h2>
             <p className={styles.stateText}>{t("activated.description")}</p>
 
+            {(user?.demoYear || user?.redeemCode?.year) && (
+                <div className={styles.periodCard}>
+                    <div className={styles.periodRow}>
+                        <div className={styles.periodItem}>
+                            <div className={styles.periodIconWrap}>
+                                <GraduationCap size={15} />
+                            </div>
+                            <div className={styles.periodText}>
+                                <span className={styles.periodLabel}>
+                                    {t("activated.year")}
+                                </span>
+                                <span className={styles.periodValue}>
+                                    {user.isDemo ? user.demoYear?.name : user.redeemCode?.year?.name}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {(activation || expiry) && (
                 <div className={styles.periodCard}>
                     <div className={styles.periodRow}>
@@ -717,6 +737,26 @@ function DemoView({
 
             <h2 className={styles.stateTitle}>{t("demo.title")}</h2>
             <p className={styles.stateText}>{t("demo.description")}</p>
+
+            {user?.demoYear && (
+                <div className={styles.periodCard}>
+                    <div className={styles.periodRow}>
+                        <div className={styles.periodItem}>
+                            <div className={styles.periodIconWrap}>
+                                <GraduationCap size={15} />
+                            </div>
+                            <div className={styles.periodText}>
+                                <span className={styles.periodLabel}>
+                                    {t("demo.currentYearLabel")}
+                                </span>
+                                <span className={styles.periodValue}>
+                                    {user.demoYear.name}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <AnimatePresence>
                 {successMessage && (

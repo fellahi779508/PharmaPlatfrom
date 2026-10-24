@@ -214,3 +214,6 @@ export async function verifyOtpPassword(email: string, otp: string) {
     };
   }
 }
+export async function getBackendUrl() {
+  return process.env.BACKEND_URL;
+}

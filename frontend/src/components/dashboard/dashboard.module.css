@@ -210,6 +210,30 @@
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+.yearBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: max-content;
+  padding: 0.28rem 0.55rem;
+  margin-top: 0.35rem;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--border));
+  border-radius: 999px;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.yearBadge:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
 .title {
   margin: 0;
   color: var(--foreground);

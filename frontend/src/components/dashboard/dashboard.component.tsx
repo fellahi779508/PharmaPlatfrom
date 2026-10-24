@@ -23,7 +23,9 @@ import styles from "./dashboard.module.css";
 import { NAV_ITEMS } from "./nav-items";
 import { useLogout } from "./use-logout";
 import { getRole } from "@/utils/server/auth-api";
+import { GetUserProfile } from "@/utils/server/user-api";
 import FlashcardComponent from "../flashcard.component";
+import { User } from "@/utils/types/allTypes";
 
 /* ------------------------------------------------------------------ */
 /*  Lazy-loaded, layout-stable GIF                                    */
@@ -149,13 +151,14 @@ export default function DashboardPage() {
   const { isLoggingOut, logout } = useLogout();
   const [currentRole, setCurrentRole] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   /* ---------------- Client Mount Guard ---------------- */
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  /* ---------------- Fetch role ---------------- */
+  /* ---------------- Fetch role and profile ---------------- */
   const fetchRole = useCallback(async () => {
     try {
       const role = await getRole();
@@ -166,11 +169,23 @@ export default function DashboardPage() {
     }
   }, []);
 
+  const fetchProfile = useCallback(async () => {
+    try {
+      const profileRes = await GetUserProfile();
+      if (profileRes.status && profileRes.response) {
+        setUser(profileRes.response);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user profile:", error);
+    }
+  }, []);
+
   useEffect(() => {
     if (isMounted) {
       fetchRole();
+      fetchProfile();
     }
-  }, [fetchRole, isMounted]);
+  }, [fetchRole, fetchProfile, isMounted]);
 
   /* ---------------- Pointer tilt + spotlight ---------------- */
   const handlePointerMove = useCallback(
@@ -233,6 +248,12 @@ export default function DashboardPage() {
             </span>
             <h1 className={styles.title}>{t("title")}</h1>
             <p className={styles.subtitle}>{t("subtitle")}</p>
+            {(user?.demoYear || user?.redeemCode?.year) && (
+              <div className={styles.yearBadge}>
+                <GraduationCap size={14} />
+                <span>{user.isDemo ? user.demoYear?.name : user.redeemCode?.year?.name}</span>
+              </div>
+            )}
           </motion.header>
 
           <motion.nav

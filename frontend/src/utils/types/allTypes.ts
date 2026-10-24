@@ -127,7 +127,7 @@ export type User = {
   isVerified: boolean;
   isDemo?: boolean;
   demoYear?: Year | null;
-  redeemCode?: RedeemCode | null;
+  redeemCode?: RedeemCode & { year?: Year | null } | null;
   otpCode?: string | null;
   otpExpiresAt?: string | null;
   aiGenerationCount?: number;

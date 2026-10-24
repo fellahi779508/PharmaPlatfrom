@@ -163,7 +163,7 @@ export class RedeemCodeService {
       // ---- load code (inside transaction) ----
       const codeEntity = await redeemRepo.findOne({
         where: { code },
-        relations: { user: true },
+        relations: { user: true, year: true },
       });
 
       if (!codeEntity) {
@@ -223,6 +223,7 @@ export class RedeemCodeService {
       user.endDate = expiry;
       user.isActive = true;
       user.demoYear = null;
+      user.isDemo = false;
       await userRepo.save(user);
 
       return {
