@@ -41,7 +41,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
   const [isHost, setIsHost] = useState(false);
 
   const [gameState, setGameState] = useState<
-    "connecting" | "waiting" | "starting" | "playing" | "completed"
+    "connecting" | "waiting" | "starting" | "playing" | "completed" | "review"
   >("connecting");
   const [countdown, setCountdown] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<RoomQuestion | null>(null);
@@ -55,8 +55,20 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
     answered: 0,
     total: 0,
   });
+  const [reviewData, setReviewData] = useState<{
+    questionIndex: number;
+    questionText: string;
+    userAnswers: number[];
+    correctAnswers: number[];
+    isCorrect: boolean;
+    answersMap: Map<number, string>;
+  }[]>([]);
+  const [userAnswersByQuestion, setUserAnswersByQuestion] = useState<Map<number, number[]>>(new Map());
 
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const userAnswersByQuestionRef = useRef<Map<number, number[]>>(new Map());
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const questionsCacheRef = useRef<Map<number, any>>(new Map());
 
   const onCloseRef = useRef(onClose);
   useEffect(() => {
@@ -117,6 +129,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
       mounted = false;
       if (socketInstance) socketInstance.disconnect();
       if (countdownRef.current) clearInterval(countdownRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [roomId, getUserId]);
 
@@ -186,10 +199,56 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
       setQuestionStartTime(Date.now());
       setTimeRemaining(data.timerSeconds);
       setAnswerProgress({ answered: 0, total: 0 });
+      
+      // Cache question data for review using ref
+      questionsCacheRef.current.set(data.questionIndex, data);
     };
 
     const onAnswerResult = (data: any) => {
-      console.log("Answer result:", data);
+      console.log("Answer result received:", data);
+      const userAnswers = userAnswersByQuestionRef.current.get(data.questionIndex) || [];
+      
+      // Create a map of answer ID to answer text from backend response
+      const answersMap = new Map<number, string>();
+      if (data.allAnswers) {
+        console.log("All answers from backend:", data.allAnswers);
+        data.allAnswers.forEach((answer: any) => {
+          answersMap.set(answer.id, answer.answer);
+        });
+      } else {
+        console.warn("No allAnswers in backend response, using cache");
+        const questionData = questionsCacheRef.current.get(data.questionIndex);
+        if (questionData?.qcm?.answers) {
+          questionData.qcm.answers.forEach((answer: any) => {
+            answersMap.set(answer.id, answer.answer);
+          });
+        }
+      }
+      
+      console.log("Answers map created:", answersMap);
+      
+      setReviewData((prev) => {
+        const existingIndex = prev.findIndex(
+          (r) => r.questionIndex === data.questionIndex
+        );
+        const newReviewItem = {
+          questionIndex: data.questionIndex,
+          questionText: data.questionText || '',
+          userAnswers,
+          correctAnswers: data.correctAnswerIds,
+          isCorrect: data.isCorrect,
+          answersMap,
+        };
+        
+        console.log("New review item:", newReviewItem);
+        
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = newReviewItem;
+          return updated;
+        }
+        return [...prev, newReviewItem];
+      });
     };
 
     const onLeaderboardUpdate = (data: RoomPlayer[]) => {
@@ -203,12 +262,21 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
     const onTimeUp = (data: { questionIndex: number }) => {
       console.log("Time up for question:", data.questionIndex);
       setAnswerSubmitted(true);
+      setTimeRemaining(0);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
     };
 
     const onGameOver = (data: { leaderboard: LeaderboardEntry[] }) => {
-      setGameState("completed");
+      setGameState("review");
       setFinalLeaderboard(data.leaderboard);
       if (countdownRef.current) clearInterval(countdownRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      
+      // Log cached questions for debugging
+      console.log("Cached questions:", questionsCacheRef.current);
+      console.log("Review data before game over:", reviewData);
     };
 
     const onRoomDeleted = (data: { reason?: string }) => {
@@ -268,6 +336,32 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
     };
   }, [socket]);
 
+  // Timer countdown effect
+  useEffect(() => {
+    if (timeRemaining > 0 && gameState === "playing" && !answerSubmitted) {
+      timerIntervalRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (timeRemaining === 0 && gameState === "playing" && !answerSubmitted) {
+      // When timer reaches 0, mark as submitted (empty answer) but don't auto-advance
+      setAnswerSubmitted(true);
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [timeRemaining, gameState, answerSubmitted]);
+
   const handleReady = () => {
     if (!socket || !userId) return;
     socket.emit("player_ready", { roomId, userId });
@@ -286,6 +380,11 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
     }
 
     const timeSpent = Date.now() - questionStartTime;
+    
+    // Store user answers for review
+    userAnswersByQuestionRef.current.set(currentQuestion.questionIndex, [...selectedAnswers]);
+    setUserAnswersByQuestion(new Map(userAnswersByQuestionRef.current));
+
     socket.emit("submit_answer", {
       roomId,
       userId,
@@ -402,6 +501,19 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
         {mounted && gameState === "completed" && (
           <GameCompleted
             leaderboard={finalLeaderboard}
+            isHost={isHost}
+            onRematch={handleRematch}
+            onNewChallenge={handleNewChallenge}
+            onLeave={handleLeaveRoom}
+            onDeleteRoom={handleLeaveRoom}
+          />
+        )}
+
+        {mounted && gameState === "review" && (
+          <GameReview
+            reviewData={reviewData}
+            finalLeaderboard={finalLeaderboard}
+            onProceedToCompleted={() => setGameState("completed")}
             isHost={isHost}
             onRematch={handleRematch}
             onNewChallenge={handleNewChallenge}
@@ -605,11 +717,10 @@ function QuestionView({
               <button
                 className={styles.nextButton}
                 onClick={onNextQuestion}
-                disabled={!allAnswered}
               >
                 {t("nextQuestion")} →
               </button>
-              {!allAnswered && (
+              {!allAnswered && timeRemaining > 0 && (
                 <p
                   style={{
                     fontSize: "0.85rem",
@@ -619,6 +730,17 @@ function QuestionView({
                 >
                   Waiting for players… {answerProgress.answered} /{" "}
                   {answerProgress.total}
+                </p>
+              )}
+              {timeRemaining === 0 && !allAnswered && (
+                <p
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--accent)",
+                    marginTop: "0.5rem",
+                  }}
+                >
+                  Time's up! Some players didn't answer.
                 </p>
               )}
             </>
@@ -697,6 +819,132 @@ function GameCompleted({
       </div>
 
       <div className={styles.gameCompletedActions}>
+        {isHost && (
+          <button className={styles.rematchButton} onClick={onRematch}>
+            <RotateCcw size={16} />
+            {t("rematch")}
+          </button>
+        )}
+        <button className={styles.newChallengeButton} onClick={onNewChallenge}>
+          <Play size={16} />
+          {t("newChallenge")}
+        </button>
+        <button className={styles.leaveButton} onClick={onLeave}>
+          {t("leave")}
+        </button>
+        {isHost && (
+          <button className={styles.deleteRoomButton} onClick={onDeleteRoom}>
+            <Trash2 size={16} />
+            {t("deleteRoom")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// Game Review Component
+// ===========================================================================
+
+function GameReview({
+  reviewData,
+  finalLeaderboard,
+  onProceedToCompleted,
+  isHost,
+  onRematch,
+  onNewChallenge,
+  onLeave,
+  onDeleteRoom,
+}: {
+  reviewData: {
+    questionIndex: number;
+    questionText: string;
+    userAnswers: number[];
+    correctAnswers: number[];
+    isCorrect: boolean;
+    answersMap: Map<number, string>;
+  }[];
+  finalLeaderboard: LeaderboardEntry[];
+  onProceedToCompleted: () => void;
+  isHost: boolean;
+  onRematch: () => void;
+  onNewChallenge: () => void;
+  onLeave: () => void;
+  onDeleteRoom: () => void;
+}) {
+  const t = useTranslations("challenges");
+
+  return (
+    <div className={styles.gameReview}>
+      <div className={styles.gameReviewHeader}>
+        <Trophy size={48} className={styles.trophyIcon} />
+        <h2>{t("reviewAnswers")}</h2>
+        <p>{t("reviewAnswersSubtitle")}</p>
+      </div>
+
+      <div className={styles.reviewList}>
+        {reviewData.map((review, index) => (
+          <div
+            key={index}
+            className={`${styles.reviewItem} ${review.isCorrect ? styles.reviewCorrect : styles.reviewIncorrect
+              }`}
+          >
+            <div className={styles.reviewItemHeader}>
+              <span className={styles.reviewQuestionNumber}>
+                {t("question")} {review.questionIndex + 1}
+              </span>
+              <span className={styles.reviewResult}>
+                {review.isCorrect ? (
+                  <>
+                    <CheckCircle2 size={16} />
+                    {t("correct")}
+                  </>
+                ) : (
+                  <>
+                    <XCircle size={16} />
+                    {t("incorrect")}
+                  </>
+                )}
+              </span>
+            </div>
+
+            <div className={styles.reviewItemContent}>
+              <div className={styles.reviewQuestionText}>
+                {review.questionText}
+              </div>
+              <div className={styles.reviewAnswers}>
+                <div className={styles.reviewAnswerSection}>
+                  <span className={styles.reviewAnswerLabel}>{t("yourAnswers")}:</span>
+                  <div className={styles.reviewAnswerTags}>
+                    {review.userAnswers.map((answerId) => (
+                      <span key={answerId} className={styles.reviewAnswerTag}>
+                        {review.answersMap.get(answerId) || `#${answerId}`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.reviewAnswerSection}>
+                  <span className={styles.reviewAnswerLabel}>{t("correctAnswers")}:</span>
+                  <div className={styles.reviewAnswerTags}>
+                    {review.correctAnswers.map((answerId) => (
+                      <span key={answerId} className={styles.reviewAnswerTag}>
+                        {review.answersMap.get(answerId) || `#${answerId}`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.gameCompletedActions}>
+        <button className={styles.proceedButton} onClick={onProceedToCompleted}>
+          {t("viewLeaderboard")}
+        </button>
         {isHost && (
           <button className={styles.rematchButton} onClick={onRematch}>
             <RotateCcw size={16} />

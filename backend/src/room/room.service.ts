@@ -474,11 +474,18 @@ export class RoomService {
     questionIndex: number,
     selectedAnswerIds: number[],
     timeSpentMs: number,
-  ): Promise<{ isCorrect: boolean; correctAnswerIds: number[] }> {
+  ): Promise<{ isCorrect: boolean; correctAnswerIds: number[]; questionText: string; allAnswers: { id: number; answer: string }[] }> {
     const room = await this.roomRepo.findOne({ where: { id: roomId } });
     if (!room || !room.qcmIds) throw new NotFoundException('Room not found');
 
     const qcmId = room.qcmIds[questionIndex];
+    const qcm = await this.dataSource.getRepository(Qcm).findOne({
+      where: { id: qcmId },
+      relations: { answers: true },
+    });
+
+    if (!qcm) throw new NotFoundException(`QCM ${qcmId} not found`);
+
     const answers = await this.dataSource.getRepository(QcmAnswer).find({
       where: { qcm: { id: qcmId } },
     });
@@ -511,7 +518,12 @@ export class RoomService {
       await this.roomPlayerRepo.save(player);
     }
 
-    return { isCorrect, correctAnswerIds: correctIds };
+    return { 
+      isCorrect, 
+      correctAnswerIds: correctIds,
+      questionText: qcm.question,
+      allAnswers: answers.map(a => ({ id: a.id, answer: a.answer }))
+    };
   }
 
   // ─────────────────────────────────────────────────────────────

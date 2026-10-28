@@ -189,6 +189,8 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
         questionIndex: payload.questionIndex,
         isCorrect: result.isCorrect,
         correctAnswerIds: result.correctAnswerIds,
+        questionText: result.questionText,
+        allAnswers: result.allAnswers,
       });
 
       const tracker = answeredTracker.get(payload.roomId) ?? new Set<string>();
@@ -305,8 +307,16 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (timerSeconds <= 0) return;
 
     const timeout = setTimeout(async () => {
-      this.server.to(roomId).emit('time_up', { questionIndex });
-      setTimeout(() => this.advanceToNext(roomId, questionIndex), 1500);
+      // Check if we're still on the same question before emitting time_up
+      try {
+        const room = await this.roomService.findById(roomId);
+        if (room.currentQuestionIndex === questionIndex) {
+          this.server.to(roomId).emit('time_up', { questionIndex });
+          // Don't auto-advance - let the host manually advance
+        }
+      } catch (err) {
+        this.logger.error('Error in timer handler:', err);
+      }
     }, timerSeconds * 1000);
 
     questionTimers.set(roomId, timeout);
