@@ -7,6 +7,7 @@ import { DataSource, Repository } from 'typeorm';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { Subject } from 'src/subject/entities/subject.entity';
 import { Semester } from 'src/semester/entities/semester.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class CourseService {
@@ -52,7 +53,7 @@ export class CourseService {
     return await this.courseRepository.find();
   }
 
-  async findBySubject(subjectId: number) {
+  async findBySubject(subjectId: number, userId?: string) {
     const subject = await this.dataSource.getRepository(Subject).findOneBy({
       id: subjectId,
     });
@@ -63,7 +64,18 @@ export class CourseService {
         }),
       );
     }
-    if (subject.isDemo) {
+    
+    // Get user to check isDemo status
+    let userIsDemo = false;
+    if (userId) {
+      const user = await this.dataSource.getRepository(User).findOne({
+        where: { id: userId },
+      });
+      userIsDemo = user?.isDemo || false;
+    }
+    
+    // Filter courses based on user's isDemo status, not subject's
+    if (userIsDemo) {
       const courses = await this.courseRepository.find({
         where: { subject: { id: subjectId }, isDemo: true },
         relations: { qcms: true },
@@ -74,7 +86,7 @@ export class CourseService {
       }));
     }
     return this.courseRepository.find({
-      where: { subject: { id: subjectId }, isDemo: false },
+      where: { subject: { id: subjectId } },
       relations: { qcms: true },
     });
   }

@@ -8,6 +8,7 @@ import {
   Delete,
   Put,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -41,8 +42,9 @@ export class CourseController {
 
   @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @Get('subject/:subjectId')
-  findBySubject(@Param('subjectId') subjectId: string) {
-    return this.courseService.findBySubject(+subjectId);
+  findBySubject(@Param('subjectId') subjectId: string, @Req() req: any) {
+    const userId = req.user?.id;
+    return this.courseService.findBySubject(+subjectId, userId);
   }
 
   @UseGuards(JwtAuthGuard, SubscriptionGuard)
