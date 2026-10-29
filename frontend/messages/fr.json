@@ -174,7 +174,8 @@
       "answer": "Réponse",
       "isCorrect": "Marquer comme correcte",
       "explanation": "Explication (facultatif)",
-      "isDemo": "Version Démo (isDemo)"
+      "isDemo": "Version Démo (isDemo)",
+      "isResidanat": "Résidanat (isResidanat)"
     },
     "qcm": {
       "answersLabel": "Options de réponse",

@@ -174,7 +174,8 @@
       "answer": "الإجابة",
       "isCorrect": "تعيين كإجابة صحيحة",
       "explanation": "الشرح (اختياري)",
-      "isDemo": "نسخة تجريبية (isDemo)"
+      "isDemo": "نسخة تجريبية (isDemo)",
+      "isResidanat": "دورة الممارسة (isResidanat)"
     },
     "qcm": {
       "answersLabel": "خيارات الإجابة",

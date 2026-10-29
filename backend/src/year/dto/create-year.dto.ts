@@ -6,4 +6,7 @@ export class CreateYearDto {
   @IsBoolean()
   @IsOptional()
   isDemo: boolean;
+  @IsBoolean()
+  @IsOptional()
+  isResidanat: boolean;
 }

@@ -12,6 +12,8 @@ export class Year {
   name: string;
   @Column({ default: false, nullable: true })
   isDemo: boolean;
+  @Column({ default: false, nullable: true })
+  isResidanat: boolean;
   @OneToMany(() => User, (user) => user.demoYear, {
     onDelete: 'SET NULL',
     nullable: true,

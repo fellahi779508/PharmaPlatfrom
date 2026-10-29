@@ -114,12 +114,30 @@ export class ExamService {
       }
     }
 
-    const courses = await courseRepo
-      .createQueryBuilder('course')
-      .leftJoinAndSelect('course.qcms', 'qcm')
-      .where('course.subjectId = :subjectId', { subjectId })
-      .andWhere('course.semesterId = :semesterId', { semesterId })
-      .getMany();
+    // Check if user has residanat year for full access
+    const userYear = user?.redeemCode?.year || user?.demoYear;
+    const hasResidanatYear = userYear?.isResidanat === true;
+
+    let courses;
+    if (hasResidanatYear) {
+      // Residanat users see all courses
+      courses = await courseRepo
+        .createQueryBuilder('course')
+        .leftJoinAndSelect('course.qcms', 'qcm')
+        .where('course.subjectId = :subjectId', { subjectId })
+        .andWhere('course.semesterId = :semesterId', { semesterId })
+        .getMany();
+    } else {
+      // Non-residanat users only see courses matching their isDemo status
+      const userIsDemo = user?.isDemo || false;
+      courses = await courseRepo
+        .createQueryBuilder('course')
+        .leftJoinAndSelect('course.qcms', 'qcm')
+        .where('course.subjectId = :subjectId', { subjectId })
+        .andWhere('course.semesterId = :semesterId', { semesterId })
+        .andWhere('course.isDemo = :isDemo', { isDemo: userIsDemo })
+        .getMany();
+    }
 
     const candidateIds = courses.flatMap((c) => (c.qcms ?? []).map((q) => q.id));
 
@@ -585,7 +603,7 @@ export class ExamService {
     const userRepo = this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { id: userId },
-      relations: { redeemCode: { year: true } },
+      relations: { redeemCode: { year: true }, demoYear: true },
     });
     if (!user) throw new NotFoundException(`User ${userId} not found`);
 
@@ -594,6 +612,12 @@ export class ExamService {
       (roleName ?? '').toLowerCase(),
     );
     if (privileged) return null;
+
+    // Check if user's year is a residanat year (full access)
+    const userYear = user?.redeemCode?.year || user?.demoYear;
+    if (userYear?.isResidanat === true) {
+      return null; // No year restriction for residanat users
+    }
 
     const yearId =
       (user as any)?.redeemCode?.year?.id ?? (user as any)?.redeemCode?.yearId;

@@ -9,6 +9,7 @@ import {
 import { DataSource } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Role } from 'src/auth/enums/role.enum';
+import { Year } from 'src/year/entities/year.entity';
 
 @Injectable()
 export class SubscriptionGuard implements CanActivate {
@@ -21,7 +22,7 @@ export class SubscriptionGuard implements CanActivate {
 
         const user = await this.dataSource.getRepository(User).findOne({
             where: { id: userId },
-            relations: { redeemCode: true, demoYear: true },
+            relations: { redeemCode: { year: true }, demoYear: true },
         });
         if (user?.role == Role.OWNER || user?.role == Role.ADMIN || user?.role == Role.TEACHER) {
             return true;
@@ -34,6 +35,15 @@ export class SubscriptionGuard implements CanActivate {
             !!code?.expiryDate &&
             new Date(code.expiryDate).getTime() > Date.now();
         const isDemoActive = Boolean(user?.isDemo && user?.demoYear);
+
+        // Check if user's year is a residanat year (full access)
+        const userYear = code?.year || user?.demoYear;
+        const isResidanatYear = userYear?.isResidanat === true;
+
+        // If user has a residanat year, grant full access
+        if (isResidanatYear) {
+            return true;
+        }
 
         const active = isRedeemActive || isDemoActive;
 

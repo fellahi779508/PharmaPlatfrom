@@ -69,6 +69,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
   const userAnswersByQuestionRef = useRef<Map<number, number[]>>(new Map());
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const questionsCacheRef = useRef<Map<number, any>>(new Map());
+  const hasTimeLimitRef = useRef<boolean>(false);
 
   const onCloseRef = useRef(onClose);
   useEffect(() => {
@@ -200,6 +201,9 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
       setTimeRemaining(data.timerSeconds);
       setAnswerProgress({ answered: 0, total: 0 });
       
+      // Track if this question has a time limit
+      hasTimeLimitRef.current = data.timerSeconds > 0;
+      
       // Cache question data for review using ref
       questionsCacheRef.current.set(data.questionIndex, data);
     };
@@ -261,6 +265,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
 
     const onTimeUp = (data: { questionIndex: number }) => {
       console.log("Time up for question:", data.questionIndex);
+      // Backend time_up event - just ensure timer is cleared and submitted
       setAnswerSubmitted(true);
       setTimeRemaining(0);
       if (timerIntervalRef.current) {
@@ -338,21 +343,28 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
 
   // Timer countdown effect
   useEffect(() => {
-    if (timeRemaining > 0 && gameState === "playing" && !answerSubmitted) {
+    // Only start timer if there's a time limit
+    if (hasTimeLimitRef.current && gameState === "playing" && !answerSubmitted) {
+      // Clear any existing timer
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+      
       timerIntervalRef.current = setInterval(() => {
         setTimeRemaining((prev) => {
-          if (prev <= 1) {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
+            // Timer reached 0
             if (timerIntervalRef.current) {
               clearInterval(timerIntervalRef.current);
             }
+            // Mark as submitted immediately when time runs out
+            setAnswerSubmitted(true);
             return 0;
           }
-          return prev - 1;
+          return newTime;
         });
       }, 1000);
-    } else if (timeRemaining === 0 && gameState === "playing" && !answerSubmitted) {
-      // When timer reaches 0, mark as submitted (empty answer) but don't auto-advance
-      setAnswerSubmitted(true);
     }
 
     return () => {
@@ -360,7 +372,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
         clearInterval(timerIntervalRef.current);
       }
     };
-  }, [timeRemaining, gameState, answerSubmitted]);
+  }, [gameState, answerSubmitted]); // Removed timeRemaining from dependencies
 
   const handleReady = () => {
     if (!socket || !userId) return;
@@ -489,6 +501,7 @@ export default function GameRoom({ roomId, onClose }: GameRoomProps) {
             selectedAnswers={selectedAnswers}
             answerSubmitted={answerSubmitted}
             timeRemaining={timeRemaining}
+            hasTimeLimit={hasTimeLimitRef.current}
             isHost={isHost}
             answerProgress={answerProgress}
             onToggleAnswer={toggleAnswer}
@@ -634,6 +647,7 @@ function QuestionView({
   selectedAnswers,
   answerSubmitted,
   timeRemaining,
+  hasTimeLimit,
   isHost,
   answerProgress,
   onToggleAnswer,
@@ -645,6 +659,7 @@ function QuestionView({
   selectedAnswers: number[];
   answerSubmitted: boolean;
   timeRemaining: number;
+  hasTimeLimit: boolean;
   isHost: boolean;
   answerProgress: { answered: number; total: number };
   onToggleAnswer: (id: number) => void;
@@ -720,27 +735,17 @@ function QuestionView({
               >
                 {t("nextQuestion")} →
               </button>
-              {!allAnswered && timeRemaining > 0 && (
+              {!allAnswered && (
                 <p
                   style={{
                     fontSize: "0.85rem",
-                    color: "var(--muted-foreground)",
+                    color: hasTimeLimit && timeRemaining === 0 ? "var(--accent)" : "var(--muted-foreground)",
                     marginTop: "0.5rem",
                   }}
                 >
-                  Waiting for players… {answerProgress.answered} /{" "}
-                  {answerProgress.total}
-                </p>
-              )}
-              {timeRemaining === 0 && !allAnswered && (
-                <p
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "var(--accent)",
-                    marginTop: "0.5rem",
-                  }}
-                >
-                  Time's up! Some players didn't answer.
+                  {hasTimeLimit && timeRemaining === 0
+                    ? "Time's up! Some players didn't answer."
+                    : `Waiting for players… ${answerProgress.answered} / ${answerProgress.total}`}
                 </p>
               )}
             </>

@@ -8,6 +8,7 @@ export type Year = {
   isDemo?: boolean;
   semesters?: Semester[];
   subjects?: Subject[];
+  isResidanat?: boolean;
 };
 
 export type Semester = {
@@ -140,6 +141,7 @@ export type User = {
 export type CreateYear = {
   name: string;
   isDemo?: boolean;
+  isResidanat?: boolean;
 };
 
 export type CreateSemester = {

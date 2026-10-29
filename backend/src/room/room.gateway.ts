@@ -216,7 +216,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (tracker.size >= totalPlayers) {
         this.clearQuestionTimer(payload.roomId);
-        setTimeout(() => this.advanceToNext(payload.roomId, payload.questionIndex), 2000);
+        // Don't auto-advance - let the host manually advance
       }
     } catch (err) {
       client.emit('error', { message: (err as Error).message });
@@ -304,6 +304,7 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private startQuestionTimer(roomId: string, questionIndex: number, timerSeconds: number) {
     this.clearQuestionTimer(roomId);
+    // Don't start timer if timerSeconds is 0 (no time limit)
     if (timerSeconds <= 0) return;
 
     const timeout = setTimeout(async () => {

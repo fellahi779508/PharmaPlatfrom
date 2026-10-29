@@ -65,16 +65,31 @@ export class CourseService {
       );
     }
     
-    // Get user to check isDemo status
+    // Get user to check isDemo status and year
     let userIsDemo = false;
+    let userHasResidanatYear = false;
     if (userId) {
       const user = await this.dataSource.getRepository(User).findOne({
         where: { id: userId },
+        relations: { redeemCode: { year: true }, demoYear: true },
       });
       userIsDemo = user?.isDemo || false;
+      
+      // Check if user's year is residanat
+      const userYear = user?.redeemCode?.year || user?.demoYear;
+      userHasResidanatYear = userYear?.isResidanat === true;
     }
     
-    // Filter courses based on user's isDemo status, not subject's
+    // If user has a residanat year, show all courses (both demo and non-demo)
+    if (userHasResidanatYear) {
+      const courses = await this.courseRepository.find({
+        where: { subject: { id: subjectId } },
+        relations: { qcms: true },
+      });
+      return courses;
+    }
+    
+    // Otherwise, filter based on user's isDemo status
     if (userIsDemo) {
       const courses = await this.courseRepository.find({
         where: { subject: { id: subjectId }, isDemo: true },
@@ -86,7 +101,7 @@ export class CourseService {
       }));
     }
     return this.courseRepository.find({
-      where: { subject: { id: subjectId } },
+      where: { subject: { id: subjectId }, isDemo: false },
       relations: { qcms: true },
     });
   }

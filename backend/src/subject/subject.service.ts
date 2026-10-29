@@ -99,7 +99,12 @@ export class SubjectService {
       return subjects;
     }
     if (user.redeemCode) {
-
+      if (user.redeemCode.year.isResidanat) {
+         return await this.subjectRepository.find({
+        relations: { year: true },
+       
+      });
+      }
       const subjects = await this.subjectRepository.find({
         relations: { year: true },
         where: { year: { id: user.redeemCode.year.id } },

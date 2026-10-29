@@ -103,6 +103,15 @@ export class SemesterService {
       return semesters;
     }
     if (user.redeemCode) {
+      // Check if user's year is a residanat year (full access)
+      const userYear = user?.redeemCode?.year || user?.demoYear;
+      if (userYear?.isResidanat === true) {
+        // Residanat users see all semesters
+        const semesters = await this.semesterRepository.find({
+          relations: { year: true },
+        });
+        return semesters;
+      }
       const semesters = await this.semesterRepository.find({
         relations: { year: true },
         where: { year: { id: user.redeemCode.year.id } },

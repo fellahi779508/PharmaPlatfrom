@@ -1565,6 +1565,7 @@ export default function TeacherPageComponent() {
         return {
           name: formState.name.trim(),
           isDemo: Boolean(formState.isDemo),
+          isResidanat: Boolean(formState.isResidanat),
         } satisfies CreateYear;
       case "semester":
         return {
@@ -2968,6 +2969,20 @@ export default function TeacherPageComponent() {
                         className={styles.checkbox}
                       />
                       <span>{t("fields.isDemo")}</span>
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(formState.isResidanat)}
+                        onChange={(e) =>
+                          setFormState({
+                            ...formState,
+                            isResidanat: e.target.checked,
+                          })
+                        }
+                        className={styles.checkbox}
+                      />
+                      <span>{t("fields.isResidanat")}</span>
                     </label>
                   </>
                 )}
