@@ -89,7 +89,7 @@ export class SessionService implements OnModuleInit {
             );
           }
 
-          if (course.isDemo || user?.isDemo) {
+          if (user?.isDemo) {
             course.qcms = (course.qcms || []).filter((q) => q.isDemo === true);
           }
 
@@ -127,7 +127,7 @@ export class SessionService implements OnModuleInit {
             );
           }
 
-          if (td.isDemo || user?.isDemo) {
+          if ( user?.isDemo) {
             td.qcms = (td.qcms || []).filter((q) => q.isDemo === true);
           }
 
@@ -165,7 +165,7 @@ export class SessionService implements OnModuleInit {
             );
           }
 
-          if (tp.isDemo || user?.isDemo) {
+          if ( user?.isDemo) {
             tp.qcms = (tp.qcms || []).filter((q) => q.isDemo === true);
           }
 
