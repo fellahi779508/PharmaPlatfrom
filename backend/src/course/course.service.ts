@@ -101,7 +101,7 @@ export class CourseService {
       }));
     }
     return this.courseRepository.find({
-      where: { subject: { id: subjectId }, isDemo: false },
+      where: { subject: { id: subjectId }},
       relations: { qcms: true },
     });
   }
