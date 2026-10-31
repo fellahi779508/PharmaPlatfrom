@@ -33,6 +33,7 @@ import { YearModule } from './year/year.module';
 import { join } from 'path';
 import { RoomModule } from './room/room.module';
 import { RoomPlayerModule } from './room-player/room-player.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 // Feature Modules
@@ -45,6 +46,8 @@ import { RoomPlayerModule } from './room-player/room-player.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    ScheduleModule.forRoot(),
 
     // 2. Configure TypeORM with PostgreSQL
     TypeOrmModule.forRootAsync({

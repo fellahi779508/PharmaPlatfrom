@@ -55,6 +55,9 @@ export class User {
   @Column({ default: 0, type: 'integer' })
   aiGenerationCount: number;
 
+  @Column({ type: 'date', nullable: true })
+  lastAiGenerationDate: Date | null;
+
   @Column({ type: 'timestamp', nullable: true })
   otpExpiresAt: Date | null;
 

@@ -336,9 +336,11 @@ export class QcmService {
 
   async update(id: number, updateQcmDto: UpdateQcmDto) {
     const qcm = await this.findOne(id);
-    if (updateQcmDto.courseId) {
+    const { answers, courseId, tdId, tpId, ...rest } = updateQcmDto;
+
+    if (courseId) {
       const course = await this.dataSource.getRepository(Course).findOne({
-        where: { id: updateQcmDto.courseId },
+        where: { id: courseId },
       });
       if (!course) {
         throw new NotFoundException(
@@ -347,9 +349,9 @@ export class QcmService {
       }
       qcm.course = course;
     }
-    if (updateQcmDto.tdId) {
+    if (tdId) {
       const td = await this.dataSource.getRepository(Td).findOne({
-        where: { id: updateQcmDto.tdId },
+        where: { id: tdId },
       });
       if (!td) {
         throw new NotFoundException(
@@ -358,9 +360,9 @@ export class QcmService {
       }
       qcm.td = td;
     }
-    if (updateQcmDto.tpId) {
+    if (tpId) {
       const tp = await this.dataSource.getRepository(Tp).findOne({
-        where: { id: updateQcmDto.tpId },
+        where: { id: tpId },
       });
       if (!tp) {
         throw new NotFoundException(
@@ -369,8 +371,8 @@ export class QcmService {
       }
       qcm.tp = tp;
     }
-    const newQcm = Object.assign(qcm, updateQcmDto);
-    return await this.qcmRepository.save(newQcm);
+    Object.assign(qcm, rest);
+    return await this.qcmRepository.save(qcm);
   }
 
   async remove(id: number) {
@@ -387,29 +389,46 @@ export class QcmService {
           this.i18n.translate('errors.user.not_found', { lang: this.currentLang }),
         );
       }
+
+      // Check daily limit reset
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const lastDateStr = user.lastAiGenerationDate
+        ? (typeof user.lastAiGenerationDate === 'string'
+          ? (user.lastAiGenerationDate as string).slice(0, 10)
+          : new Date(user.lastAiGenerationDate).toISOString().slice(0, 10))
+        : null;
+
+      if (lastDateStr !== todayStr) {
+        user.aiGenerationCount = 0;
+        user.lastAiGenerationDate = new Date();
+      }
+
       if (user.aiGenerationCount >= 3) {
         throw new BadRequestException(
           this.i18n.translate('errors.user.ai_generation_limit', { lang: this.currentLang }),
         );
       }
-      const qcm = await manager.getRepository(SessionQuestion).findOne({
+      const sessionQuestion = await manager.getRepository(SessionQuestion).findOne({
         where: { id: qcmId },
-        relations: { qcm: { answers: true } }
+        relations: { qcm: { answers: true } },
       });
 
-
+      const qcm = sessionQuestion?.qcm ?? (await manager.getRepository(Qcm).findOne({
+        where: { id: qcmId },
+        relations: { answers: true },
+      }));
 
       if (!qcm) {
         throw new NotFoundException(
           this.i18n.translate('errors.qcm.not_found', { lang: this.currentLang }),
         );
       }
-      const lang = this.currentLang
+      const lang = this.currentLang;
 
-      const question = qcm.qcm.question;
+      const question = qcm.question;
 
       // Properly format answers into readable strings for the AI prompt
-      const formattedAnswers = qcm.qcm.answers
+      const formattedAnswers = (qcm.answers ?? [])
         .map((ans, index) => `Option ${index + 1}: ${ans.answer} (Correct: ${ans.isCorrect})`)
         .join('\n');
 
@@ -446,6 +465,7 @@ export class QcmService {
         throw new BadRequestException('AI returned an empty response.');
       }
       user.aiGenerationCount++;
+      user.lastAiGenerationDate = new Date();
       await manager.getRepository(User).save(user);
 
       return explanation.text;

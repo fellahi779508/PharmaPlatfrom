@@ -1596,18 +1596,20 @@ export default function TeacherPageComponent() {
           subjectId: selectedSubject!.id,
         } satisfies CreateTp;
       case "qcm": {
-        const cleanAnswers = answerDrafts
-          .filter((a) => a.answer.trim())
-          .map(({ _key, ...rest }) => ({
-            ...rest,
-            answer: rest.answer.trim(),
-            explanation: rest.explanation?.trim() || undefined,
-          }));
         const payload: any = {
           question: formState.question.trim(),
-          answers: cleanAnswers,
           isDemo: Boolean(formState.isDemo),
         };
+        if (!editing) {
+          const cleanAnswers = answerDrafts
+            .filter((a) => a.answer.trim())
+            .map(({ _key, ...rest }) => ({
+              ...rest,
+              answer: rest.answer.trim(),
+              explanation: rest.explanation?.trim() || undefined,
+            }));
+          payload.answers = cleanAnswers;
+        }
         if (selectedCourse) payload.courseId = Number(selectedCourse.id);
         if (selectedTd) payload.tdId = Number(selectedTd.id);
         if (selectedTp) payload.tpId = Number(selectedTp.id);
